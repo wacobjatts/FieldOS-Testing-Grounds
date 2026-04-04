@@ -1,30 +1,623 @@
-<div class="card">
-  <div class="title">FORCE</div>
-  <div class="row">
-    <span>
-      Force Mismatch <span class="info">ⓘ</span>
-    </span>
-    <span>0.42</span>
-  </div>
-  <div class="row">
-    <span>Signal Quality</span>
-    <span>0.68</span>
-  </div>
-  <div class="info-panel">
-    Measures net work imbalance in the current buffer.
-    Confidence drops when the sample is sparse or unstable.
-  </div>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FieldOS: KINETIC Visual Shell</title>
+  <style>
+    :root {
+      --bg: #020617;
+      --panel: #061122;
+      --panel-2: #08162b;
+      --border: #1e293b;
+      --text: #e2e8f0;
+      --text-dim: #64748b;
+      --text-soft: #94a3b8;
 
-<div class="card">
-  <div class="title">STRUCTURE</div>
-  <div class="row">
-    <span>
-      Reality Gap <span class="info">ⓘ</span>
-    </span>
-    <span>pending</span>
+      --blue: #38bdf8;
+      --blue-soft: rgba(56,189,248,0.16);
+      --blue-glow: rgba(56,189,248,0.45);
+
+      --orange: #f97316;
+      --orange-soft: rgba(249,115,22,0.16);
+      --orange-glow: rgba(249,115,22,0.40);
+
+      --red: #f87171;
+      --red-soft: rgba(248,113,113,0.16);
+      --red-glow: rgba(248,113,113,0.45);
+
+      --green: #22c55e;
+      --green-glow: rgba(34,197,94,0.4);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top, rgba(56,189,248,0.08), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(249,115,22,0.06), transparent 24%),
+        var(--bg);
+    }
+
+    .app {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 16px 14px 42px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .eyebrow {
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--blue);
+      font-weight: 700;
+    }
+
+    .title {
+      font-size: 28px;
+      line-height: 1;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .sub {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+
+    .toggle-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+      color: var(--text-soft);
+      border-radius: 999px;
+      padding: 8px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .chip.active-blue {
+      color: var(--blue);
+      box-shadow: 0 0 12px rgba(56,189,248,0.14);
+      background: var(--blue-soft);
+    }
+
+    .chip.active-orange {
+      color: var(--orange);
+      box-shadow: 0 0 12px rgba(249,115,22,0.14);
+      background: var(--orange-soft);
+    }
+
+    .card {
+      position: relative;
+      background: linear-gradient(180deg, rgba(8,22,43,0.96), rgba(4,12,25,0.96));
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 16px;
+      margin-bottom: 14px;
+      overflow: hidden;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.03),
+        0 0 0 1px rgba(56,189,248,0.015),
+        0 12px 30px rgba(0,0,0,0.26);
+    }
+
+    .card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(circle at top left, rgba(56,189,248,0.06), transparent 32%);
+    }
+
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      font-weight: 800;
+      margin-bottom: 14px;
+    }
+
+    .info {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(56,189,248,0.35);
+      color: var(--blue);
+      font-size: 10px;
+      flex: 0 0 auto;
+    }
+
+    .hero {
+      padding: 18px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.05;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .hero p {
+      margin: 12px 0 0;
+      color: var(--text-soft);
+      line-height: 1.55;
+      font-size: 14px;
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .big-number {
+      font-size: 68px;
+      font-weight: 800;
+      line-height: 0.9;
+      color: var(--blue);
+      text-shadow: 0 0 20px rgba(56,189,248,0.22);
+      letter-spacing: -0.05em;
+    }
+
+    .badge {
+      border-radius: 999px;
+      padding: 14px 18px;
+      border: 1px solid rgba(34,197,94,0.35);
+      color: #4ade80;
+      background: rgba(34,197,94,0.08);
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      text-transform: uppercase;
+      box-shadow: 0 0 16px rgba(34,197,94,0.08);
+    }
+
+    .progress {
+      margin-top: 18px;
+      height: 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(56,189,248,0.28);
+      background: rgba(2,6,23,0.9);
+      overflow: hidden;
+      padding: 2px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 82%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--blue), #34d399);
+      box-shadow: 0 0 18px rgba(56,189,248,0.28);
+    }
+
+    .caption-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 12px;
+      color: var(--text-soft);
+      font-size: 13px;
+    }
+
+    .reading-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .reading-box {
+      border: 1px solid rgba(56,189,248,0.18);
+      border-radius: 18px;
+      padding: 12px 14px;
+      background: rgba(255,255,255,0.015);
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 11px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .row:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .row:first-child { padding-top: 0; }
+
+    .label {
+      color: var(--text-soft);
+      font-size: 14px;
+    }
+
+    .value {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      text-align: right;
+    }
+
+    .value.blue { color: var(--blue); }
+    .value.orange { color: var(--orange); }
+    .value.red { color: var(--red); }
+    .value.green { color: #4ade80; }
+
+    .section-header {
+      font-size: 18px;
+      font-weight: 800;
+      margin: 0 0 14px;
+      letter-spacing: -0.02em;
+    }
+
+    .scenario-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .scenario {
+      border-radius: 18px;
+      border: 1px solid rgba(56,189,248,0.26);
+      background: linear-gradient(180deg, rgba(15,68,96,0.55), rgba(7,33,52,0.45));
+      padding: 16px;
+      box-shadow: inset 0 0 18px rgba(56,189,248,0.05);
+    }
+
+    .scenario h3 {
+      margin: 0 0 6px;
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .scenario p {
+      margin: 0;
+      color: var(--text-soft);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .mini-card {
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.02);
+      padding: 14px;
+    }
+
+    .mini-title {
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 10px;
+      font-weight: 800;
+    }
+
+    .mini-value {
+      font-size: 30px;
+      line-height: 1;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: var(--blue);
+      text-shadow: 0 0 14px rgba(56,189,248,0.18);
+    }
+
+    .mini-sub {
+      margin-top: 10px;
+      color: var(--text-soft);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 10px;
+    }
+
+    .event {
+      border-left: 2px solid rgba(56,189,248,0.35);
+      padding-left: 10px;
+    }
+
+    .event-time {
+      color: var(--text-dim);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .event-text {
+      margin-top: 2px;
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    .sandbox-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .field {
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      background: rgba(255,255,255,0.02);
+      padding: 12px;
+    }
+
+    .field-label {
+      font-size: 11px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+
+    .field-value {
+      color: var(--text-soft);
+      font-size: 14px;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .button {
+      flex: 1 1 120px;
+      text-align: center;
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-weight: 800;
+      font-size: 13px;
+      border: 1px solid rgba(56,189,248,0.22);
+      background: linear-gradient(180deg, rgba(56,189,248,0.16), rgba(8,22,43,0.24));
+      color: var(--text);
+      box-shadow: 0 0 16px rgba(56,189,248,0.06);
+    }
+
+    .explain {
+      color: var(--text-soft);
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .footer-space {
+      height: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <div class="topbar">
+      <div class="brand">
+        <div class="eyebrow">FieldOS • Specialist Module</div>
+        <div class="title">WhaleWatcher Validation Console</div>
+        <div class="sub">Physics-based move analysis for structural truth, hidden pressure, and instability.</div>
+      </div>
+    </div>
+
+    <div class="toggle-row" style="margin-bottom: 14px;">
+      <div class="chip active-blue">Office Mode</div>
+      <div class="chip">Field Mode</div>
+      <div class="chip active-orange">Sandbox Open</div>
+    </div>
+
+    <div class="card hero">
+      <div class="card-title">System Overview <span class="info">i</span></div>
+
+      <div class="status-row">
+        <div class="big-number">82.4</div>
+        <div class="badge">Signal Valid</div>
+      </div>
+
+      <div class="progress">
+        <div class="progress-fill"></div>
+      </div>
+
+      <div class="caption-row">
+        <div>Superconductor release</div>
+        <div>Confidence: 0.9312</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Current Reading <span class="info">i</span></div>
+
+      <div class="reading-grid">
+        <div class="reading-box">
+          <div class="row">
+            <div class="label">Structural State</div>
+            <div class="value red">Weak</div>
+          </div>
+          <div class="row">
+            <div class="label">Reality Gap</div>
+            <div class="value blue">6.4200</div>
+          </div>
+          <div class="row">
+            <div class="label">Force Imbalance</div>
+            <div class="value orange">0.7800</div>
+          </div>
+          <div class="row">
+            <div class="label">System Strain</div>
+            <div class="value red">High</div>
+          </div>
+          <div class="row">
+            <div class="label">Verity</div>
+            <div class="value green">0.8240</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Physics Snapshot <span class="info">i</span></div>
+
+      <div class="two-col">
+        <div class="mini-card">
+          <div class="mini-title">Structure</div>
+          <div class="mini-value">0.72</div>
+          <div class="mini-sub">Porosity / unsupported space in the local field.</div>
+        </div>
+
+        <div class="mini-card">
+          <div class="mini-title">Force</div>
+          <div class="mini-value">78%</div>
+          <div class="mini-sub">Net work imbalance inside the current buffer.</div>
+        </div>
+
+        <div class="mini-card">
+          <div class="mini-title">Motion</div>
+          <div class="mini-value">Leak</div>
+          <div class="mini-sub">Price is moving faster than structure is supporting.</div>
+        </div>
+
+        <div class="mini-card">
+          <div class="mini-title">Environment</div>
+          <div class="mini-value">Calm</div>
+          <div class="mini-sub">System entropy currently low enough for trustable reads.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Simulation Scenarios <span class="info">i</span></div>
+      <h2 class="section-header">Scenario Library</h2>
+
+      <div class="scenario-grid">
+        <div class="scenario">
+          <h3>Black Hole</h3>
+          <p>High market-buy pressure meets a replenishing wall. Expect compression, rising mismatch, and no valid breakout.</p>
+        </div>
+
+        <div class="scenario">
+          <h3>Vacuum Spike</h3>
+          <p>Liquidity vanishes, a small order moves price violently, and the system should flag the move as unvalidated.</p>
+        </div>
+
+        <div class="scenario">
+          <h3>Entropy Storm</h3>
+          <p>Alternating force, widening spread, degraded signal quality. The system should tighten thresholds and withhold trust.</p>
+        </div>
+
+        <div class="scenario">
+          <h3>Options Dislocation</h3>
+          <p>Derivatives positioning suggests one direction while spot structure disagrees. Used later as a cross-field modifier.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Summary Strip <span class="info">i</span></div>
+      <div class="timeline">
+        <div class="event">
+          <div class="event-time">12:01:08</div>
+          <div class="event-text">Compression building against upward force.</div>
+        </div>
+        <div class="event">
+          <div class="event-time">12:01:19</div>
+          <div class="event-text">Reality gap expanded without corresponding work support.</div>
+        </div>
+        <div class="event">
+          <div class="event-time">12:01:27</div>
+          <div class="event-text">System strain increased as force and structure diverged.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Sandbox <span class="info">i</span></div>
+      <h2 class="section-header">Test Scenario Builder</h2>
+
+      <div class="sandbox-grid">
+        <div class="field">
+          <div class="field-label">Price Change (dV)</div>
+          <div class="field-value">Enter a displacement amount</div>
+        </div>
+
+        <div class="field">
+          <div class="field-label">Work (W)</div>
+          <div class="field-value">Enter a work / volume amount</div>
+        </div>
+
+        <div class="field">
+          <div class="field-label">Book Removal</div>
+          <div class="field-value">Optional structural shock input</div>
+        </div>
+
+        <div class="field">
+          <div class="field-label">Notes</div>
+          <div class="field-value">Use this to compare edge cases and expected trunk response</div>
+        </div>
+      </div>
+
+      <div class="button-row">
+        <div class="button">Run Simulation</div>
+        <div class="button">Save Scenario</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">How It Works <span class="info">i</span></div>
+      <div class="explain">
+        This interface does not predict price. It measures whether price is structurally supported.
+        The system reads order book structure, trade flow, pressure imbalance, and instability, then routes those observations into the FieldOS trunk as calibrated signals.
+        The result is a truth score, not a story.
+      </div>
+    </div>
+
+    <div class="footer-space"></div>
   </div>
-  <div class="info-panel">
-    Distance between current price and the last structurally solid region.
-  </div>
-</div>
+</body>
+</html>
