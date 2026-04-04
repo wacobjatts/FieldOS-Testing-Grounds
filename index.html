@@ -1,62 +1,437 @@
-l<!DOCTYPE html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <title>WhaleWatcher</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WhaleWatcher | FieldOS</title>
   <style>
-    body { background: #0a0a0a; color: #00ff41; font-family: monospace; padding: 20px; }
-    button { padding: 10px; margin: 5px; background: #00ff41; border: none; }
-    .ghost { color: red; }
-    .valid { color: lime; }
+    :root {
+      --bg: #071018;
+      --panel: #0d1722;
+      --panel-2: #101d2b;
+      --line: #1f3550;
+      --text: #d9f3ff;
+      --muted: #8ba7bd;
+      --accent: #37d7ff;
+      --accent-soft: rgba(55, 215, 255, 0.12);
+      --good: #35f08a;
+      --good-soft: rgba(53, 240, 138, 0.12);
+      --bad: #ff5d73;
+      --bad-soft: rgba(255, 93, 115, 0.12);
+      --warn: #ffcc66;
+      --shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(55, 215, 255, 0.08), transparent 30%),
+        linear-gradient(180deg, #08111a 0%, #050b11 100%);
+      color: var(--text);
+      padding: 18px;
+    }
+
+    .app {
+      max-width: 980px;
+      margin: 0 auto;
+    }
+
+    .header {
+      margin-bottom: 16px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(16, 29, 43, 0.98), rgba(9, 18, 28, 0.98));
+      box-shadow: var(--shadow);
+    }
+
+    .eyebrow {
+      font-size: 12px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1.1;
+    }
+
+    .sub {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .hero {
+      display: grid;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      box-shadow: var(--shadow);
+    }
+
+    .hero-card {
+      padding: 18px;
+    }
+
+    .label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    .precision-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .precision-number {
+      font-size: 52px;
+      line-height: 1;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: var(--accent);
+      text-shadow: 0 0 24px rgba(55, 215, 255, 0.22);
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .status-pill.valid {
+      color: var(--good);
+      border-color: rgba(53, 240, 138, 0.35);
+      background: var(--good-soft);
+    }
+
+    .status-pill.ghost {
+      color: var(--bad);
+      border-color: rgba(255, 93, 115, 0.35);
+      background: var(--bad-soft);
+    }
+
+    .bar-wrap {
+      width: 100%;
+      height: 14px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: #07111a;
+      border: 1px solid var(--line);
+    }
+
+    .bar-fill {
+      height: 100%;
+      width: 1%;
+      background: linear-gradient(90deg, var(--accent), var(--good));
+      transition: width 220ms ease;
+    }
+
+    .bar-meta {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .card {
+      padding: 18px;
+    }
+
+    .card-title {
+      margin: 0 0 14px 0;
+      font-size: 18px;
+    }
+
+    .button-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    button {
+      appearance: none;
+      border: 1px solid rgba(55, 215, 255, 0.28);
+      background: linear-gradient(180deg, rgba(55, 215, 255, 0.18), rgba(55, 215, 255, 0.08));
+      color: var(--text);
+      border-radius: 14px;
+      padding: 14px 14px;
+      font-size: 15px;
+      font-weight: 700;
+      text-align: left;
+    }
+
+    button:active {
+      transform: scale(0.99);
+    }
+
+    .btn-sub {
+      display: block;
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .meta-box {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,255,255,0.02);
+      padding: 14px;
+    }
+
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 9px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      font-size: 14px;
+    }
+
+    .meta-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .meta-key {
+      color: var(--muted);
+    }
+
+    .meta-value {
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .raw-box {
+      margin-top: 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: #07111a;
+      padding: 12px;
+      overflow: auto;
+      font-size: 12px;
+      line-height: 1.45;
+      color: #b7d9ea;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    @media (min-width: 760px) {
+      .hero {
+        grid-template-columns: 1.2fr 0.8fr;
+      }
+
+      .grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
   </style>
 </head>
 <body>
+  <div class="app">
+    <section class="header">
+      <div class="eyebrow">FieldOS · Specialist Module</div>
+      <h1>WhaleWatcher Validation Console</h1>
+      <div class="sub">
+        Physics-based move analysis for ghost detection, real move validation, and absorption behavior.
+      </div>
+    </section>
 
-<h1>WhaleWatcher Test</h1>
+    <section class="hero">
+      <div class="panel hero-card">
+        <div class="label">Effective Precision</div>
+        <div class="precision-row">
+          <div id="precisionDisplay" class="precision-number">1.00</div>
+          <div id="statusPill" class="status-pill">Idle</div>
+        </div>
+        <div class="bar-wrap">
+          <div id="precisionBar" class="bar-fill"></div>
+        </div>
+        <div class="bar-meta">
+          <span id="scenarioName">No scenario selected</span>
+          <span id="confidenceText">Confidence: 0.0000</span>
+        </div>
+      </div>
 
-<button onclick="runTest('VIRAL_BOT')">Viral Bot</button>
-<button onclick="runTest('MUD_PIT')">Mud Pit</button>
+      <div class="panel hero-card">
+        <div class="label">Current Reading</div>
+        <div class="meta-box">
+          <div class="meta-row">
+            <span class="meta-key">Displacement</span>
+            <span id="displacementValue" class="meta-value">—</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-key">Work Done</span>
+            <span id="workValue" class="meta-value">—</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-key">Inertia</span>
+            <span id="inertiaValue" class="meta-value">—</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-key">Classification</span>
+            <span id="classificationValue" class="meta-value">Idle</span>
+          </div>
+        </div>
+      </div>
+    </section>
 
-<h2 id="precision">Precision: 1.00</h2>
-<h3 id="status">Status: Idle</h3>
+    <section class="grid">
+      <div class="panel card">
+        <h2 class="card-title">Simulation Scenarios</h2>
+        <div class="button-grid">
+          <button onclick="runTest('VIRAL_BOT')">
+            Viral Bot
+            <span class="btn-sub">High displacement · low work</span>
+          </button>
 
-<script>
-function analyze(data) {
-  const displacement = Math.max(Math.abs(data.priceChangeFraction), 1e-8);
-  const work = Math.max(data.orderBookDepth, 0);
-  const density = work / displacement;
-  const inertia = density / 1000000;
-  const confidence = 1 - Math.exp(-inertia);
-  const precision = 1 + Math.pow(confidence, 2) * 99;
-  const ghost = displacement > 0.02 && confidence < 0.15;
+          <button onclick="runTest('MUD_PIT')">
+            Mud Pit
+            <span class="btn-sub">Low displacement · heavy resistance</span>
+          </button>
 
-  return { precision, ghost, confidence };
-}
+          <button onclick="runTest('ACTIVE_BARRIER')">
+            Active Barrier
+            <span class="btn-sub">Absorption behavior</span>
+          </button>
 
-function runTest(type) {
-  let data;
+          <button onclick="runTest('SUPERCONDUCTOR')">
+            Superconductor
+            <span class="btn-sub">Efficient move test</span>
+          </button>
+        </div>
+      </div>
 
-  if (type === 'VIRAL_BOT') {
-    data = { priceChangeFraction: 0.15, orderBookDepth: 50 };
-  } else {
-    data = { priceChangeFraction: 0.001, orderBookDepth: 1000000 };
-  }
+      <div class="panel card">
+        <h2 class="card-title">Physics Output</h2>
+        <div class="raw-box" id="rawOutput">Waiting for injection...</div>
+      </div>
+    </section>
+  </div>
 
-  const result = analyze(data);
+  <script>
+    function analyzeWhaleWatcher(data) {
+      const displacement = Math.max(Math.abs(data.priceChangeFraction), 1e-8);
+      const workDone = Math.max(data.orderBookDepth, 0);
+      const resistanceDensity = workDone / displacement;
+      const inertia = resistanceDensity / 1000000;
+      const confidence = 1 - Math.exp(-inertia);
+      const effectivePrecision = Math.min(
+        1 + Math.pow(confidence, 2) * 99,
+        100
+      );
+      const isGhostCandidate = displacement > 0.02 && confidence < 0.15;
 
-  document.getElementById("precision").innerText =
-    "Precision: " + result.precision.toFixed(2);
+      return {
+        effectivePrecision,
+        physics: {
+          displacement,
+          workDone,
+          resistanceDensity,
+          inertia,
+          confidence,
+          isGhostCandidate
+        }
+      };
+    }
 
-  const status = document.getElementById("status");
+    function runTest(type) {
+      let data = null;
+      let scenarioLabel = "";
 
-  if (result.ghost) {
-    status.innerText = "Status: GHOST DETECTED";
-    status.className = "ghost";
-  } else {
-    status.innerText = "Status: VALID MOVE";
-    status.className = "valid";
-  }
-}
-</script>
+      if (type === "VIRAL_BOT") {
+        data = { price: 100, priceChangeFraction: 0.15, orderBookDepth: 50 };
+        scenarioLabel = "Viral Bot";
+      } else if (type === "MUD_PIT") {
+        data = { price: 100, priceChangeFraction: 0.001, orderBookDepth: 1000000 };
+        scenarioLabel = "Mud Pit";
+      } else if (type === "ACTIVE_BARRIER") {
+        data = { price: 100, priceChangeFraction: 0.0001, orderBookDepth: 5000000 };
+        scenarioLabel = "Active Barrier";
+      } else if (type === "SUPERCONDUCTOR") {
+        data = { price: 100, priceChangeFraction: 0.1, orderBookDepth: 500000 };
+        scenarioLabel = "Superconductor";
+      }
 
+      const result = analyzeWhaleWatcher(data);
+      const physics = result.physics;
+
+      document.getElementById("precisionDisplay").innerText = result.effectivePrecision.toFixed(2);
+      document.getElementById("scenarioName").innerText = scenarioLabel;
+      document.getElementById("confidenceText").innerText = "Confidence: " + physics.confidence.toFixed(4);
+      document.getElementById("displacementValue").innerText = physics.displacement.toFixed(6);
+      document.getElementById("workValue").innerText = physics.workDone.toLocaleString();
+      document.getElementById("inertiaValue").innerText = physics.inertia.toFixed(4);
+
+      const barPercent = Math.max(1, Math.min(result.effectivePrecision, 100));
+      document.getElementById("precisionBar").style.width = barPercent + "%";
+
+      const pill = document.getElementById("statusPill");
+      const classification = document.getElementById("classificationValue");
+
+      if (physics.isGhostCandidate) {
+        pill.innerText = "Ghost Detected";
+        pill.className = "status-pill ghost";
+        classification.innerText = "Ghost Move";
+      } else {
+        pill.innerText = "Signal Valid";
+        pill.className = "status-pill valid";
+        classification.innerText = "Validated / Absorbed";
+      }
+
+      document.getElementById("rawOutput").innerText = JSON.stringify(
+        {
+          scenario: scenarioLabel,
+          input: data,
+          output: {
+            effectivePrecision: result.effectivePrecision,
+            physics: physics
+          }
+        },
+        null,
+        2
+      );
+    }
+  </script>
 </body>
 </html>
