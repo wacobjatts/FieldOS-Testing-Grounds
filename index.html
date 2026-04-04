@@ -1,437 +1,139 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WhaleWatcher | FieldOS</title>
-  <style>
-    :root {
-      --bg: #071018;
-      --panel: #0d1722;
-      --panel-2: #101d2b;
-      --line: #1f3550;
-      --text: #d9f3ff;
-      --muted: #8ba7bd;
-      --accent: #37d7ff;
-      --accent-soft: rgba(55, 215, 255, 0.12);
-      --good: #35f08a;
-      --good-soft: rgba(53, 240, 138, 0.12);
-      --bad: #ff5d73;
-      --bad-soft: rgba(255, 93, 115, 0.12);
-      --warn: #ffcc66;
-      --shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
-      --radius: 18px;
-    }
-
-    * {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-      background:
-        radial-gradient(circle at top, rgba(55, 215, 255, 0.08), transparent 30%),
-        linear-gradient(180deg, #08111a 0%, #050b11 100%);
-      color: var(--text);
-      padding: 18px;
-    }
-
-    .app {
-      max-width: 980px;
-      margin: 0 auto;
-    }
-
-    .header {
-      margin-bottom: 16px;
-      padding: 18px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: linear-gradient(180deg, rgba(16, 29, 43, 0.98), rgba(9, 18, 28, 0.98));
-      box-shadow: var(--shadow);
-    }
-
-    .eyebrow {
-      font-size: 12px;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 8px;
-      font-weight: 700;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: 30px;
-      line-height: 1.1;
-    }
-
-    .sub {
-      margin-top: 10px;
-      color: var(--muted);
-      font-size: 15px;
-      line-height: 1.5;
-    }
-
-    .hero {
-      display: grid;
-      gap: 16px;
-      margin-bottom: 16px;
-    }
-
-    .panel {
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: linear-gradient(180deg, var(--panel), var(--panel-2));
-      box-shadow: var(--shadow);
-    }
-
-    .hero-card {
-      padding: 18px;
-    }
-
-    .label {
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      color: var(--muted);
-      margin-bottom: 10px;
-      font-weight: 700;
-    }
-
-    .precision-row {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 14px;
-    }
-
-    .precision-number {
-      font-size: 52px;
-      line-height: 1;
-      font-weight: 800;
-      letter-spacing: -0.04em;
-      color: var(--accent);
-      text-shadow: 0 0 24px rgba(55, 215, 255, 0.22);
-    }
-
-    .status-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      border-radius: 999px;
-      padding: 10px 14px;
-      font-size: 13px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      border: 1px solid var(--line);
-      color: var(--muted);
-      background: rgba(255,255,255,0.03);
-    }
-
-    .status-pill.valid {
-      color: var(--good);
-      border-color: rgba(53, 240, 138, 0.35);
-      background: var(--good-soft);
-    }
-
-    .status-pill.ghost {
-      color: var(--bad);
-      border-color: rgba(255, 93, 115, 0.35);
-      background: var(--bad-soft);
-    }
-
-    .bar-wrap {
-      width: 100%;
-      height: 14px;
-      border-radius: 999px;
-      overflow: hidden;
-      background: #07111a;
-      border: 1px solid var(--line);
-    }
-
-    .bar-fill {
-      height: 100%;
-      width: 1%;
-      background: linear-gradient(90deg, var(--accent), var(--good));
-      transition: width 220ms ease;
-    }
-
-    .bar-meta {
-      margin-top: 10px;
-      color: var(--muted);
-      font-size: 13px;
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .grid {
-      display: grid;
-      gap: 16px;
-    }
-
-    .card {
-      padding: 18px;
-    }
-
-    .card-title {
-      margin: 0 0 14px 0;
-      font-size: 18px;
-    }
-
-    .button-grid {
-      display: grid;
-      gap: 10px;
-    }
-
-    button {
-      appearance: none;
-      border: 1px solid rgba(55, 215, 255, 0.28);
-      background: linear-gradient(180deg, rgba(55, 215, 255, 0.18), rgba(55, 215, 255, 0.08));
-      color: var(--text);
-      border-radius: 14px;
-      padding: 14px 14px;
-      font-size: 15px;
-      font-weight: 700;
-      text-align: left;
-    }
-
-    button:active {
-      transform: scale(0.99);
-    }
-
-    .btn-sub {
-      display: block;
-      margin-top: 4px;
-      font-size: 12px;
-      color: var(--muted);
-      font-weight: 600;
-    }
-
-    .meta-box {
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      background: rgba(255,255,255,0.02);
-      padding: 14px;
-    }
-
-    .meta-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 9px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-      font-size: 14px;
-    }
-
-    .meta-row:last-child {
-      border-bottom: none;
-      padding-bottom: 0;
-    }
-
-    .meta-key {
-      color: var(--muted);
-    }
-
-    .meta-value {
-      font-weight: 700;
-      text-align: right;
-    }
-
-    .raw-box {
-      margin-top: 14px;
-      border-radius: 14px;
-      border: 1px solid var(--line);
-      background: #07111a;
-      padding: 12px;
-      overflow: auto;
-      font-size: 12px;
-      line-height: 1.45;
-      color: #b7d9ea;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    @media (min-width: 760px) {
-      .hero {
-        grid-template-columns: 1.2fr 0.8fr;
-      }
-
-      .grid {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="app">
-    <section class="header">
-      <div class="eyebrow">FieldOS · Specialist Module</div>
-      <h1>WhaleWatcher Validation Console</h1>
-      <div class="sub">
-        Physics-based move analysis for ghost detection, real move validation, and absorption behavior.
-      </div>
-    </section>
-
-    <section class="hero">
-      <div class="panel hero-card">
-        <div class="label">Effective Precision</div>
-        <div class="precision-row">
-          <div id="precisionDisplay" class="precision-number">1.00</div>
-          <div id="statusPill" class="status-pill">Idle</div>
-        </div>
-        <div class="bar-wrap">
-          <div id="precisionBar" class="bar-fill"></div>
-        </div>
-        <div class="bar-meta">
-          <span id="scenarioName">No scenario selected</span>
-          <span id="confidenceText">Confidence: 0.0000</span>
-        </div>
-      </div>
-
-      <div class="panel hero-card">
-        <div class="label">Current Reading</div>
-        <div class="meta-box">
-          <div class="meta-row">
-            <span class="meta-key">Displacement</span>
-            <span id="displacementValue" class="meta-value">—</span>
-          </div>
-          <div class="meta-row">
-            <span class="meta-key">Work Done</span>
-            <span id="workValue" class="meta-value">—</span>
-          </div>
-          <div class="meta-row">
-            <span class="meta-key">Inertia</span>
-            <span id="inertiaValue" class="meta-value">—</span>
-          </div>
-          <div class="meta-row">
-            <span class="meta-key">Classification</span>
-            <span id="classificationValue" class="meta-value">Idle</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="grid">
-      <div class="panel card">
-        <h2 class="card-title">Simulation Scenarios</h2>
-        <div class="button-grid">
-          <button onclick="runTest('VIRAL_BOT')">
-            Viral Bot
-            <span class="btn-sub">High displacement · low work</span>
-          </button>
-
-          <button onclick="runTest('MUD_PIT')">
-            Mud Pit
-            <span class="btn-sub">Low displacement · heavy resistance</span>
-          </button>
-
-          <button onclick="runTest('ACTIVE_BARRIER')">
-            Active Barrier
-            <span class="btn-sub">Absorption behavior</span>
-          </button>
-
-          <button onclick="runTest('SUPERCONDUCTOR')">
-            Superconductor
-            <span class="btn-sub">Efficient move test</span>
-          </button>
-        </div>
-      </div>
-
-      <div class="panel card">
-        <h2 class="card-title">Physics Output</h2>
-        <div class="raw-box" id="rawOutput">Waiting for injection...</div>
-      </div>
-    </section>
-  </div>
-
-  <script>
-    function analyzeWhaleWatcher(data) {
-      const displacement = Math.max(Math.abs(data.priceChangeFraction), 1e-8);
-      const workDone = Math.max(data.orderBookDepth, 0);
-      const resistanceDensity = workDone / displacement;
-      const inertia = resistanceDensity / 1000000;
-      const confidence = 1 - Math.exp(-inertia);
-      const effectivePrecision = Math.min(
-        1 + Math.pow(confidence, 2) * 99,
-        100
-      );
-      const isGhostCandidate = displacement > 0.02 && confidence < 0.15;
-
-      return {
-        effectivePrecision,
-        physics: {
-          displacement,
-          workDone,
-          resistanceDensity,
-          inertia,
-          confidence,
-          isGhostCandidate
+    <meta charset="UTF-8">
+    <title>FieldOS // KINETIC Shell</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --bg-deep: #060708;
+            --bg-panel: #0f1113;
+            --accent-cyan: #00f2ff;
+            --accent-red: #ff4747;
+            --text-dim: #626a73;
+            --border-subtle: #222529;
         }
-      };
-    }
+        body { background-color: var(--bg-deep); color: #e6edf3; font-family: 'IBM Plex Mono', monospace; }
+        
+        /* 18. SYMMETRY BREAK / ANISOTROPIC FLOW */
+        .void-tether {
+            background: linear-gradient(to bottom, rgba(255, 71, 71, 0.2), transparent);
+            border-left: 1px dashed rgba(255, 71, 71, 0.4);
+        }
 
-    function runTest(type) {
-      let data = null;
-      let scenarioLabel = "";
+        /* 13. CORE TENSION VIBRATION */
+        @keyframes strain-jitter {
+            0% { transform: translate(0,0); }
+            25% { transform: translate(1px, -1px); }
+            75% { transform: translate(-1px, 1px); }
+            100% { transform: translate(0,0); }
+        }
+        .high-tension { animation: strain-jitter 0.1s infinite; border-color: var(--accent-red) !important; }
 
-      if (type === "VIRAL_BOT") {
-        data = { price: 100, priceChangeFraction: 0.15, orderBookDepth: 50 };
-        scenarioLabel = "Viral Bot";
-      } else if (type === "MUD_PIT") {
-        data = { price: 100, priceChangeFraction: 0.001, orderBookDepth: 1000000 };
-        scenarioLabel = "Mud Pit";
-      } else if (type === "ACTIVE_BARRIER") {
-        data = { price: 100, priceChangeFraction: 0.0001, orderBookDepth: 5000000 };
-        scenarioLabel = "Active Barrier";
-      } else if (type === "SUPERCONDUCTOR") {
-        data = { price: 100, priceChangeFraction: 0.1, orderBookDepth: 500000 };
-        scenarioLabel = "Superconductor";
-      }
+        /* 14. PHASE TRANSITION: SUPERCONDUCTOR */
+        .superconductor-glow {
+            box-shadow: 0 0 30px rgba(0, 242, 255, 0.1);
+            background: linear-gradient(135deg, var(--bg-panel) 0%, #003a3d 100%);
+            border-color: var(--accent-cyan) !important;
+        }
+    </style>
+</head>
+<body class="overflow-hidden">
 
-      const result = analyzeWhaleWatcher(data);
-      const physics = result.physics;
+    <div class="h-screen flex flex-col">
+        <header class="h-14 border-b border-subtle bg-panel flex items-center px-6 justify-between">
+            <div class="flex items-center gap-4">
+                <span class="font-black tracking-tighter text-lg italic">FIELD<span class="text-cyan-400">OS</span></span>
+                <div class="h-6 w-[1px] bg-subtle"></div>
+                <div class="flex flex-col">
+                    <span class="text-[8px] text-dim uppercase tracking-widest">Systemic Stability Band</span>
+                    <div class="flex gap-[1px] items-center h-2 w-48 bg-black/40 rounded-full overflow-hidden px-1">
+                        <div class="h-full bg-cyan-500/40 w-full rounded-full relative">
+                            <div class="absolute inset-y-0 left-1/4 right-1/4 bg-cyan-400 shadow-[0_0_8px_#00f2ff]"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-[10px] text-dim flex gap-6">
+                <span>TRUNK RIGIDITY: <span class="text-white">0.92</span></span>
+                <span>GLOBAL ENTROPY: <span class="text-white text-orange-400">LOW</span></span>
+            </div>
+        </header>
 
-      document.getElementById("precisionDisplay").innerText = result.effectivePrecision.toFixed(2);
-      document.getElementById("scenarioName").innerText = scenarioLabel;
-      document.getElementById("confidenceText").innerText = "Confidence: " + physics.confidence.toFixed(4);
-      document.getElementById("displacementValue").innerText = physics.displacement.toFixed(6);
-      document.getElementById("workValue").innerText = physics.workDone.toLocaleString();
-      document.getElementById("inertiaValue").innerText = physics.inertia.toFixed(4);
+        <main class="flex-1 p-8 grid grid-cols-3 gap-8 content-start overflow-y-auto">
+            
+            <div class="relative group">
+                <div class="bg-panel border border-subtle p-5 relative z-10">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="text-[10px] text-dim font-bold uppercase tracking-widest">BTC // Structural Audit</div>
+                        <div class="px-2 py-0.5 bg-red-500/10 text-red-500 text-[9px] font-black rounded-sm uppercase">Fragile</div>
+                    </div>
+                    <div class="text-3xl font-black mb-1 tracking-tighter">94,204.00</div>
+                    <div class="text-[10px] text-dim mb-6">UNVALIDATED VOID: <span class="text-red-400">1,204.00 pts</span></div>
+                    
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-[8px] text-dim uppercase">
+                            <span>Force Mismatch</span>
+                            <span class="text-red-400">72% Sell Pressure</span>
+                        </div>
+                        <div class="h-1 bg-black/50 w-full flex">
+                            <div class="h-full bg-cyan-500" style="width: 28%"></div>
+                            <div class="h-full bg-red-500" style="width: 72%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="void-tether absolute inset-x-0 top-full h-24 z-0 pointer-events-none">
+                    <div class="absolute bottom-0 left-0 right-0 border-b border-dashed border-red-500/30 text-[8px] text-red-500/50 pl-2">LAST SUPPORTED MANIFOLD: 93,000.00</div>
+                </div>
+            </div>
 
-      const barPercent = Math.max(1, Math.min(result.effectivePrecision, 100));
-      document.getElementById("precisionBar").style.width = barPercent + "%";
+            <div class="bg-panel border border-subtle p-5 high-tension">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="text-[10px] text-dim font-bold uppercase tracking-widest">ETH // Core Tension</div>
+                    <div class="px-2 py-0.5 bg-orange-500/10 text-orange-500 text-[9px] font-black rounded-sm uppercase italic">Torsional Strain</div>
+                </div>
+                <div class="text-3xl font-black mb-1 tracking-tighter">2,410.12</div>
+                <div class="text-[10px] text-dim mb-6">SPECIALIST VS TRUNK DELTA: <span class="text-orange-400">HIGH</span></div>
+                
+                <div class="space-y-1">
+                    <div class="flex justify-between text-[8px] text-dim uppercase">
+                        <span>Strain Accumulation (Fatigue)</span>
+                    </div>
+                    <div class="h-1 bg-black/50 w-full">
+                        <div class="h-full bg-orange-500 transition-all duration-75" style="width: 88%"></div>
+                    </div>
+                </div>
+            </div>
 
-      const pill = document.getElementById("statusPill");
-      const classification = document.getElementById("classificationValue");
+            <div class="p-5 border superconductor-glow relative overflow-hidden">
+                <div class="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(circle_at_center,_var(--accent-cyan)_0%,_transparent_70%)]"></div>
+                <div class="flex justify-between items-start mb-4">
+                    <div class="text-[10px] text-dim font-bold uppercase tracking-widest text-cyan-200">SOL // Phase Transition</div>
+                    <div class="px-2 py-0.5 bg-cyan-500 text-black text-[9px] font-black rounded-sm uppercase animate-pulse">Superconductor</div>
+                </div>
+                <div class="text-3xl font-black mb-1 tracking-tighter text-cyan-400">145.50</div>
+                <div class="text-[10px] text-cyan-200/50 mb-6 uppercase">Inertia Collapse Detected: Friction Zero</div>
+                
+                <div class="space-y-1">
+                    <div class="flex justify-between text-[8px] text-cyan-200 uppercase">
+                        <span>Displacement Efficiency</span>
+                    </div>
+                    <div class="h-1 bg-cyan-900 w-full">
+                        <div class="h-full bg-cyan-400" style="width: 98%"></div>
+                    </div>
+                </div>
+            </div>
 
-      if (physics.isGhostCandidate) {
-        pill.innerText = "Ghost Detected";
-        pill.className = "status-pill ghost";
-        classification.innerText = "Ghost Move";
-      } else {
-        pill.innerText = "Signal Valid";
-        pill.className = "status-pill valid";
-        classification.innerText = "Validated / Absorbed";
-      }
+        </main>
 
-      document.getElementById("rawOutput").innerText = JSON.stringify(
-        {
-          scenario: scenarioLabel,
-          input: data,
-          output: {
-            effectivePrecision: result.effectivePrecision,
-            physics: physics
-          }
-        },
-        null,
-        2
-      );
-    }
-  </script>
+        <footer class="h-10 border-t border-subtle bg-panel flex items-center px-6 justify-between text-[10px] text-dim">
+            <div class="flex gap-4">
+                <span>VERITY ENGINE: <span class="text-green-500">ACTIVE</span></span>
+                <span>LATENCY: 4ms</span>
+            </div>
+            <div class="italic">PHASE 1 // FIELDOS TRUNK INTEGRATED</div>
+        </footer>
+    </div>
+
 </body>
 </html>
