@@ -1,1 +1,62 @@
-l
+l<!DOCTYPE html>
+<html>
+<head>
+  <title>WhaleWatcher</title>
+  <style>
+    body { background: #0a0a0a; color: #00ff41; font-family: monospace; padding: 20px; }
+    button { padding: 10px; margin: 5px; background: #00ff41; border: none; }
+    .ghost { color: red; }
+    .valid { color: lime; }
+  </style>
+</head>
+<body>
+
+<h1>WhaleWatcher Test</h1>
+
+<button onclick="runTest('VIRAL_BOT')">Viral Bot</button>
+<button onclick="runTest('MUD_PIT')">Mud Pit</button>
+
+<h2 id="precision">Precision: 1.00</h2>
+<h3 id="status">Status: Idle</h3>
+
+<script>
+function analyze(data) {
+  const displacement = Math.max(Math.abs(data.priceChangeFraction), 1e-8);
+  const work = Math.max(data.orderBookDepth, 0);
+  const density = work / displacement;
+  const inertia = density / 1000000;
+  const confidence = 1 - Math.exp(-inertia);
+  const precision = 1 + Math.pow(confidence, 2) * 99;
+  const ghost = displacement > 0.02 && confidence < 0.15;
+
+  return { precision, ghost, confidence };
+}
+
+function runTest(type) {
+  let data;
+
+  if (type === 'VIRAL_BOT') {
+    data = { priceChangeFraction: 0.15, orderBookDepth: 50 };
+  } else {
+    data = { priceChangeFraction: 0.001, orderBookDepth: 1000000 };
+  }
+
+  const result = analyze(data);
+
+  document.getElementById("precision").innerText =
+    "Precision: " + result.precision.toFixed(2);
+
+  const status = document.getElementById("status");
+
+  if (result.ghost) {
+    status.innerText = "Status: GHOST DETECTED";
+    status.className = "ghost";
+  } else {
+    status.innerText = "Status: VALID MOVE";
+    status.className = "valid";
+  }
+}
+</script>
+
+</body>
+</html>
