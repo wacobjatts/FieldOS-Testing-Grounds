@@ -1,200 +1,24 @@
-<!-- FIELDOS: KINETIC — BASIC UI SHELL (PASTE INTO HTML FILE) -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>FieldOS: KINETIC</title>
-
-  <style>
-    body {
-      margin: 0;
-      font-family: monospace;
-      background: #020617;
-      color: #e2e8f0;
-    }
-
-    .container {
-      max-width: 420px;
-      margin: auto;
-      padding: 16px;
-    }
-
-    .card {
-      background: #020617;
-      border: 1px solid #1e293b;
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 12px;
-    }
-
-    .title {
-      font-size: 10px;
-      color: #64748b;
-      margin-bottom: 6px;
-      text-transform: uppercase;
-    }
-
-    .big {
-      font-size: 22px;
-      font-weight: bold;
-      text-align: center;
-    }
-
-    .row {
-      display: flex;
-      justify-content: space-between;
-      font-size: 12px;
-      margin: 4px 0;
-    }
-
-    .fragile {
-      color: #f87171;
-    }
-
-    .precision {
-      text-align: center;
-      font-size: 18px;
-      color: #38bdf8;
-    }
-
-    .bar {
-      height: 8px;
-      background: #1e293b;
-      border-radius: 6px;
-      overflow: hidden;
-      margin-top: 8px;
-    }
-
-    .bar-fill {
-      height: 100%;
-      background: linear-gradient(to right, #22c55e, #ef4444);
-    }
-
-    .tether {
-      width: 2px;
-      background: rgba(255, 0, 0, 0.4);
-      margin: 10px auto;
-    }
-
-    .blur {
-      filter: blur(0.5px);
-      color: #f87171;
-    }
-
-    .pulse {
-      animation: pulse 1s infinite;
-    }
-
-    @keyframes pulse {
-      0% { opacity: 0.5; }
-      50% { opacity: 1; }
-      100% { opacity: 0.5; }
-    }
-
-    .shake {
-      animation: shake 0.1s infinite;
-    }
-
-    @keyframes shake {
-      0% { transform: translate(1px, 1px); }
-      50% { transform: translate(-1px, -1px); }
-      100% { transform: translate(1px, 1px); }
-    }
-
-    .event {
-      font-size: 10px;
-      margin: 2px 0;
-      color: #94a3b8;
-    }
-
-    .warning {
-      color: orange;
-      font-size: 10px;
-      margin-top: 6px;
-    }
-
-  </style>
-</head>
-
-<body>
-
-<div class="container">
-
-  <!-- TOP STATE -->
-  <div class="card">
-    <div class="title">STRUCTURAL STATE</div>
-    <div class="big fragile">FRAGILE</div>
-    <div class="precision">Precision: 42.8</div>
-  </div>
-
-  <!-- VOID -->
-  <div class="card">
-    <div class="title">VOID / STRUCTURE</div>
-    <div class="row">
-      <span>Void Volume</span>
-      <span>6.42</span>
-    </div>
-
-    <div class="bar">
-      <div class="bar-fill" style="width:65%"></div>
-    </div>
-
-    <!-- TETHER -->
-    <div class="tether" style="height:30px;"></div>
-  </div>
-
-  <!-- FORCE -->
-  <div class="card">
-    <div class="title">FORCE FIELD</div>
-    <div class="row">
-      <span>Imbalance</span>
-      <span>78%</span>
-    </div>
-
-    <div class="row">
-      <span>Compression</span>
-      <span class="pulse">ACTIVE</span>
-    </div>
-  </div>
-
-  <!-- SYSTEM -->
-  <div class="card shake">
-    <div class="title">SYSTEM STATE</div>
-
-    <div class="row">
-      <span>Liar Index</span>
-      <span class="blur">81%</span>
-    </div>
-
-    <div class="row">
-      <span>Variance</span>
-      <span>0.34</span>
-    </div>
-
-    <div class="row">
-      <span>Fatigue</span>
-      <span>2.8</span>
-    </div>
-
-    <div class="warning">⚠ Cross-Asset Drag Active</div>
-  </div>
-
-  <!-- PHASE -->
-  <div class="card pulse">
-    <div class="title">PHASE</div>
-    <div class="big">SUPERCONDUCTOR</div>
-  </div>
-
-  <!-- EVENTS -->
-  <div class="card">
-    <div class="title">EVENT LOG</div>
-    <div class="event">[12:01] Compression Spike</div>
-    <div class="event">[12:03] Void Expansion</div>
-    <div class="event">[12:05] Drag Detected</div>
-  </div>
-
+l<div class="card">
+  <div class="title">STRUCTURAL STATE</div>
+  <div class="big fragile">WEAK</div>
 </div>
 
-</body>
-</html>
+<div class="card">
+  <div class="title">FORCE</div>
+  <div class="row"><span>Imbalance</span><span>HIGH</span></div>
+</div>
+
+<div class="card">
+  <div class="title">STRAIN</div>
+  <div class="row"><span>System Strain</span><span>BUILDING</span></div>
+</div>
+
+<div class="card">
+  <div class="title">TRUTH</div>
+  <div class="row"><span>Verity</span><span>LOW</span></div>
+</div>
+
+<div class="card">
+  <div class="title">ENVIRONMENT</div>
+  <div class="row"><span>Stability</span><span>CHAOTIC</span></div>
+</div>
