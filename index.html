@@ -2,50 +2,80 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>FIELD-OS // PRECISION TERMINAL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FIELD-OS // SOURCE ACCESS TERMINAL</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
     <div class="terminal">
         <header class="top-bar">
-            <div class="brand">FIELD-OS // KINETIC</div>
-            <div class="stream-info">FEED: BTC-USD // LATENCY: <span id="ms-ping">12ms</span> // STATUS: ACTIVE</div>
+            <div class="brand">FIELD-OS // KINETIC PRECISION</div>
+            <div class="connection-status">
+                SIGNAL: <span class="glow">ENCRYPTED</span> // 
+                LATENCY: <span id="ms-ping">14ms</span> // 
+                NODE: US-EAST-1
+            </div>
         </header>
-        
+
         <div class="main-layout">
             <aside class="sidebar">
-                <div class="control-group">
-                    <label>INSTRUMENT SELECT</label>
+                
+                <section class="control-group">
+                    <label>SELECT CALIBRATION MODEL</label>
                     <select id="instrument-select">
-                        <option value="absorption">ABSORPTION PRECISION</option>
-                        <option value="kinetic">KINETIC MOMENTUM</option>
-                        <option value="liquidity">LIQUIDITY DENSITY</option>
+                        <option value="absorption">ABSORPTION PRECISION (n*decay)</option>
+                        <option value="kinetic">KINETIC MOMENTUM (v*damp)</option>
+                        <option value="liquidity">LIQUIDITY DENSITY (tanh)</option>
                     </select>
-                </div>
-                <div class="formula-block">
-                    <label>ACTIVE LOGIC</label>
-                    <pre id="code-display"><code></code></pre>
-                </div>
-                <div class="stats-stack">
-                    <div class="stat">
-                        <label>PRECISION %</label>
-                        <div id="stat-precision" class="val-large">0.0%</div>
+                </section>
+
+                <section class="formula-block">
+                    <label>ACTIVE SOURCE CODE</label>
+                    <pre id="code-display"><code>// Initialize Logic...</code></pre>
+                </section>
+
+                <section class="live-metrics">
+                    <div class="metric">
+                        <label>TRUST INTEGRITY</label>
+                        <div id="stat-precision" class="value">0.0%</div>
                     </div>
-                    <div class="stat">
+                    <div class="metric">
                         <label>DIVERGENCE DELTA</label>
-                        <div id="stat-divergence" class="val-large">0.00</div>
+                        <div id="stat-divergence" class="value">0.000</div>
                     </div>
-                </div>
+                </section>
+
+                <footer class="legal-notice">
+                    PROPRIETARY ALGORITHMIC ACCESS. 
+                    UNAUTHORIZED REDISTRIBUTION PROHIBITED.
+                </footer>
             </aside>
 
             <main class="chart-stage">
-                <div class="chart-wrapper">
+                <div class="chart-container">
                     <canvas id="dualChart"></canvas>
+                </div>
+                
+                <div class="data-strip">
+                    <div class="entry">
+                        <span class="key">PRICE:</span>
+                        <span id="raw-price" class="val">0.00</span>
+                    </div>
+                    <div class="entry">
+                        <span class="key">SAMPLE DENSITY (N):</span>
+                        <span id="raw-trades" class="val">0</span>
+                    </div>
+                    <div class="entry">
+                        <span class="key">DECAY (MS):</span>
+                        <span id="raw-age" class="val">0ms</span>
+                    </div>
                 </div>
             </main>
         </div>
     </div>
+
     <script src="app.js"></script>
 </body>
 </html>
