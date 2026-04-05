@@ -1,40 +1,43 @@
-<div class="asset-display">
-  <div id="sym" class="asset-symbol">BTCUSDT</div>
-  <div class="asset-stream">live terminal stream</div>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FIELD-OS // KINETIC: Accretion Terminal</title>
+    
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+        }
+      }
+    </script>
 
-<div class="gradient-shell">
-  <div class="gradient-title-row">
-    <div class="gradient-title">Kinetic Gradient</div>
-    <div class="info" onclick="toggleInfo('gradientInfo')">i</div>
-  </div>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
-  <div class="info-box" id="gradientInfo">
-    This is the first intuitive read layer for Kinetic.  
-    Bars above the center line indicate positive directional pressure.  
-    Bars below the center line indicate negative directional pressure.  
-    Taller bars mean stronger movement.  
-    The smooth line is a calmer read of the same field, helping show whether pressure is building or fading.
-  </div>
+    <div class="cockpit-frame">
+        <div id="motherboard">
+            
+            <div id="accretion-canvas-container"></div>
 
-  <svg id="gradientSvg" class="gradient-svg" viewBox="0 0 520 180" preserveAspectRatio="none">
-    <line x1="0" y1="90" x2="520" y2="90" class="zero-line"></line>
-    <g id="barLayer"></g>
-    <path id="signalLine" class="signal-line" d=""></path>
-  </svg>
+            <div class="hud-layer">
+                <header>
+                    <div class="brand">FIELD-OS // KINETIC</div>
+                    <div class="status">SYSTEM: NOMINAL</div>
+                </header>
+                
+                <div class="readout">
+                    <div class="label">ACCRETION VELOCITY</div>
+                    <div id="velocity-value" class="value">0.000</div>
+                </div>
+            </div>
 
-  <div class="gradient-read">
-    <div class="read-box">
-      <div class="read-label">Bias</div>
-      <div id="biasRead" class="read-value">Neutral</div>
+        </div>
     </div>
-    <div class="read-box">
-      <div class="read-label">Pressure</div>
-      <div id="pressureRead" class="read-value">Stable</div>
-    </div>
-    <div class="read-box">
-      <div class="read-label">State</div>
-      <div id="stateRead" class="read-value">Early</div>
-    </div>
-  </div>
-</div>
+
+    <script type="module" src="app.js"></script>
+
+</body>
+</html>
