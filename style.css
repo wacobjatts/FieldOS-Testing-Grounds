@@ -1,0 +1,63 @@
+:root {
+  --bg-0: #050c12;
+  --bg-1: #0a1829;
+  --accent: #62c0ff;
+  --accent-glow: rgba(98, 192, 255, 0.15);
+  --line: rgba(119, 196, 255, 0.12);
+  --text: #e8f3ff;
+  --text-dim: #6d86a1;
+}
+
+body, html {
+  margin: 0; padding: 0;
+  width: 100%; height: 100%;
+  background-color: var(--bg-0);
+  color: var(--text);
+  font-family: sans-serif;
+  overflow: hidden;
+  display: flex; justify-content: center; align-items: center;
+}
+
+.cockpit-frame {
+  width: 95vw; height: 85vh;
+  background: radial-gradient(circle at center, var(--bg-1), var(--bg-0));
+  border: 1px solid var(--line);
+  position: relative;
+  transform: perspective(1200px) rotateX(5deg);
+}
+
+#accretion-canvas-container { position: absolute; inset: 0; z-index: 1; }
+
+.tactical-stack {
+  position: absolute; right: 40px; top: 80px;
+  width: 100px; z-index: 10;
+  display: flex; flex-direction: column; gap: 8px;
+}
+
+.instrument-label { font-size: 9px; letter-spacing: 2px; color: var(--accent); }
+
+.manifold-container {
+  height: 250px; background: rgba(0,0,0,0.5);
+  border: 1px solid var(--line);
+  position: relative; overflow: hidden; display: flex;
+}
+
+.chamber { flex: 1; transition: opacity 0.3s, filter 0.3s; height: 50%; align-self: flex-end; }
+.buy { background: linear-gradient(to top, var(--accent), transparent); border-right: 1px solid var(--line); }
+.sell { background: linear-gradient(to top, #ff9d00, transparent); }
+
+#price-blade {
+  position: absolute; left: 0; right: 0; height: 2px;
+  background: #fff; box-shadow: 0 0 8px #fff; z-index: 5;
+}
+
+.etching-overlay {
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(transparent, transparent 19px, var(--line) 20px);
+  pointer-events: none;
+}
+
+.precision-readout { font-size: 8px; color: var(--text-dim); text-align: center; }
+
+.hud-layer { position: absolute; inset: 40px; pointer-events: none; }
+.brand { font-weight: 900; letter-spacing: 4px; color: var(--accent); }
