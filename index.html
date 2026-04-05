@@ -1,299 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Field-OS // Kinetic</title>
-
-<style>
-:root{
-  --bg:#0a0f14;
-  --panel:#141b22;
-  --line:rgba(130,170,210,.15);
-  --accent:#5ec8ff;
-  --accent-soft:#9be7ff;
-  --text:#e6f3ff;
-  --text-dim:#7f97ad;
-}
-
-body{
-  margin:0;
-  background:var(--bg);
-  color:var(--text);
-  font-family:system-ui, -apple-system, sans-serif;
-}
-
-/* HEADER */
-.header{
-  display:flex;
-  justify-content:space-between;
-  padding:12px 20px;
-  border-bottom:1px solid var(--line);
-}
-
-.search{
-  background:var(--panel);
-  border:1px solid var(--line);
-  padding:8px;
-  border-radius:6px;
-  color:white;
-}
-
-/* LAYOUT */
-.main{
-  display:grid;
-  grid-template-columns:1fr 280px;
-  height:calc(100vh - 60px);
-}
-
-/* CHART AREA */
-.chart-area{
-  padding:16px;
-}
-
-.panel{
-  background:var(--panel);
-  border:1px solid var(--line);
-  border-radius:10px;
-  padding:12px;
-  margin-bottom:12px;
-}
-
-/* PRICE CHART */
-.chart{
-  height:280px;
-  position:relative;
-}
-
-.chart canvas{
-  width:100%;
-  height:100%;
-}
-
-/* VOLUME */
-.volume{
-  height:80px;
-}
-
-/* INDICATOR */
-.indicator{
-  height:140px;
-}
-
-/* RIGHT PANEL */
-.side{
-  padding:16px;
-  border-left:1px solid var(--line);
-}
-
-/* SCORE */
-.score{
-  font-size:22px;
-  font-weight:700;
-}
-
-.bar{
-  height:6px;
-  background:#222;
-  margin:6px 0 12px;
-}
-
-.fill{
-  height:100%;
-  background:var(--accent);
-}
-
-/* COMPASS */
-.compass{
-  height:120px;
-  position:relative;
-  border:1px solid var(--line);
-  border-radius:10px;
-}
-
-.dot{
-  width:10px;
-  height:10px;
-  background:var(--accent);
-  border-radius:50%;
-  position:absolute;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-}
-
-/* TEXT */
-.label{
-  font-size:11px;
-  color:var(--text-dim);
-}
-
-.value{
-  font-family:monospace;
-}
-
-</style>
+    <meta charset="UTF-8">
+    <title>FIELD-OS // PRECISION TERMINAL</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
+    <div class="terminal">
+        <header class="top-bar">
+            <div class="brand">FIELD-OS // KINETIC</div>
+            <div class="stream-info">FEED: BTC-USD // LATENCY: <span id="ms-ping">12ms</span> // STATUS: ACTIVE</div>
+        </header>
+        
+        <div class="main-layout">
+            <aside class="sidebar">
+                <div class="control-group">
+                    <label>INSTRUMENT SELECT</label>
+                    <select id="instrument-select">
+                        <option value="absorption">ABSORPTION PRECISION</option>
+                        <option value="kinetic">KINETIC MOMENTUM</option>
+                        <option value="liquidity">LIQUIDITY DENSITY</option>
+                    </select>
+                </div>
+                <div class="formula-block">
+                    <label>ACTIVE LOGIC</label>
+                    <pre id="code-display"><code></code></pre>
+                </div>
+                <div class="stats-stack">
+                    <div class="stat">
+                        <label>PRECISION %</label>
+                        <div id="stat-precision" class="val-large">0.0%</div>
+                    </div>
+                    <div class="stat">
+                        <label>DIVERGENCE DELTA</label>
+                        <div id="stat-divergence" class="val-large">0.00</div>
+                    </div>
+                </div>
+            </aside>
 
-<div class="header">
-  <input class="search" placeholder="Search BTC, AAPL..." />
-  <div>BTC/USD • 42,865 • LIVE</div>
-</div>
-
-<div class="main">
-
-  <!-- LEFT SIDE -->
-  <div class="chart-area">
-
-    <!-- PRICE -->
-    <div class="panel chart">
-      <canvas id="priceChart"></canvas>
+            <main class="chart-stage">
+                <div class="chart-wrapper">
+                    <canvas id="dualChart"></canvas>
+                </div>
+            </main>
+        </div>
     </div>
-
-    <!-- VOLUME -->
-    <div class="panel volume">
-      <canvas id="volumeChart"></canvas>
-    </div>
-
-    <!-- DROPDOWN -->
-    <div class="panel">
-      <select id="indicatorSelect">
-        <option>Kinetic Manifold</option>
-        <option>Compression</option>
-        <option>Precision</option>
-      </select>
-    </div>
-
-    <!-- INDICATOR -->
-    <div class="panel indicator">
-      <canvas id="indicatorChart"></canvas>
-    </div>
-
-  </div>
-
-  <!-- RIGHT PANEL -->
-  <div class="side">
-
-    <!-- SCORE -->
-    <div class="panel">
-      <div class="label">Kinetic Score</div>
-      <div class="score" id="score">78</div>
-      <div class="bar"><div class="fill" style="width:78%"></div></div>
-    </div>
-
-    <!-- COMPASS -->
-    <div class="panel">
-      <div class="label">Compass</div>
-      <div class="compass">
-        <div class="dot" id="dot"></div>
-      </div>
-    </div>
-
-    <!-- VALUES -->
-    <div class="panel">
-      <div class="label">Force</div>
-      <div class="value" id="force">0.63</div>
-
-      <div class="label">Truth</div>
-      <div class="value" id="truth">0.71</div>
-
-      <div class="label">Slope</div>
-      <div class="value" id="slope">0.12</div>
-    </div>
-
-    <!-- FORMULA -->
-    <div class="panel">
-      <div class="label">Formula</div>
-      <div class="value">
-        Force = mismatch × participation<br>
-        Truth = precision × (1 - entropy)
-      </div>
-    </div>
-
-    <!-- INTERPRETATION -->
-    <div class="panel">
-      <div class="label">State</div>
-      <div class="value" id="state">
-        Upward pressure building with support
-      </div>
-    </div>
-
-  </div>
-
-</div>
-
-<script>
-function randomSeries(len=60){
-  let arr=[50];
-  for(let i=1;i<len;i++){
-    arr.push(arr[i-1]+(Math.random()-0.5)*2);
-  }
-  return arr;
-}
-
-function drawLine(canvas,data,color){
-  const ctx=canvas.getContext('2d');
-  const w=canvas.width=canvas.offsetWidth;
-  const h=canvas.height=canvas.offsetHeight;
-
-  ctx.clearRect(0,0,w,h);
-  ctx.strokeStyle=color;
-  ctx.lineWidth=2;
-
-  ctx.beginPath();
-
-  let max=Math.max(...data);
-  let min=Math.min(...data);
-
-  data.forEach((v,i)=>{
-    let x=i/(data.length-1)*w;
-    let y=h-(v-min)/(max-min)*h;
-    if(i===0) ctx.moveTo(x,y);
-    else ctx.lineTo(x,y);
-  });
-
-  ctx.stroke();
-}
-
-function drawBars(canvas,data){
-  const ctx=canvas.getContext('2d');
-  const w=canvas.width=canvas.offsetWidth;
-  const h=canvas.height=canvas.offsetHeight;
-
-  ctx.clearRect(0,0,w,h);
-
-  let max=Math.max(...data);
-
-  data.forEach((v,i)=>{
-    let x=i/data.length*w;
-    let barHeight=(v/max)*h;
-    ctx.fillStyle="#5ec8ff";
-    ctx.fillRect(x,h-barHeight,3,barHeight);
-  });
-}
-
-let price=randomSeries();
-let volume=randomSeries();
-let force=randomSeries();
-let truth=randomSeries();
-
-function render(){
-  drawLine(priceChart,price,"#5ec8ff");
-  drawBars(volumeChart,volume);
-  drawLine(indicatorChart,force,"#5ec8ff");
-  drawLine(indicatorChart,truth,"#9be7ff");
-
-  // update compass
-  let x=(Math.random()*40-20);
-  let y=(Math.random()*40-20);
-  dot.style.transform=`translate(${x}px,${y}px)`;
-}
-
-setInterval(render,1000);
-render();
-</script>
-
+    <script src="app.js"></script>
 </body>
 </html>
