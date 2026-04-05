@@ -1,119 +1,43 @@
-:root {
-  --bg-0: #050c12;
-  --bg-1: #0a1829;
-  --accent: #62c0ff;
-  --accent-glow: rgba(98, 192, 255, 0.15);
-  --line: rgba(119, 196, 255, 0.12);
-  --text: #e8f3ff;
-  --text-dim: #6d86a1;
-  --panel-blur: blur(12px);
-  --panel-border: 1px solid rgba(119, 196, 255, 0.2);
+.tactical-stack {
+  position: absolute;
+  right: 40px; top: 100px;
+  width: 120px;
+  display: flex; flex-direction: column; gap: 10px;
 }
 
-body, html {
-  margin: 0; padding: 0;
-  width: 100%; height: 100%;
-  background-color: var(--bg-0);
-  color: var(--text);
-  font-family: 'Inter', sans-serif;
+.manifold-container {
+  height: 300px;
+  background: rgba(5, 12, 18, 0.8);
+  border: 1px solid var(--line);
+  position: relative;
   overflow: hidden;
   display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
-.cockpit-frame {
-  width: 95vw;
-  height: 85vh;
-  background: radial-gradient(circle at center, var(--bg-1), var(--bg-0));
-  border: var(--panel-border);
-  border-radius: 8px;
-  position: relative;
-  box-shadow: 0 50px 100px rgba(0,0,0,0.8);
-  transform: perspective(1200px) rotateX(8deg);
+.chamber {
+  flex: 1;
+  transition: opacity 0.5s ease, filter 0.5s ease;
 }
 
-.cockpit-frame::before {
-  content: "";
+.buy { background: linear-gradient(to top, var(--accent), transparent); }
+.sell { background: linear-gradient(to top, #ff9d00, transparent); }
+
+#price-blade {
   position: absolute;
-  inset: 0;
-  background-image: 
-    linear-gradient(var(--line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--line) 1px, transparent 1px);
-  background-size: 30px 30px;
-  opacity: 0.4;
+  left: 0; right: 0; height: 2px;
+  background: #fff;
+  box-shadow: 0 0 10px #fff;
+  z-index: 5;
+  transition: top 0.3s cubic-bezier(0.1, 0.7, 1.0, 0.1);
+}
+
+.etching-overlay {
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(transparent, transparent 19px, var(--line) 20px);
   pointer-events: none;
 }
 
-#accretion-canvas-container {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-}
-
-.hud-layer {
-  position: absolute;
-  inset: 40px;
-  z-index: 10;
-  pointer-events: none;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-header {
-  border-left: 3px solid var(--accent);
-  padding-left: 15px;
-}
-
-.brand {
-  font-weight: 900;
-  letter-spacing: 5px;
-  font-size: 14px;
-  color: var(--accent);
-}
-
-.status {
-  font-size: 10px;
-  color: var(--text-dim);
-  margin-top: 5px;
-}
-
-.readout {
-  align-self: flex-end;
-  text-align: right;
-  background: var(--accent-glow);
-  padding: 20px;
-  backdrop-filter: var(--panel-blur);
-  border-right: 2px solid var(--accent);
-}
-
-.label {
-  font-size: 9px;
-  letter-spacing: 2px;
-  color: var(--text-dim);
-}
-
-.value {
-  font-family: monospace;
-  font-size: 32px;
-  color: var(--text);
-  text-shadow: 0 0 15px var(--accent);
-}
-
-.spatial-label {
-  position: absolute;
-  pointer-events: none;
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 2px;
-  color: var(--accent);
-  text-transform: uppercase;
-  white-space: nowrap;
-  padding: 4px 8px;
-  border-left: 1px solid var(--accent);
-  background: linear-gradient(90deg, rgba(98, 192, 255, 0.1), transparent);
-  z-index: 20;
-  display: none;
-  top: 0; left: 0;
+.precision-readout {
+  font-size: 9px; color: var(--text-dim);
+  text-align: center; letter-spacing: 1px;
 }
