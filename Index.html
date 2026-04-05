@@ -1,38 +1,678 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FIELD-OS // KINETIC: Accretion Terminal</title>
-    <script type="importmap">
-      {
-        "imports": {
-          "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Field-OS Cockpit Sample</title>
+  <style>
+    :root {
+      --bg-0: #071018;
+      --bg-1: #0b1622;
+      --bg-2: #102033;
+      --panel: rgba(14, 27, 42, 0.82);
+      --line: rgba(119, 196, 255, 0.16);
+      --line-strong: rgba(119, 196, 255, 0.30);
+      --text: #e8f3ff;
+      --text-soft: #9fb7cf;
+      --text-dim: #6d86a1;
+      --accent: #62c0ff;
+      --accent-2: #8de0ff;
+      --accent-glow: rgba(98, 192, 255, 0.20);
+      --success: #7ee7b8;
+      --warn: #ffb86b;
+      --danger: #ff8e8e;
+      --violet: #b89cff;
+      --grid: rgba(105, 185, 255, 0.07);
+      --shadow: 0 20px 50px rgba(0,0,0,0.35);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at top left, rgba(98,192,255,0.10), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(184,156,255,0.05), transparent 24%),
+        linear-gradient(180deg, #09131d 0%, #050b12 100%);
+      color: var(--text);
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.6;
+      background-image:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+      background-size: 36px 36px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    .header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 16px 18px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(19,38,59,0.86), rgba(10,21,33,0.86));
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+
+    .brand-title {
+      margin: 0;
+      font-size: 14px;
+      letter-spacing: 0.18em;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .brand-sub {
+      margin-top: 4px;
+      font-size: 10px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .status {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(8,18,28,0.75);
+      color: var(--text-soft);
+      font-size: 11px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    .dot.green {
+      background: var(--success);
+      box-shadow: 0 0 12px rgba(126,231,184,0.22);
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: 260px 1fr 320px;
+      gap: 16px;
+      min-height: 760px;
+    }
+
+    .panel {
+      position: relative;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(14,27,42,0.92), rgba(8,15,24,0.94));
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, transparent, rgba(141,224,255,0.03), transparent),
+        linear-gradient(180deg, rgba(255,255,255,0.02), transparent 20%);
+    }
+
+    .section {
+      padding: 16px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .section-title h2,
+    .section-title h3 {
+      margin: 0;
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .info {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 1px solid var(--line);
+      color: var(--accent-2);
+      display: inline-grid;
+      place-items: center;
+      font-size: 12px;
+    }
+
+    .left-col, .right-col {
+      display: grid;
+      gap: 16px;
+    }
+
+    .left-col {
+      grid-template-rows: auto auto 1fr;
+    }
+
+    .right-col {
+      grid-template-rows: repeat(4, auto) 1fr;
+    }
+
+    .nav-card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(8,18,28,0.72);
+      padding: 12px;
+      color: var(--text-soft);
+      font-size: 12px;
+      line-height: 1.55;
+      margin-bottom: 10px;
+    }
+
+    .nav-card strong {
+      display: block;
+      color: var(--text);
+      margin-bottom: 6px;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .label-row {
+      display: grid;
+      gap: 10px;
+    }
+
+    .label-box {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(8,18,28,0.74);
+      padding: 12px;
+    }
+
+    .label-box .mini {
+      font-size: 10px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 6px;
+    }
+
+    .label-box .big {
+      font-size: 14px;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .center-col {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 16px;
+    }
+
+    .hero-top {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 16px 18px 0;
+    }
+
+    .hero-title {
+      font-size: 13px;
+      color: var(--text);
+      font-weight: 800;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+    }
+
+    .hero-copy {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--text-soft);
+      line-height: 1.6;
+      max-width: 640px;
+    }
+
+    .hero-state {
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(8,18,28,0.74);
+      font-size: 11px;
+      color: var(--text-soft);
+      text-align: right;
+    }
+
+    .instrument-wrap {
+      padding: 0 16px;
+      display: grid;
+      place-items: center;
+    }
+
+    .field-board {
+      position: relative;
+      width: min(100%, 700px);
+      aspect-ratio: 1 / 1;
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      background:
+        radial-gradient(circle at center, rgba(98,192,255,0.10), transparent 48%),
+        radial-gradient(circle at 50% 50%, rgba(184,156,255,0.06), transparent 65%),
+        linear-gradient(180deg, rgba(10,20,31,0.96), rgba(8,15,24,0.98));
+      overflow: hidden;
+    }
+
+    .field-board::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+      background-size: 34px 34px;
+      opacity: 0.55;
+    }
+
+    .field-board::after {
+      content: "";
+      position: absolute;
+      inset: 8%;
+      border-radius: 50%;
+      border: 1px solid rgba(119,196,255,0.12);
+      box-shadow:
+        0 0 0 40px rgba(119,196,255,0.03),
+        0 0 0 80px rgba(119,196,255,0.025),
+        0 0 0 120px rgba(119,196,255,0.02);
+    }
+
+    .cross-h {
+      position: absolute;
+      left: 8%;
+      right: 8%;
+      top: 50%;
+      height: 1px;
+      background: rgba(141,224,255,0.18);
+      z-index: 2;
+    }
+
+    .cross-v {
+      position: absolute;
+      top: 8%;
+      bottom: 8%;
+      left: 50%;
+      width: 1px;
+      background: rgba(141,224,255,0.18);
+      z-index: 2;
+    }
+
+    .state-dot {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 20px var(--accent-glow);
+      left: calc(50% - 7px);
+      top: calc(50% - 7px);
+      z-index: 4;
+      animation: breathe 3.8s ease-in-out infinite;
+    }
+
+    .path-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+    }
+
+    .path-line {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 2.5;
+      opacity: 0.7;
+      filter: drop-shadow(0 0 10px rgba(98,192,255,0.18));
+    }
+
+    .vector-label {
+      position: absolute;
+      z-index: 5;
+      min-width: 120px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(8,18,28,0.78);
+      box-shadow: var(--shadow);
+      font-size: 10px;
+      color: var(--text-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.10em;
+      line-height: 1.5;
+    }
+
+    .vector-label span {
+      display: block;
+      color: var(--text);
+      font-size: 13px;
+      text-transform: none;
+      letter-spacing: 0;
+      margin-top: 4px;
+      font-weight: 700;
+    }
+
+    .bias-label { top: 10%; left: 8%; }
+    .integrity-label { top: 10%; right: 8%; text-align: right; }
+    .pressure-label { bottom: 10%; left: calc(50% - 60px); text-align: center; }
+
+    .alert-box {
+      position: absolute;
+      right: 8%;
+      bottom: 8%;
+      z-index: 5;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,184,107,0.35);
+      background: rgba(255,184,107,0.10);
+      color: var(--warn);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-weight: 700;
+    }
+
+    .bottom-strip {
+      padding: 0 16px 16px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .metric-box {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(8,18,28,0.74);
+      padding: 12px;
+    }
+
+    .metric-box .mini {
+      font-size: 10px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 8px;
+    }
+
+    .metric-box .value {
+      font-size: 18px;
+      color: var(--accent-2);
+      font-weight: 700;
+    }
+
+    .terminal {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(7,14,22,0.82);
+      padding: 12px;
+      min-height: 210px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11px;
+      color: #bfe4ff;
+      line-height: 1.75;
+    }
+
+    .terminal-line {
+      white-space: nowrap;
+      opacity: 0.94;
+    }
+
+    @keyframes breathe {
+      0% { transform: scale(0.92); box-shadow: 0 0 12px var(--accent-glow); }
+      50% { transform: scale(1.08); box-shadow: 0 0 22px rgba(98,192,255,0.28); }
+      100% { transform: scale(0.92); box-shadow: 0 0 12px var(--accent-glow); }
+    }
+
+    @media (max-width: 1100px) {
+      .board {
+        grid-template-columns: 1fr;
       }
-    </script>
-    <link rel="stylesheet" href="style.css">
+
+      .bottom-strip {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="cockpit-frame">
-        <div id="motherboard">
-            <div id="accretion-canvas-container"></div>
-            
-            <div id="label-horizon" class="spatial-label">EVENT HORIZON // TRUTH</div>
-            <div id="label-rim" class="spatial-label">ACCRETION RIM // SPECULATION</div>
+  <div class="app">
+    <header class="header">
+      <div>
+        <h1 class="brand-title">FIELD-OS // KINETIC</h1>
+        <div class="brand-sub">Spatial command board sample • one instrument concept</div>
+      </div>
+      <div class="status">
+        <div class="chip"><span class="dot green"></span>Live Concept</div>
+        <div class="chip">Motherboard / Cockpit Study</div>
+        <div class="chip">Instrument 01</div>
+      </div>
+    </header>
 
-            <div class="hud-layer">
-                <header>
-                    <div class="brand">FIELD-OS // KINETIC</div>
-                    <div class="status">SYSTEM: NOMINAL</div>
-                </header>
-                <div class="readout">
-                    <div class="label">ACCRETION VELOCITY</div>
-                    <div id="velocity-value" class="value">0.000</div>
-                </div>
+    <main class="board">
+      <aside class="left-col">
+        <section class="panel section">
+          <div class="section-title">
+            <h3>Navigation Cells</h3>
+            <div class="info">i</div>
+          </div>
+          <div class="nav-card">
+            <strong>Crypto Field</strong>
+            Live asset cockpit with state instruments and later chart integration.
+          </div>
+          <div class="nav-card">
+            <strong>Equities Field</strong>
+            Session-aware state logic for regular market hours and gaps.
+          </div>
+          <div class="nav-card">
+            <strong>Journal</strong>
+            Field notes, calls, snapshots, and review loops.
+          </div>
+        </section>
+
+        <section class="panel section">
+          <div class="section-title">
+            <h3>State Labels</h3>
+            <div class="info">i</div>
+          </div>
+          <div class="label-row">
+            <div class="label-box">
+              <div class="mini">Current Bias</div>
+              <div class="big">Upward</div>
             </div>
+            <div class="label-box">
+              <div class="mini">Integrity</div>
+              <div class="big">Solid</div>
+            </div>
+            <div class="label-box">
+              <div class="mini">Pressure</div>
+              <div class="big">Building</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel section">
+          <div class="section-title">
+            <h3>Instrument Note</h3>
+            <div class="info">i</div>
+          </div>
+          <div style="font-size:12px; color:var(--text-soft); line-height:1.7;">
+            This sample is a calm spatial cockpit study. The center board is not a chart yet.
+            It is a motherboard-style state instrument showing how a tracked market state could
+            move through a controlled field with labeled interpretation.
+          </div>
+        </section>
+      </aside>
+
+      <section class="panel center-col">
+        <div class="hero-top">
+          <div>
+            <div class="hero-title">Instrument 01 — Spatial State Board</div>
+            <div class="hero-copy">
+              This is a Star Trek / motherboard inspired cockpit concept translated into a calmer
+              scientific market interface. The center dot is the tracked state. The path shows recent
+              motion. The labels translate what the user is seeing.
+            </div>
+          </div>
+          <div class="hero-state">
+            BTC / USD<br>
+            Aligned State Preview
+          </div>
         </div>
-    </div>
-    <script type="module" src="app.js"></script>
+
+        <div class="instrument-wrap">
+          <div class="field-board">
+            <div class="cross-h"></div>
+            <div class="cross-v"></div>
+
+            <svg class="path-layer" viewBox="0 0 700 700" preserveAspectRatio="none">
+              <path class="path-line" d="M350 350 L390 320 L430 300 L470 290 L520 260"></path>
+            </svg>
+
+            <div class="state-dot" style="left: calc(74% - 7px); top: calc(37% - 7px);"></div>
+
+            <div class="vector-label bias-label">
+              Bias
+              <span>Upward</span>
+            </div>
+
+            <div class="vector-label integrity-label">
+              Integrity
+              <span>Solid</span>
+            </div>
+
+            <div class="vector-label pressure-label">
+              Pressure
+              <span>Building</span>
+            </div>
+
+            <div class="alert-box">Alignment Building</div>
+          </div>
+        </div>
+
+        <div class="bottom-strip">
+          <div class="metric-box">
+            <div class="mini">Position</div>
+            <div class="value">74%</div>
+          </div>
+          <div class="metric-box">
+            <div class="mini">Drift</div>
+            <div class="value">Moderate</div>
+          </div>
+          <div class="metric-box">
+            <div class="mini">Clarity</div>
+            <div class="value">Stable</div>
+          </div>
+          <div class="metric-box">
+            <div class="mini">Alert State</div>
+            <div class="value">Low</div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="right-col">
+        <section class="panel section">
+          <div class="section-title">
+            <h3>Asset State</h3>
+            <div class="info">i</div>
+          </div>
+          <div class="label-box">
+            <div class="mini">Narrative</div>
+            <div class="big" style="font-size:13px;">Upward bias is solid and building.</div>
+          </div>
+        </section>
+
+        <section class="panel section">
+          <div class="section-title">
+            <h3>Interpretation</h3>
+            <div class="info">i</div>
+          </div>
+          <div style="font-size:12px; color:var(--text-soft); line-height:1.7;">
+            The state point has moved above the center axis and away from equilibrium. The path is
+            smooth and the labels suggest a constructive environment rather than a noisy or fractured one.
+          </div>
+        </section>
+
+        <section class="panel section">
+          <div class="section-title">
+            <h3>Future Pairing</h3>
+            <div class="info">i</div>
+          </div>
+          <div style="font-size:12px; color:var(--text-soft); line-height:1.7;">
+            Later this board could sit beside a real price chart, volume instrument, and Kinetic Manifold.
+            Right now it is a pure visual language study.
+          </div>
+        </section>
+
+        <section class="panel section">
+          <div class="section-title">
+            <h3>Color Language</h3>
+            <div class="info">i</div>
+          </div>
+          <div class="label-row">
+            <div class="label-box"><div class="mini">Blue</div><div class="big">System / Neutral</div></div>
+            <div class="label-box"><div class="mini">Green</div><div class="big">Aligned</div></div>
+            <div class="label-box"><div class="mini">Amber</div><div class="big">Friction</div></div>
+          </div>
+        </section>
+
+        <section class="panel section">
+          <div class="section-title">
+            <h3>Terminal</h3>
+            <div class="info">i</div>
+          </div>
+          <div class="terminal">
+            <div class="terminal-line">[14:02:01] COCKPIT BOARD INITIALIZED</div>
+            <div class="terminal-line">[14:02:14] STATE POINT LOCKED</div>
+            <div class="terminal-line">[14:02:18] BIAS :: UPWARD</div>
+            <div class="terminal-line">[14:02:22] INTEGRITY :: SOLID</div>
+            <div class="terminal-line">[14:02:31] PRESSURE :: BUILDING</div>
+            <div class="terminal-line">[14:02:39] NOTE :: VISUAL LANGUAGE STUDY</div>
+          </div>
+        </section>
+      </aside>
+    </main>
+  </div>
 </body>
 </html>
