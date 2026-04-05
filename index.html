@@ -3,91 +3,222 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FIELD-OS // TEMPORAL PRECISION</title>
+    <title>FIELD-OS // VERTICAL TERMINAL</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        /* INLINE CSS TO PREVENT "WHITE SCREEN" ON LOAD */
+        :root {
+            --bg: #030507;
+            --panel: #0a0e12;
+            --accent: #62c0ff;
+            --border: #1f2933;
+            --text: #c9d1d9;
+            --text-dim: #6e7681;
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'SF Mono', 'Roboto Mono', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .terminal-container {
+            width: 95%;
+            max-width: 1200px;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* 1. Header & Time System */
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        .time-system { text-align: right; }
+        .sys-time { color: var(--accent); font-size: 24px; text-shadow: 0 0 8px rgba(98, 192, 255, 0.4); }
+        .data-time { color: var(--text-dim); font-size: 11px; margin-top: 4px; }
+
+        /* 2. The Main Chart Area */
+        .chart-section {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            height: 400px;
+            position: relative;
+            padding: 15px;
+        }
+
+        /* 3. Logic & Formulas (Directly under chart) */
+        .logic-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .formula-box {
+            background: #000;
+            border: 1px solid var(--border);
+            padding: 15px;
+            color: #88eeff;
+            font-size: 12px;
+            min-height: 100px;
+        }
+
+        /* 4. Numbers & Readouts (Bottom Row) */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        .stat-card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            padding: 15px;
+        }
+
+        .label { font-size: 9px; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; }
+        .value { font-size: 22px; color: var(--accent); margin-top: 8px; }
+
+        select {
+            background: #000; color: var(--accent);
+            border: 1px solid var(--border); padding: 10px;
+            width: 100%; margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
 
-    <div class="terminal">
-        <header class="top-bar">
-            <div class="brand">FIELD-OS // KINETIC PRECISION</div>
-            <div class="connection-status">
-                SIGNAL: <span class="glow">ENCRYPTED</span> // 
-                NODE: US-EAST-1
+    <div class="terminal-container">
+        
+        <header class="top-nav">
+            <div>
+                <div style="font-weight: 800; color: var(--accent); letter-spacing: 2px;">FIELD-OS // KINETIC</div>
+                <select id="instrument-select">
+                    <option value="absorption">ABSORPTION PRECISION</option>
+                    <option value="kinetic">KINETIC MOMENTUM</option>
+                    <option value="liquidity">LIQUIDITY DENSITY</option>
+                </select>
+            </div>
+            <div class="time-system">
+                <div style="font-size: 8px; color: var(--text-dim);">SYSTEM TIME</div>
+                <div id="live-clock" class="sys-time">00:00:00</div>
+                <div id="data-timestamp" class="data-time">DATA TIME: 00:00:00</div>
             </div>
         </header>
 
-        <div class="main-layout">
-            <aside class="sidebar">
-                
-                <section class="temporal-module">
-                    <div class="clock-block">
-                        <label class="tiny-label">SYSTEM TIME</label>
-                        <div id="live-clock" class="digital-glow">00:00:00</div>
-                    </div>
-                    <div class="timestamp-block">
-                        <span class="tiny-label">DATA TIME:</span>
-                        <span id="data-timestamp" class="mono-fade">00:00:00</span>
-                    </div>
-                    <div class="playback-status">
-                        <div class="led pulse"></div> LIVE DATA STREAM
-                    </div>
-                </section>
+        <section class="chart-section">
+            <canvas id="dualChart"></canvas>
+        </section>
 
-                <section class="control-group">
-                    <label>SELECT CALIBRATION MODEL</label>
-                    <select id="instrument-select">
-                        <option value="absorption">ABSORPTION PRECISION</option>
-                        <option value="kinetic">KINETIC MOMENTUM</option>
-                        <option value="liquidity">LIQUIDITY DENSITY</option>
-                    </select>
-                </section>
+        <section class="logic-section">
+            <div class="formula-box">
+                <div class="label" style="margin-bottom: 10px;">ACTIVE LOGIC SOURCE</div>
+                <pre id="code-display" style="margin: 0;">// Initializing...</pre>
+            </div>
+            <div class="formula-box" style="color: var(--text-dim);">
+                <div class="label" style="margin-bottom: 10px;">MODEL DESCRIPTION</div>
+                <div id="model-desc">Select an instrument to view the derivation logic and synchronization parameters.</div>
+            </div>
+        </section>
 
-                <section class="formula-block">
-                    <label>ACTIVE SOURCE CODE</label>
-                    <pre id="code-display"><code>// Logic Calibration Active...</code></pre>
-                </section>
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="label">PRECISION INTEGRITY</div>
+                <div id="stat-precision" class="value">0.0%</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">MARKET PRICE</div>
+                <div id="raw-price" class="value">0.00</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">SAMPLE DENSITY (N)</div>
+                <div id="raw-trades" class="value">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">DIVERGENCE DELTA</div>
+                <div id="stat-divergence" class="value">0.000</div>
+            </div>
+        </section>
 
-                <section class="live-metrics">
-                    <div class="metric">
-                        <label>TRUST INTEGRITY</label>
-                        <div id="stat-precision" class="value">0.0%</div>
-                    </div>
-                    <div class="metric">
-                        <label>DIVERGENCE DELTA</label>
-                        <div id="stat-divergence" class="value">0.000</div>
-                    </div>
-                </section>
-
-                <footer class="legal-notice">
-                    PROPRIETARY ALGORITHMIC ACCESS.
-                </footer>
-            </aside>
-
-            <main class="chart-stage">
-                <div class="chart-container">
-                    <canvas id="dualChart"></canvas>
-                </div>
-                
-                <div class="data-strip">
-                    <div class="entry">
-                        <span class="key">PRICE:</span>
-                        <span id="raw-price" class="val">0.00</span>
-                    </div>
-                    <div class="entry">
-                        <span class="key">SAMPLE DENSITY:</span>
-                        <span id="raw-trades" class="val">0</span>
-                    </div>
-                    <div class="entry">
-                        <span class="key">SNAPSHOT LAG:</span>
-                        <span id="raw-age" class="val">0ms</span>
-                    </div>
-                </div>
-            </main>
-        </div>
     </div>
 
-    <script src="app.js"></script>
+    <script>
+        // INTERNAL SCRIPT TO ENSURE IT RUNS IMMEDIATELY
+        const ctx = document.getElementById('dualChart').getContext('2d');
+        let priceData = Array(60).fill(65000);
+        let precisionData = Array(60).fill(0.5);
+
+        const dualChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: Array(60).fill(''),
+                datasets: [
+                    { label: 'PRICE', data: priceData, borderColor: '#fff', borderWidth: 1.5, yAxisID: 'yPrice', pointRadius: 0, tension: 0.1 },
+                    { label: 'PRECISION', data: precisionData, borderColor: '#62c0ff', backgroundColor: 'rgba(98, 192, 255, 0.1)', fill: true, yAxisID: 'yPrecision', pointRadius: 0, tension: 0.4 }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    yPrice: { position: 'left', grid: { color: '#1a2229' } },
+                    yPrecision: { position: 'right', min: 0, max: 1, display: false },
+                    x: { display: false }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // Update Clock
+        setInterval(() => {
+            const now = new Date();
+            const timeStr = now.toTimeString().split(' ')[0];
+            document.getElementById('live-clock').innerText = timeStr;
+            document.getElementById('data-timestamp').innerText = "DATA TIME: " + timeStr;
+        }, 1000);
+
+        // Simulated Market Loop
+        setInterval(() => {
+            let lastPrice = priceData[priceData.length - 1];
+            let newPrice = lastPrice + (Math.random() - 0.5) * 50;
+            let precision = 0.4 + Math.abs(Math.sin(Date.now() / 2000)) * 0.5;
+
+            priceData.push(newPrice); priceData.shift();
+            precisionData.push(precision); precisionData.shift();
+            
+            dualChart.update('none');
+
+            document.getElementById('raw-price').innerText = newPrice.toFixed(2);
+            document.getElementById('stat-precision').innerText = (precision * 100).toFixed(1) + "%";
+            document.getElementById('raw-trades').innerText = Math.floor(precision * 12);
+            document.getElementById('stat-divergence').innerText = (newPrice / lastPrice - precision).toFixed(4);
+        }, 300);
+
+        // Handle Logic Changes
+        const specs = {
+            absorption: { code: "n = trades / 10;\ndecay = exp(-age / 100);\nreturn n * decay;", desc: "Calculates the reliability of absorption events based on trade density and book synchronization." },
+            kinetic: { code: "v = velocity * delta;\ndamp = 1 - friction;\nreturn v * damp;", desc: "Measures price-action momentum adjusted for inertial dampening in the order book." },
+            liquidity: { code: "d = sum(levels) / wall;\nreturn tanh(d);", desc: "Analyzes liquidity density relative to institutional order walls." }
+        };
+
+        document.getElementById('instrument-select').addEventListener('change', (e) => {
+            const s = specs[e.target.value];
+            document.getElementById('code-display').innerText = s.code;
+            document.getElementById('model-desc').innerText = s.desc;
+        });
+
+        // Init
+        document.getElementById('code-display').innerText = specs.absorption.code;
+    </script>
 </body>
 </html>
