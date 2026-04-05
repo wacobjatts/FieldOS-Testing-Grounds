@@ -1,289 +1,727 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FIELD-OS // LAYER-0: SOURCE INTEGRITY</title>
-
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Field-OS // Kinetic — Concept Alpha</title>
 <style>
-:root {
-  --black: #020406;
-  --obsidian: #080c10;
-  --void: #0d1218;
-  --cyan: #5ef1ff;
-  --cyan-glow: rgba(94, 241, 255, 0.3);
-  --amber: #ffbc5e;
-  --text: #d1d9e1;
-  --border: rgba(94, 241, 255, 0.08);
-}
+  :root{
+    --bg-0:#0b0f12;
+    --bg-1:#11161b;
+    --bg-2:#171e25;
+    --panel:rgba(18,24,30,.88);
+    --panel-2:rgba(23,30,37,.96);
+    --line:rgba(121,220,255,.14);
+    --line-strong:rgba(121,220,255,.34);
+    --text:#e9f8ff;
+    --text-soft:#aac4d3;
+    --text-dim:#708594;
+    --cyan:#72dbff;
+    --cyan-soft:#b3f0ff;
+    --cyan-glow:rgba(114,219,255,.24);
+    --green:#8cf3c9;
+    --amber:#ffcb78;
+    --red:#ff9e9e;
+    --shadow:0 24px 60px rgba(0,0,0,.34);
+    --radius:18px;
+  }
 
-* { box-sizing: border-box; cursor: crosshair; }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color:var(--text);
+    background:
+      radial-gradient(circle at 15% 0%, rgba(114,219,255,.08), transparent 28%),
+      radial-gradient(circle at 100% 20%, rgba(114,219,255,.04), transparent 22%),
+      linear-gradient(180deg, #0b0f12 0%, #0a0d10 100%);
+    min-height:100vh;
+    overflow-x:hidden;
+  }
 
-body, html {
-  margin: 0; padding: 0;
-  background-color: var(--black);
-  color: var(--text);
-  font-family: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
-  overflow-x: hidden;
-}
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    opacity:.32;
+    background-image:
+      linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
+    background-size:28px 28px;
+  }
 
-/* THE INSTRUMENT GRID */
-.grid-overlay {
-  position: fixed;
-  inset: 0;
-  background-image: 
-    linear-gradient(var(--border) 1px, transparent 1px),
-    linear-gradient(90deg, var(--border) 1px, transparent 1px);
-  background-size: 40px 40px;
-  pointer-events: none;
-  z-index: 0;
-}
+  .app{
+    width:min(1320px, calc(100vw - 28px));
+    margin:14px auto 28px;
+    position:relative;
+    z-index:1;
+  }
 
-/* TOP STATUS: BIT-RATE & NODE */
-.system-header {
-  position: sticky;
-  top: 0;
-  height: 50px;
-  background: rgba(2, 4, 6, 0.9);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  padding: 0 25px;
-  z-index: 100;
-  justify-content: space-between;
-}
+  .glass{
+    background:linear-gradient(180deg, rgba(24,31,38,.88), rgba(14,19,24,.9));
+    border:1px solid var(--line);
+    box-shadow:var(--shadow);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
 
-.brand { font-weight: 900; letter-spacing: 3px; color: var(--cyan); font-size: 12px; }
-.node-status { font-size: 9px; color: var(--amber); letter-spacing: 1px; }
+  .topbar{
+    display:grid;
+    grid-template-columns: 260px 1fr auto;
+    align-items:center;
+    gap:14px;
+    padding:14px 16px;
+    border-radius:20px;
+    margin-bottom:14px;
+  }
 
-/* THE "GLASS" WORKSPACE */
-.workspace {
-  max-width: 1400px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1fr 380px;
-  gap: 1px;
-  background: var(--border);
-  min-height: calc(100vh - 50px);
-  position: relative;
-  z-index: 10;
-}
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
 
-/* LEFT SIDE: THE KINETIC FLOW */
-.flow-view {
-  background: var(--black);
-  padding: 30px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
+  .brand-mark{
+    width:38px;
+    height:38px;
+    border-radius:13px;
+    border:1px solid var(--line-strong);
+    background:
+      radial-gradient(circle at 35% 35%, rgba(179,240,255,.18), transparent 46%),
+      linear-gradient(180deg, rgba(114,219,255,.18), rgba(114,219,255,.04));
+    box-shadow:0 0 18px var(--cyan-glow);
+    position:relative;
+  }
 
-.price-glance {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-}
+  .brand-mark::before,.brand-mark::after{
+    content:"";
+    position:absolute;
+    background:rgba(179,240,255,.7);
+    border-radius:999px;
+  }
+  .brand-mark::before{width:18px;height:2px;left:10px;top:18px}
+  .brand-mark::after{width:2px;height:18px;left:18px;top:10px}
 
-.big-price { font-size: 64px; font-weight: 200; color: #fff; line-height: 0.8; }
-.delta-tag { font-size: 14px; color: var(--cyan); margin-bottom: 8px; }
+  .brand h1{
+    margin:0;
+    font-size:14px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--cyan);
+  }
+  .brand p{
+    margin:4px 0 0;
+    color:var(--text-dim);
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:.16em;
+  }
 
-/* DYNAMIC MANIFOLD (2.5D) */
-.manifold-canvas {
-  flex: 1;
-  background: var(--obsidian);
-  border: 1px solid var(--border);
-  position: relative;
-  overflow: hidden;
-  min-height: 400px;
-  background: radial-gradient(circle at 50% 50%, #0d161d, #020406);
-}
+  .search-wrap{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    min-width:0;
+  }
 
-/* RIGHT SIDE: THE LOGIC STACK */
-.logic-sidebar {
-  background: var(--void);
-  padding: 25px;
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
-  border-left: 1px solid var(--border);
-}
+  .search{
+    flex:1;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:rgba(10,14,18,.75);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:11px 14px;
+    min-width:0;
+  }
 
-.kernel-readout {
-  border-left: 2px solid var(--cyan);
-  padding-left: 15px;
-}
+  .search input{
+    width:100%;
+    background:transparent;
+    border:0;
+    color:var(--text);
+    outline:none;
+    font-size:14px;
+  }
 
-.label { font-size: 9px; color: #566472; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
-.code-block {
-  background: #000;
-  padding: 15px;
-  font-size: 11px;
-  color: #88eeff;
-  border: 1px solid var(--border);
-  line-height: 1.6;
-}
+  .search input::placeholder{color:var(--text-dim)}
 
-/* THE GAUGES */
-.gauge-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
-}
+  .chip-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
 
-.gauge-card {
-  background: var(--obsidian);
-  border: 1px solid var(--border);
-  padding: 15px;
-}
+  .chip{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    white-space:nowrap;
+    padding:9px 11px;
+    border-radius:999px;
+    border:1px solid var(--line);
+    background:rgba(10,14,18,.72);
+    color:var(--text-soft);
+    font-size:11px;
+  }
+  .dot{
+    width:8px;height:8px;border-radius:50%;
+    background:var(--cyan);
+    box-shadow:0 0 12px var(--cyan-glow);
+  }
+  .dot.green{background:var(--green); box-shadow:0 0 10px rgba(140,243,201,.22)}
 
-.gauge-val { font-size: 24px; color: var(--cyan); margin-top: 5px; }
+  .layout{
+    display:grid;
+    grid-template-columns: 1fr 320px;
+    gap:14px;
+  }
 
-.tape-stream {
-  flex: 1;
-  background: #000;
-  border: 1px solid var(--border);
-  font-size: 10px;
-  color: #43515f;
-  padding: 10px;
-  overflow-y: hidden;
-  font-family: monospace;
-}
+  .left-stack{
+    display:grid;
+    gap:14px;
+    min-width:0;
+  }
 
-.tape-entry { border-bottom: 1px solid #111; padding: 4px 0; display: flex; justify-content: space-between; }
-.tape-entry.high-sig { color: var(--cyan); }
+  .hero{
+    border-radius:24px;
+    overflow:hidden;
+    position:relative;
+  }
 
-/* ANIMATION PULSE */
-.pulse-ring {
-  position: absolute;
-  top: 50%; left: 50%;
-  width: 200px; height: 200px;
-  border: 1px solid var(--cyan);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  opacity: 0.1;
-  animation: ripple 4s infinite linear;
-}
+  .hero-inner{
+    display:grid;
+    grid-template-columns: 1.25fr .85fr;
+    gap:0;
+  }
 
-@keyframes ripple {
-  0% { width: 0; height: 0; opacity: 0.5; }
-  100% { width: 600px; height: 600px; opacity: 0; }
-}
+  .hero-main{
+    padding:20px;
+    min-width:0;
+    border-right:1px solid var(--line);
+  }
 
+  .hero-kicker{
+    font-size:11px;
+    color:var(--cyan);
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    margin-bottom:10px;
+  }
+
+  .hero-title{
+    margin:0;
+    font-size:34px;
+    line-height:1.04;
+    letter-spacing:-.03em;
+  }
+
+  .hero-copy{
+    margin:12px 0 16px;
+    color:var(--text-soft);
+    max-width:58ch;
+    line-height:1.65;
+    font-size:14px;
+  }
+
+  .hero-sentence{
+    padding:13px 14px;
+    border-radius:14px;
+    border:1px solid var(--line);
+    background:rgba(10,14,18,.58);
+    color:var(--cyan-soft);
+    font-weight:600;
+    box-shadow: inset 0 0 0 1px rgba(114,219,255,.03);
+  }
+
+  .hero-side{
+    padding:20px;
+    display:grid;
+    gap:12px;
+    align-content:start;
+  }
+
+  .micro{
+    border-radius:16px;
+    border:1px solid var(--line);
+    background:rgba(10,14,18,.58);
+    padding:14px;
+  }
+
+  .micro-label{
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:.16em;
+    color:var(--text-dim);
+    margin-bottom:8px;
+  }
+
+  .micro-value{
+    font-size:26px;
+    font-weight:700;
+    line-height:1;
+  }
+
+  .micro-sub{
+    font-size:12px;
+    color:var(--text-soft);
+    margin-top:8px;
+    line-height:1.5;
+  }
+
+  .chart-card{
+    border-radius:22px;
+    overflow:hidden;
+    position:relative;
+  }
+
+  .chart-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:12px;
+    padding:16px 18px 0;
+  }
+
+  .chart-head h2{
+    margin:0;
+    font-size:13px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+  }
+
+  .chart-meta{
+    margin-top:7px;
+    font-size:12px;
+    color:var(--text-soft);
+  }
+
+  .frame-select{
+    appearance:none;
+    background:rgba(10,14,18,.72);
+    color:var(--text);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:10px 12px;
+    font-size:12px;
+  }
+
+  .chart-shell{
+    padding:14px 18px 18px;
+  }
+
+  .price-pane,
+  .volume-pane,
+  .indicator-pane{
+    position:relative;
+    border-radius:18px;
+    border:1px solid var(--line);
+    background:
+      radial-gradient(circle at 15% 10%, rgba(114,219,255,.04), transparent 28%),
+      linear-gradient(180deg, rgba(25,33,41,.98), rgba(17,23,29,.98));
+    overflow:hidden;
+  }
+
+  .price-pane{height:360px}
+  .volume-pane{height:100px;margin-top:10px}
+  .indicator-pane{height:170px;margin-top:14px}
+
+  .grid-overlay{
+    position:absolute; inset:0; pointer-events:none;
+    background-image:
+      linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+    background-size:48px 48px;
+    opacity:.55;
+  }
+
+  .axis-label{
+    position:absolute;
+    font-size:10px;
+    color:var(--text-dim);
+    text-transform:uppercase;
+    letter-spacing:.14em;
+    z-index:3;
+  }
+
+  .axis-left{left:10px; top:10px}
+  .axis-bottom{right:12px; bottom:8px}
+
+  .fake-price-line,
+  .fake-line-1,
+  .fake-line-2{
+    position:absolute;
+    inset:0;
+  }
+
+  .indicator-toolbar{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    padding:0 18px 14px;
+    flex-wrap:wrap;
+  }
+
+  .dropdown{
+    appearance:none;
+    background:rgba(10,14,18,.74);
+    color:var(--text);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:10px 12px;
+    font-size:12px;
+    min-width:220px;
+  }
+
+  .mini-note{
+    color:var(--text-dim);
+    font-size:11px;
+  }
+
+  .stack-cards{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap:12px;
+  }
+
+  .mini-card{
+    border-radius:18px;
+    padding:14px;
+  }
+
+  .score{
+    font-size:28px;
+    font-weight:700;
+    line-height:1;
+  }
+
+  .meter{
+    margin-top:10px;
+    height:8px;
+    border-radius:999px;
+    background:rgba(255,255,255,.06);
+    overflow:hidden;
+  }
+
+  .meter-fill{
+    height:100%;
+    border-radius:inherit;
+    background:linear-gradient(90deg, var(--cyan), var(--cyan-soft));
+    box-shadow:0 0 14px var(--cyan-glow);
+  }
+
+  .compass{
+    height:144px;
+    border-radius:16px;
+    border:1px solid var(--line);
+    background:rgba(10,14,18,.6);
+    position:relative;
+    overflow:hidden;
+  }
+  .compass::before,.compass::after{
+    content:"";
+    position:absolute;
+    background:rgba(179,240,255,.14);
+  }
+  .compass::before{left:50%;top:10px;bottom:10px;width:1px}
+  .compass::after{top:50%;left:10px;right:10px;height:1px}
+  .compass-dot{
+    position:absolute;
+    width:12px;height:12px;border-radius:50%;
+    background:var(--cyan);
+    left:66%; top:32%;
+    box-shadow:0 0 16px var(--cyan-glow);
+  }
+
+  .cards-grid{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap:12px;
+  }
+
+  .data-card{
+    border-radius:18px;
+    padding:14px;
+  }
+
+  .kv{
+    display:grid;
+    grid-template-columns: 1fr auto;
+    gap:10px;
+    align-items:baseline;
+    padding:7px 0;
+    border-bottom:1px solid rgba(255,255,255,.05);
+  }
+  .kv:last-child{border-bottom:0}
+  .kv .k{
+    font-size:11px;
+    color:var(--text-dim);
+    text-transform:uppercase;
+    letter-spacing:.14em;
+  }
+  .kv .v{
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    color:var(--cyan-soft);
+    font-size:13px;
+  }
+
+  .explain{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap:12px;
+  }
+
+  .ex-card{
+    border-radius:18px;
+    padding:16px;
+  }
+
+  .ex-card h3{
+    margin:0 0 10px;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.14em;
+  }
+
+  .ex-card p{
+    margin:0;
+    font-size:13px;
+    line-height:1.7;
+    color:var(--text-soft);
+  }
+
+  .sidebar{
+    display:grid;
+    gap:14px;
+    align-content:start;
+  }
+
+  .watch-card,
+  .list-card{
+    border-radius:22px;
+    overflow:hidden;
+  }
+
+  .watch-head{
+    padding:16px 16px 0;
+  }
+
+  .watch-head h3{
+    margin:0;
+    font-size:12px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+  }
+
+  .watch-head p{
+    margin:8px 0 0;
+    color:var(--text-soft);
+    font-size:12px;
+    line-height:1.6;
+  }
+
+  .watch-list{
+    padding:14px 16px 16px;
+    display:grid;
+    gap:10px;
+  }
+
+  .watch-item{
+    border:1px solid var(--line);
+    border-radius:14px;
+    background:rgba(10,14,18,.68);
+    padding:12px;
+    display:grid;
+    grid-template-columns: 1fr auto;
+    gap:10px;
+    align-items:center;
+  }
+
+  .watch-item .name{
+    font-size:13px;
+    font-weight:600;
+  }
+  .watch-item .meta{
+    font-size:11px;
+    color:var(--text-dim);
+    margin-top:4px;
+  }
+
+  .spark{
+    width:76px;
+    height:26px;
+  }
+
+  .pill{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 10px;
+    border-radius:999px;
+    border:1px solid var(--line);
+    background:rgba(10,14,18,.6);
+    color:var(--text-soft);
+    font-size:11px;
+  }
+
+  @media (max-width: 1080px){
+    .layout{grid-template-columns:1fr}
+    .hero-inner{grid-template-columns:1fr}
+    .hero-main{border-right:0;border-bottom:1px solid var(--line)}
+  }
+
+  @media (max-width: 820px){
+    .topbar{grid-template-columns:1fr; align-items:stretch}
+    .chip-row{justify-content:flex-start}
+    .stack-cards,
+    .cards-grid,
+    .explain{grid-template-columns:1fr}
+    .app{width:min(100vw - 18px, 1320px)}
+  }
 </style>
 </head>
 <body>
-
-<div class="grid-overlay"></div>
-
-<header class="system-header">
-  <div class="brand">FIELD-OS // KINETIC // L0_SOURCE</div>
-  <div class="node-status">NODE: PRIMARY_ALPHA // PRECISION: 0.99982 // SIG: STABLE</div>
-</header>
-
-<main class="workspace">
-  
-  <section class="flow-view">
-    <div class="price-glance">
-      <div>
-        <div class="label">Instrument_Primary</div>
-        <div class="big-price" id="main-price">68,432.12</div>
+  <div class="app">
+    <div class="topbar glass">
+      <div class="brand">
+        <div class="brand-mark"></div>
+        <div>
+          <h1>Field-OS // Kinetic</h1>
+          <p>concept alpha • market physics terminal</p>
+        </div>
       </div>
-      <div class="delta-tag">Δ +1.42% // MOMENTUM_HIGH</div>
-    </div>
 
-    <div class="manifold-canvas">
-        <div class="pulse-ring"></div>
-        <div class="pulse-ring" style="animation-delay: 2s;"></div>
-        
-        <div style="position:absolute; top:50%; left:0; width:100%; height:1px; background:var(--border);"></div>
-        <div style="position:absolute; left:50%; top:0; width:1px; height:100%; background:var(--border);"></div>
-        
-        <div id="vector-dot" style="position:absolute; width:10px; height:10px; background:var(--cyan); border-radius:50%; box-shadow: 0 0 20px var(--cyan); top:50%; left:50%; transition: all 0.2s cubic-bezier(0.17, 0.67, 0.83, 0.67);"></div>
-    </div>
-
-    <div class="gauge-row" style="grid-template-columns: repeat(4, 1fr);">
-        <div class="gauge-card">
-            <div class="label">Inertia</div>
-            <div class="gauge-val">0.82</div>
+      <div class="search-wrap">
+        <div class="search">
+          <span style="color:var(--text-dim)">⌕</span>
+          <input placeholder="Search BTC, ETH, AAPL, NVDA..." />
         </div>
-        <div class="gauge-card">
-            <div class="label">Entropy</div>
-            <div class="gauge-val">0.14</div>
-        </div>
-        <div class="gauge-card">
-            <div class="label">Velocity</div>
-            <div class="gauge-val">1.22</div>
-        </div>
-        <div class="gauge-card">
-            <div class="label">Work</div>
-            <div class="gauge-val">402M</div>
-        </div>
-    </div>
-  </section>
-
-  <aside class="logic-sidebar">
-    <div class="kernel-readout">
-      <div class="label">Logic_Kernel_Current</div>
-      <div style="font-size: 18px; font-weight: bold; margin-bottom: 5px;">ABSORPTION_V3</div>
-      <div style="font-size: 10px; color: var(--cyan);">ACCESS_LEVEL: ENTERPRISE_FUND</div>
-    </div>
-
-    <div class="code-block">
-      // CALCULATE_TRUTH_INDEX<br>
-      n = trades.sample(10);<br>
-      decay = exp(-latency / 100);<br>
-      <span style="color: #fff;">return (n * decay) > threshold;</span>
-    </div>
-
-    <div class="gauge-row">
-      <div class="gauge-card">
-        <div class="label">Integrity</div>
-        <div class="gauge-val" id="integrity-val">98.2%</div>
       </div>
-      <div class="gauge-card">
-        <div class="label">Divergence</div>
-        <div class="gauge-val" id="div-val">0.002</div>
+
+      <div class="chip-row">
+        <div class="chip"><span class="dot green"></span>LIVE</div>
+        <div class="chip">BTC/USD</div>
+        <div class="chip">1h</div>
+        <div class="chip">Favorite ★</div>
       </div>
     </div>
 
-    <div class="label">High_Frequency_Tape</div>
-    <div class="tape-stream" id="tape">
-        <div class="tape-entry high-sig"><span>14:02:01</span><span>BUY_SIDE_ABSORPTION</span><span>0.98</span></div>
-        <div class="tape-entry"><span>14:02:02</span><span>ORDER_FLOW_NEUTRAL</span><span>0.41</span></div>
-        <div class="tape-entry"><span>14:02:03</span><span>LIQUIDITY_EXPANSION</span><span>0.66</span></div>
-        <div class="tape-entry high-sig"><span>14:02:04</span><span>MARKET_TRUTH_SYNC</span><span>0.99</span></div>
-    </div>
+    <div class="layout">
+      <div class="left-stack">
+        <section class="hero glass">
+          <div class="hero-inner">
+            <div class="hero-main">
+              <div class="hero-kicker">Surprise Concept</div>
+              <h2 class="hero-title">A clean market instrument panel with just enough weirdness to feel alive.</h2>
+              <p class="hero-copy">
+                This concept leans harder into clarity than spectacle. Price stays anchored, volume stays standard,
+                the active instrument reads like calculus over time, and every other surface exists to translate the state
+                instead of competing with it.
+              </p>
+              <div class="hero-sentence">
+                Upward pressure is building while structural support remains intact.
+              </div>
+            </div>
+            <div class="hero-side">
+              <div class="micro">
+                <div class="micro-label">Asset State</div>
+                <div class="micro-value">Aligned</div>
+                <div class="micro-sub">Moderate force, stable truth, low distortion.</div>
+              </div>
+              <div class="micro">
+                <div class="micro-label">Current Time</div>
+                <div class="micro-value" style="font-size:22px">14:38:22</div>
+                <div class="micro-sub">Clock stays visible so values can be matched against chart history later.</div>
+              </div>
+            </div>
+          </div>
+        </section>
 
-    <div style="font-size: 9px; color: #333; text-align: center;">
-      PROPRIETARY KINETIC DECODER // NO_REPRO
-    </div>
-  </aside>
+        <section class="chart-card glass">
+          <div class="chart-head">
+            <div>
+              <h2>Chart View</h2>
+              <div class="chart-meta">Price, volume, and one active instrument at a time.</div>
+            </div>
+            <select class="frame-select">
+              <option>1m</option>
+              <option>5m</option>
+              <option selected>1h</option>
+              <option>4h</option>
+              <option>1D</option>
+            </select>
+          </div>
 
-</main>
+          <div class="chart-shell">
+            <div class="price-pane">
+              <div class="grid-overlay"></div>
+              <div class="axis-label axis-left">Price</div>
+              <div class="axis-label axis-bottom">Time</div>
+              <svg class="fake-price-line" viewBox="0 0 1000 360" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="lineGlow" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stop-color="#72dbff" stop-opacity=".9"/>
+                    <stop offset="100%" stop-color="#72dbff" stop-opacity=".2"/>
+                  </linearGradient>
+                </defs>
+                <path d="M0 250 C60 248 80 210 120 215 C180 222 220 190 260 170 C310 145 340 162 390 138 C450 108 510 132 560 110 C610 92 670 95 720 80 C780 62 840 73 900 55 C940 47 970 56 1000 42" fill="none" stroke="url(#lineGlow)" stroke-width="3.5" stroke-linecap="round"/>
+                <path d="M0 250 C60 248 80 210 120 215 C180 222 220 190 260 170 C310 145 340 162 390 138 C450 108 510 132 560 110 C610 92 670 95 720 80 C780 62 840 73 900 55 C940 47 970 56 1000 42 L1000 360 L0 360 Z" fill="rgba(114,219,255,.05)"/>
+              </svg>
+            </div>
 
-<script>
-    // Simulate HFT movement
-    const priceEl = document.getElementById('main-price');
-    const dot = document.getElementById('vector-dot');
-    const integrity = document.getElementById('integrity-val');
+            <div class="volume-pane">
+              <div class="grid-overlay"></div>
+              <div class="axis-label axis-left">Volume</div>
+              <svg width="100%" height="100%" viewBox="0 0 1000 100" preserveAspectRatio="none">
+                <g fill="rgba(114,219,255,.68)">
+                  <rect x="20" y="42" width="18" height="50" rx="2"/>
+                  <rect x="52" y="28" width="18" height="64" rx="2"/>
+                  <rect x="84" y="58" width="18" height="34" rx="2"/>
+                  <rect x="116" y="38" width="18" height="54" rx="2"/>
+                  <rect x="148" y="18" width="18" height="74" rx="2"/>
+                  <rect x="180" y="48" width="18" height="44" rx="2"/>
+                  <rect x="212" y="34" width="18" height="58" rx="2"/>
+                  <rect x="244" y="66" width="18" height="26" rx="2"/>
+                  <rect x="276" y="44" width="18" height="48" rx="2"/>
+                  <rect x="308" y="24" width="18" height="68" rx="2"/>
+                  <rect x="340" y="31" width="18" height="61" rx="2"/>
+                  <rect x="372" y="20" width="18" height="72" rx="2"/>
+                  <rect x="404" y="52" width="18" height="40" rx="2"/>
+                  <rect x="436" y="41" width="18" height="51" rx="2"/>
+                  <rect x="468" y="12" width="18" height="80" rx="2"/>
+                  <rect x="500" y="25" width="18" height="67" rx="2"/>
+                  <rect x="532" y="47" width="18" height="45" rx="2"/>
+                  <rect x="564" y="35" width="18" height="57" rx="2"/>
+                  <rect x="596" y="14" width="18" height="78" rx="2"/>
+                  <rect x="628" y="30" width="18" height="62" rx="2"/>
+                  <rect x="660" y="24" width="18" height="68" rx="2"/>
+                  <rect x="692" y="46" width="18" height="46" rx="2"/>
+                  <rect x="724" y="28" width="18" height="64" rx="2"/>
+                  <rect x="756" y="18" width="18" height="74" rx="2"/>
+                  <rect x="788" y="40" width="18" height="52" rx="2"/>
+                  <rect x="820" y="31" width="18" height="61" rx="2"/>
+                  <rect x="852" y="16" width="18" height="76" rx="2"/>
+                  <rect x="884" y="38" width="18" height="54" rx="2"/>
+                  <rect x="916" y="27" width="18" height="65" rx="2"/>
+                  <rect x="948" y="12" width="18" height="80" rx="2"/>
+                </g>
+              </svg>
+            </div>
+          </div>
 
-    setInterval(() => {
-        // Price Jitter
-        let p = 68432.12 + (Math.random() - 0.5) * 10;
-        priceEl.innerText = p.toLocaleString('en-US', {minimumFractionDigits: 2});
+          <div class="indicator-toolbar">
+            <select class="dropdown">
+              <option selected>Kinetic Manifold</option>
+              <option>Compression / Expansion</option>
+              <option>Precision / Confidence</option>
+            </select>
+            <div class="mini-note">Main instruments are line-based and time-based. Numbers stay separate from the pane.</div>
+          </div>
 
-        // Vector Manifold Jitter
-        let x = 50 + (Math.sin(Date.now()/500) * 20);
-        let y = 50 + (Math.cos(Date.now()/700) * 15);
-        dot.style.left = x + "%";
-        dot.style.top = y + "%";
-
-        // Integrity Decay
-        let i = 97 + Math.random() * 2;
-        integrity.innerText = i.toFixed(1) + "%";
-    }, 100);
-</script>
-
-</body>
-</html>
+          <div style="padding:0 18px 18px">
+            <div class="indicator-pane">
+              <div class="grid-overlay
