@@ -50,21 +50,23 @@
     /* INSTRUMENT VISUAL */
     .card-visual { min-height: 90px; background: #050505; display: flex; align-items: center; justify-content: center; color: #00ffff; font-weight: bold; font-size: 14px; text-align: center; padding: 10px; border-bottom: 1px solid #353535; }
     
-    /* VOLUME VISUAL: Slimmed from 34px to 22px */
-    .volume-card-visual { height: 22px; min-height: 22px; background: #000; display: flex; align-items: center; padding: 0 10px; font-size: 9px; font-weight: bold; color: #00ffff; border-bottom: 1px solid #353535; text-transform: uppercase; letter-spacing: 1px; }
+    /* VOLUME VISUAL - REMOVED PER REQUEST */
+    .volume-card-visual { display: none; }
 
+    /* CARD HEADER */
     .card-header { padding: 6px; display: flex; justify-content: space-between; align-items: center; background: #000; }
-    
-    /* VOLUME HEADER: Reduced padding */
-    .stack-card.is-volume .card-header { padding: 3px 6px; }
-
     .card-info { flex: 1; }
     .card-title { font-size: 12px; font-weight: bold; margin: 0; color: #ccc; }
-    
-    /* VOLUME TITLE: Reduced font size */
-    .stack-card.is-volume .card-title { font-size: 11px; }
-
     .card-controls { display: flex; gap: 4px; align-items: center; }
+
+    /* VOLUME SPECIFIC OVERRIDES */
+    .stack-card.is-volume .card-header { padding: 3px 6px; }
+    .stack-card.is-volume .card-title { font-size: 11px; color: #00ffff; text-transform: uppercase; letter-spacing: 1px; }
+    .stack-card.is-volume .icon-btn { width: 18px; height: 18px; font-size: 10px; }
+    
+    /* VOLUME EXPANDED VIEW (Support Strip) */
+    .volume-content-area { height: 22px; background: #050505; border-top: 1px solid #222; display: flex; align-items: center; padding: 0 10px; font-size: 9px; color: #666; }
+    .stack-card.is-volume.is-collapsed .volume-content-area { display: none; }
 
     /* CHOOSER */
     .chooser-panel { border: 1px solid #353535; display: flex; flex-direction: column; background: #000; }
@@ -99,9 +101,6 @@
     .is-hidden { display: none !important; }
     .ghost-btn { background: transparent; border: 1px solid #353535; color: #fff; padding: 4px 8px; font-size: 10px; cursor: pointer; }
     .icon-btn { background: transparent; border: 1px solid #353535; color: #fff; width: 22px; height: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-
-    /* VOLUME CONTROLS: Reduced size */
-    .stack-card.is-volume .icon-btn { width: 18px; height: 18px; font-size: 10px; }
   </style>
 </head>
 <body>
@@ -204,7 +203,7 @@
   ];
 
   let stackItems = [
-    { id: 'instr-initial', type: 'instrument', name: 'Kinetic Manifold', desc: 'Combines force and truth into a single live view.' }
+    { id: 'instr-initial', type: 'instrument', name: 'Kinetic Manifold', desc: 'Combines force and truth into a single live view.', collapsed: false }
   ];
   
   let rightModules = [];
@@ -268,7 +267,7 @@
   /* STACK LOGIC */
   function addModuleToStack(type, name, desc) {
     if (type === 'volume' && stackItems.some(i => i.type === 'volume')) return;
-    stackItems.push({ id: type === 'volume' ? 'vol-01' : Date.now(), type, name, desc });
+    stackItems.push({ id: type === 'volume' ? 'vol-01' : Date.now(), type, name, desc, collapsed: false });
     renderStack();
     closeChooser();
   }
@@ -286,6 +285,11 @@
     renderStack();
   }
 
+  function toggleVolumeCollapse(index) {
+    stackItems[index].collapsed = !stackItems[index].collapsed;
+    renderStack();
+  }
+
   function renderStack() {
     const stack = document.getElementById('middleStack');
     stack.innerHTML = '';
@@ -298,26 +302,34 @@
     stackItems.forEach((item, i) => {
       const card = document.createElement('section');
       const isVol = item.type === 'volume';
+      const isCollapsed = isVol && item.collapsed;
       
-      /* Apply .is-volume class for specialized CSS */
-      card.className = isVol ? 'stack-card is-volume' : 'stack-card';
+      let classes = isVol ? 'stack-card is-volume' : 'stack-card';
+      if (isCollapsed) classes += ' is-collapsed';
+      card.className = classes;
       
-      /* Conditionally include ? button only for instruments */
+      const titleText = isVol ? `Volume: ${item.name}` : item.name;
+      const toggleIcon = isVol ? (isCollapsed ? '▸' : '▾') : '';
+      const volToggleBtn = isVol ? `<button class="icon-btn" style="border:none;" onclick="toggleVolumeCollapse(${i})">${toggleIcon}</button>` : '';
       const infoButton = isVol ? '' : '<button class="icon-btn" style="border:none; color:#666;">?</button>';
       
+      // Removed the volume-card-visual div to eliminate the blank strip.
+      // For volume, we show a slim 'support strip' underneath the header when expanded.
       card.innerHTML = `
-        ${isVol ? `<div class="volume-card-visual">Volume: ${item.name}</div>` : `<div class="card-visual">${item.name}</div>`}
+        ${!isVol ? `<div class="card-visual">${item.name}</div>` : ''}
         <div class="card-header">
           <div class="card-info">
-            <h3 class="card-title">${isVol ? 'Volume Analysis' : item.name}</h3>
+            <h3 class="card-title">${titleText}</h3>
           </div>
           <div class="card-controls">
             <button class="icon-btn" style="border:none;" onclick="moveItem(${i}, -1)">▲</button>
             <button class="icon-btn" style="border:none;" onclick="moveItem(${i}, 1)">▼</button>
             <button class="icon-btn" style="border:none; color:#ff4444;" onclick="removeItem(${i})">×</button>
+            ${volToggleBtn}
             ${infoButton}
           </div>
         </div>
+        ${isVol ? `<div class="volume-content-area">CLOUD: ACTIVE STRUCTURAL VIEW</div>` : ''}
       `;
       stack.appendChild(card);
     });
