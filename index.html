@@ -1,489 +1,301 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>FieldOS iPhone Shell</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
+<!-- LEFT TICKER SECTION ONLY -->
+<section class="left-ticker-panel" id="leftTickerPanel">
+  <div class="left-ticker-shell">
 
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      background: #000;
-      font-family: Arial, Helvetica, sans-serif;
-      color: #e8e8e8;
-      overflow: hidden;
-    }
+    <!-- Main ticker content -->
+    <div class="left-ticker-content">
+      <div class="ticker-panel-header">
+        <h2 class="ticker-panel-title">Tickers</h2>
+        <button class="ticker-list-add-btn" type="button" aria-label="Create new list">+</button>
+      </div>
 
-    body {
-      position: fixed;
-      inset: 0;
-    }
+      <div class="ticker-search-wrap">
+        <input
+          type="text"
+          class="ticker-search-input"
+          id="tickerSearchInput"
+          placeholder="Search symbol"
+          autocomplete="off"
+        />
+      </div>
 
-    .app {
-      position: fixed;
-      inset: 0;
-      background: #000;
-      display: grid;
-      grid-template-rows: 1fr 64px;
-      gap: 10px;
-      padding:
-        calc(env(safe-area-inset-top) + 10px)
-        10px
-        calc(env(safe-area-inset-bottom) + 10px)
-        10px;
-    }
-
-    .workspace {
-      min-height: 0;
-      min-width: 0;
-      display: grid;
-      grid-template-columns: auto minmax(0, 1fr) auto;
-      gap: 10px;
-      align-items: stretch;
-    }
-
-    /* LEFT CURTAIN */
-    .left-panel {
-      width: 88px;
-      min-width: 88px;
-      transition: width 0.22s ease;
-      overflow: hidden;
-    }
-
-    .left-panel.collapsed {
-      width: 18px;
-      min-width: 18px;
-    }
-
-    .left-shell {
-      height: 100%;
-      display: grid;
-      grid-template-columns: 1fr 18px;
-    }
-
-    .left-panel.collapsed .left-shell {
-      grid-template-columns: 0 18px;
-    }
-
-    .left-content {
-      border: 1px solid #3a3a3a;
-      overflow: hidden;
-      padding: 10px 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .left-panel.collapsed .left-content {
-      border: 0;
-      padding: 0;
-    }
-
-    .curtain-handle {
-      border: 1px solid #3a3a3a;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      user-select: none;
-      font-size: 13px;
-      font-weight: 700;
-      color: #d8d8d8;
-      background: #000;
-    }
-
-    /* CENTER */
-    .center {
-      min-width: 0;
-      min-height: 0;
-      display: grid;
-      grid-template-rows: minmax(0, 44vh) 46px minmax(0, 1fr);
-      gap: 10px;
-    }
-
-    .chart-wrap {
-      min-width: 0;
-      min-height: 0;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-    }
-
-    .chart-box {
-      width: 100%;
-      max-width: 100%;
-      height: 100%;
-      border: 1px solid #3a3a3a;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      aspect-ratio: 1.08 / 1;
-      padding: 12px;
-    }
-
-    .volume-box {
-      border: 1px solid #3a3a3a;
-      display: flex;
-      align-items: center;
-      padding: 0 10px;
-    }
-
-    .instrument-panel {
-      min-height: 0;
-      border: 1px solid #3a3a3a;
-      display: grid;
-      grid-template-rows: auto 1fr;
-      overflow: hidden;
-      transition: grid-template-rows 0.22s ease;
-    }
-
-    .instrument-panel.collapsed {
-      grid-template-rows: auto 0fr;
-    }
-
-    .instrument-header {
-      padding: 10px;
-      border-bottom: 1px solid #3a3a3a;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 8px;
-      align-items: start;
-    }
-
-    .instrument-panel.collapsed .instrument-header {
-      border-bottom: 0;
-    }
-
-    .instrument-title-wrap {
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .instrument-toggle {
-      border: 1px solid #3a3a3a;
-      background: transparent;
-      color: #e8e8e8;
-      padding: 6px 10px;
-      font-size: 13px;
-      cursor: pointer;
-      height: 38px;
-    }
-
-    .instrument-body {
-      min-height: 0;
-      overflow: auto;
-      padding: 10px;
-    }
-
-    .instrument-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
-    }
-
-    .instrument-card {
-      min-height: 84px;
-      border: 1px solid #3a3a3a;
-      background: transparent;
-      color: #e8e8e8;
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 6px;
-      text-align: left;
-      cursor: pointer;
-    }
-
-    /* RIGHT CURTAIN */
-    .right-panel {
-      width: 96px;
-      min-width: 96px;
-      transition: width 0.22s ease;
-      overflow: hidden;
-    }
-
-    .right-panel.collapsed {
-      width: 18px;
-      min-width: 18px;
-    }
-
-    .right-shell {
-      height: 100%;
-      display: grid;
-      grid-template-columns: 18px 1fr;
-    }
-
-    .right-panel.collapsed .right-shell {
-      grid-template-columns: 18px 0;
-    }
-
-    .right-content {
-      border: 1px solid #3a3a3a;
-      display: grid;
-      grid-template-rows: auto 1fr;
-      overflow: hidden;
-    }
-
-    .right-panel.collapsed .right-content {
-      border: 0;
-    }
-
-    .right-topbar {
-      padding: 8px;
-      border-bottom: 1px solid #3a3a3a;
-      display: flex;
-      justify-content: flex-end;
-    }
-
-    .module-add-icon {
-      width: 30px;
-      height: 30px;
-      border: 1px solid #3a3a3a;
-      background: transparent;
-      color: #e8e8e8;
-      font-size: 18px;
-      cursor: pointer;
-    }
-
-    .right-empty {
-      min-height: 0;
-      padding: 10px 8px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      text-align: center;
-      overflow: hidden;
-    }
-
-    .add-module-btn {
-      border: 1px solid #3a3a3a;
-      background: transparent;
-      color: #e8e8e8;
-      padding: 8px 10px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      cursor: pointer;
-      font-size: 13px;
-      width: 100%;
-    }
-
-    /* PAGE BAR */
-    .page-bar {
-      min-height: 0;
-      border: 1px solid #3a3a3a;
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      overflow: hidden;
-    }
-
-    .page-tab {
-      border: 0;
-      border-right: 1px solid #3a3a3a;
-      background: transparent;
-      color: #e8e8e8;
-      font-size: 12px;
-      cursor: pointer;
-      padding: 0;
-    }
-
-    .page-tab:last-child {
-      border-right: 0;
-    }
-
-    .page-tab.active {
-      font-weight: 700;
-    }
-
-    /* TEXT */
-    h1, h2, p {
-      margin: 0;
-    }
-
-    .section-title {
-      font-size: 16px;
-      font-weight: 700;
-      line-height: 1.15;
-    }
-
-    .section-subtitle {
-      font-size: 12px;
-      line-height: 1.3;
-      color: #b5b5b5;
-    }
-
-    .small-label {
-      font-size: 14px;
-      font-weight: 700;
-    }
-
-    .card-title {
-      font-size: 15px;
-      font-weight: 700;
-      line-height: 1.1;
-    }
-
-    .card-text {
-      font-size: 12px;
-      line-height: 1.3;
-      color: #b5b5b5;
-    }
-
-    /* Slightly larger phones */
-    @media (min-width: 430px) {
-      .left-panel {
-        width: 96px;
-        min-width: 96px;
-      }
-
-      .right-panel {
-        width: 108px;
-        min-width: 108px;
-      }
-
-      .center {
-        grid-template-rows: minmax(0, 46vh) 50px minmax(0, 1fr);
-      }
-
-      .chart-box {
-        aspect-ratio: 1.12 / 1;
-      }
-
-      .instrument-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="app">
-    <div class="workspace">
-      <aside class="left-panel" id="leftPanel">
-        <div class="left-shell">
-          <div class="left-content">
-            <h2 class="section-title">Tickers</h2>
-          </div>
-          <div class="curtain-handle" id="leftHandle">‹</div>
+      <div class="ticker-lists-wrap">
+        <div class="ticker-lists-header">
+          <span class="ticker-lists-title">Lists</span>
         </div>
-      </aside>
 
-      <main class="center">
-        <section class="chart-wrap">
-          <div class="chart-box">
-            <h1 class="section-title">Chart Area</h1>
-          </div>
-        </section>
-
-        <section class="volume-box">
-          <h2 class="small-label">Volume</h2>
-        </section>
-
-        <section class="instrument-panel" id="instrumentPanel">
-          <div class="instrument-header">
-            <div class="instrument-title-wrap">
-              <h2 class="section-title">FieldOS Instruments</h2>
-              <p class="section-subtitle">Choose a category to open instruments</p>
-            </div>
-            <button class="instrument-toggle" id="instrumentToggle" type="button">Hide</button>
-          </div>
-
-          <div class="instrument-body">
-            <div class="instrument-grid">
-              <button class="instrument-card" type="button">
-                <span class="card-title">Flow</span>
-                <span class="card-text">Order book pressure, absorption</span>
-              </button>
-              <button class="instrument-card" type="button">
-                <span class="card-title">Momentum</span>
-                <span class="card-text">Impulse, continuation, decay behavior</span>
-              </button>
-              <button class="instrument-card" type="button">
-                <span class="card-title">Structure</span>
-                <span class="card-text">Anchors, levels, compression zones</span>
-              </button>
-              <button class="instrument-card" type="button">
-                <span class="card-title">Volatility</span>
-                <span class="card-text">Turbulence, range expansion</span>
-              </button>
-              <button class="instrument-card" type="button">
-                <span class="card-title">Signal</span>
-                <span class="card-text">Confirmation, divergence</span>
-              </button>
-              <button class="instrument-card" type="button">
-                <span class="card-title">Custom</span>
-                <span class="card-text">Saved user instruments</span>
-              </button>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      <aside class="right-panel" id="rightPanel">
-        <div class="right-shell">
-          <div class="curtain-handle" id="rightHandle">›</div>
-          <div class="right-content">
-            <div class="right-topbar">
-              <button class="module-add-icon" type="button">+</button>
-            </div>
-            <div class="right-empty">
-              <h2 class="section-title">Info</h2>
-              <p class="section-subtitle">Add market tools, notes, or live context</p>
-              <button class="add-module-btn" type="button">
-                <span>+</span>
-                <span>Add</span>
-              </button>
-            </div>
-          </div>
+        <div class="ticker-lists" id="tickerLists">
+          <button class="ticker-list-chip is-active" type="button">Main</button>
+          <button class="ticker-list-chip" type="button">Tech</button>
+          <button class="ticker-list-chip" type="button">Crypto</button>
         </div>
-      </aside>
+      </div>
+
+      <div class="ticker-watchlist-wrap">
+        <div class="ticker-watchlist-header">
+          <span class="ticker-watchlist-title">Watchlist</span>
+        </div>
+
+        <div class="ticker-watchlist" id="tickerWatchlist">
+          <button class="ticker-row is-active" type="button" data-symbol="AAPL">
+            <span class="ticker-symbol">AAPL</span>
+            <span class="ticker-price">214.43</span>
+          </button>
+
+          <button class="ticker-row" type="button" data-symbol="NVDA">
+            <span class="ticker-symbol">NVDA</span>
+            <span class="ticker-price">132.17</span>
+          </button>
+
+          <button class="ticker-row" type="button" data-symbol="TSLA">
+            <span class="ticker-symbol">TSLA</span>
+            <span class="ticker-price">176.80</span>
+          </button>
+
+          <button class="ticker-row" type="button" data-symbol="SPY">
+            <span class="ticker-symbol">SPY</span>
+            <span class="ticker-price">518.22</span>
+          </button>
+
+          <button class="ticker-row" type="button" data-symbol="QQQ">
+            <span class="ticker-symbol">QQQ</span>
+            <span class="ticker-price">442.11</span>
+          </button>
+        </div>
+      </div>
     </div>
 
-    <nav class="page-bar">
-      <button class="page-tab active" type="button">Chart</button>
-      <button class="page-tab" type="button">Volume</button>
-      <button class="page-tab" type="button">Instruments</button>
-      <button class="page-tab" type="button">Order Book</button>
-      <button class="page-tab" type="button">Signals</button>
-      <button class="page-tab" type="button">News</button>
-    </nav>
+    <!-- Curtain handle -->
+    <button
+      class="left-ticker-curtain-handle"
+      id="leftTickerCurtainHandle"
+      type="button"
+      aria-label="Collapse ticker panel"
+    >
+      ‹
+    </button>
   </div>
+</section>
 
-  <script>
-    const leftPanel = document.getElementById("leftPanel");
-    const rightPanel = document.getElementById("rightPanel");
-    const leftHandle = document.getElementById("leftHandle");
-    const rightHandle = document.getElementById("rightHandle");
-    const instrumentPanel = document.getElementById("instrumentPanel");
-    const instrumentToggle = document.getElementById("instrumentToggle");
+<style>
+  .left-ticker-panel {
+    width: 88px;
+    min-width: 88px;
+    overflow: hidden;
+    transition: width 0.22s ease;
+  }
 
-    leftHandle.addEventListener("click", () => {
-      leftPanel.classList.toggle("collapsed");
-      leftHandle.textContent = leftPanel.classList.contains("collapsed") ? "›" : "‹";
+  .left-ticker-panel.is-open {
+    width: 88px;
+    min-width: 88px;
+  }
+
+  .left-ticker-panel.is-collapsed {
+    width: 18px;
+    min-width: 18px;
+  }
+
+  .left-ticker-shell {
+    height: 100%;
+    display: grid;
+    grid-template-columns: 1fr 18px;
+    gap: 0;
+  }
+
+  .left-ticker-panel.is-collapsed .left-ticker-shell {
+    grid-template-columns: 0 18px;
+  }
+
+  .left-ticker-content {
+    border: 1px solid #3a3a3a;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 10px 8px;
+    gap: 10px;
+  }
+
+  .left-ticker-panel.is-collapsed .left-ticker-content {
+    border: 0;
+    padding: 0;
+  }
+
+  .ticker-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .ticker-panel-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.1;
+    color: #e8e8e8;
+  }
+
+  .ticker-list-add-btn {
+    width: 28px;
+    height: 28px;
+    border: 1px solid #3a3a3a;
+    background: transparent;
+    color: #e8e8e8;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    flex: 0 0 auto;
+  }
+
+  .ticker-search-wrap {
+    width: 100%;
+  }
+
+  .ticker-search-input {
+    width: 100%;
+    height: 34px;
+    border: 1px solid #3a3a3a;
+    background: transparent;
+    color: #e8e8e8;
+    padding: 0 10px;
+    font-size: 12px;
+    outline: none;
+  }
+
+  .ticker-search-input::placeholder {
+    color: #9f9f9f;
+  }
+
+  .ticker-lists-wrap,
+  .ticker-watchlist-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .ticker-lists-header,
+  .ticker-watchlist-header {
+    display: flex;
+    align-items: center;
+  }
+
+  .ticker-lists-title,
+  .ticker-watchlist-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #b8b8b8;
+  }
+
+  .ticker-lists {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .ticker-list-chip {
+    width: 100%;
+    min-height: 32px;
+    border: 1px solid #3a3a3a;
+    background: transparent;
+    color: #d9d9d9;
+    font-size: 12px;
+    text-align: left;
+    padding: 0 10px;
+    cursor: pointer;
+  }
+
+  .ticker-list-chip.is-active {
+    font-weight: 700;
+  }
+
+  .ticker-watchlist {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .ticker-row {
+    width: 100%;
+    min-height: 40px;
+    border: 1px solid #3a3a3a;
+    background: transparent;
+    color: #e8e8e8;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 0 10px;
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .ticker-row.is-active {
+    font-weight: 700;
+  }
+
+  .ticker-symbol,
+  .ticker-price {
+    font-size: 12px;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .left-ticker-curtain-handle {
+    border: 1px solid #3a3a3a;
+    background: transparent;
+    color: #d8d8d8;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 18px;
+    padding: 0;
+  }
+
+  @media (min-width: 430px) {
+    .left-ticker-panel,
+    .left-ticker-panel.is-open {
+      width: 96px;
+      min-width: 96px;
+    }
+  }
+</style>
+
+<script>
+  (function () {
+    const panel = document.getElementById("leftTickerPanel");
+    const handle = document.getElementById("leftTickerCurtainHandle");
+    const rows = Array.from(document.querySelectorAll(".ticker-row"));
+    const chips = Array.from(document.querySelectorAll(".ticker-list-chip"));
+
+    panel.classList.add("is-open");
+
+    handle.addEventListener("click", () => {
+      const collapsed = panel.classList.toggle("is-collapsed");
+      panel.classList.toggle("is-open", !collapsed);
+      handle.textContent = collapsed ? "›" : "‹";
+      handle.setAttribute(
+        "aria-label",
+        collapsed ? "Open ticker panel" : "Collapse ticker panel"
+      );
     });
 
-    rightHandle.addEventListener("click", () => {
-      rightPanel.classList.toggle("collapsed");
-      rightHandle.textContent = rightPanel.classList.contains("collapsed") ? "‹" : "›";
+    rows.forEach((row) => {
+      row.addEventListener("click", () => {
+        rows.forEach((r) => r.classList.remove("is-active"));
+        row.classList.add("is-active");
+      });
     });
 
-    instrumentToggle.addEventListener("click", () => {
-      instrumentPanel.classList.toggle("collapsed");
-      instrumentToggle.textContent = instrumentPanel.classList.contains("collapsed") ? "Show" : "Hide";
+    chips.forEach((chip) => {
+      chip.addEventListener("click", () => {
+        chips.forEach((c) => c.classList.remove("is-active"));
+        chip.classList.add("is-active");
+      });
     });
-  </script>
-</body>
-</html>
+  })();
+</script>
