@@ -1,235 +1,423 @@
-<!-- CENTER SECTION ONLY -->
-<section class="center-section">
+<!-- INSTRUMENT SECTION ONLY -->
+<section class="instrument-section" id="instrumentSection">
 
-  <!-- Sticky stack -->
-  <div class="center-sticky">
-
-    <!-- Chart -->
-    <div class="chart-area">
-      <h2>Chart Area</h2>
-    </div>
-
-    <!-- Volume -->
-    <div class="volume-area">
-      <span>Volume</span>
-    </div>
-
+  <!-- STATE 1: default -->
+  <div class="instrument-default-state" id="instrumentDefaultState">
+    <button
+      class="instrument-add-button"
+      id="instrumentAddButton"
+      type="button"
+      aria-label="Add Instrument"
+    >
+      <span class="instrument-add-plus">+</span>
+      <span class="instrument-add-text">Add Instrument</span>
+    </button>
   </div>
 
-  <!-- Scrollable content -->
-  <div class="center-scroll">
+  <!-- STATE 2 + 3: category chooser -->
+  <div class="instrument-chooser-state is-hidden" id="instrumentChooserState">
+    <div class="instrument-category-list">
 
-    <!-- Instrument Section -->
-    <div class="instrument-inline" id="instrumentInline">
-
-      <!-- Default trigger -->
-      <button class="instrument-add" id="instrumentAddBtn">
-        + Add Instrument
+      <button class="instrument-category-card" type="button" data-category="absorption">
+        <div class="instrument-category-card-header">
+          <span class="instrument-category-name">Absorption</span>
+          <span class="instrument-category-arrow">▾</span>
+        </div>
+        <div class="instrument-category-body is-hidden">
+          <button class="instrument-option" type="button" data-code="A3" data-name="Absorption Memory Curve" data-desc="Primary absorption structure visual for memory and soak behavior.">
+            A3 · Absorption Memory Curve
+          </button>
+          <button class="instrument-option" type="button" data-code="A7" data-name="Cumulative Absorption Velocity" data-desc="Measures cumulative absorption acceleration over time.">
+            A7 · Cumulative Absorption Velocity
+          </button>
+          <button class="instrument-option" type="button" data-code="A9" data-name="Step-Decay Hybrid" data-desc="Tracks stepped structural memory decay.">
+            A9 · Step-Decay Hybrid
+          </button>
+        </div>
       </button>
 
-      <!-- Expanded panel -->
-      <div class="instrument-panel hidden" id="instrumentPanel">
-
-        <!-- Header -->
-        <div class="instrument-header">
-          <div>
-            <strong id="instrumentTitle">FieldOS Instruments</strong>
-            <p id="instrumentSubtitle">Select a category</p>
-          </div>
-
-          <div class="instrument-actions">
-            <button id="instrumentBack" class="hidden">Back</button>
-            <button id="instrumentClose">Hide</button>
-          </div>
+      <button class="instrument-category-card" type="button" data-category="core-tension">
+        <div class="instrument-category-card-header">
+          <span class="instrument-category-name">Core Tension</span>
+          <span class="instrument-category-arrow">▾</span>
         </div>
-
-        <!-- Category view -->
-        <div class="instrument-categories" id="instrumentCategories">
-
-          <button data-cat="absorption">Absorption</button>
-          <button data-cat="tension">Core Tension</button>
-          <button data-cat="entropy">Entropy</button>
-          <button data-cat="liar">Liar Index</button>
-          <button data-cat="mismatch">Mismatch</button>
-          <button data-cat="reality">Reality Gap</button>
-
+        <div class="instrument-category-body is-hidden">
+          <button class="instrument-option" type="button" data-code="T3" data-name="Tension Regime Ladder" data-desc="Maps compression state transitions.">
+            T3 · Tension Regime Ladder
+          </button>
+          <button class="instrument-option" type="button" data-code="T4" data-name="Coil Decay Oscillator" data-desc="Measures coiled energy decay.">
+            T4 · Coil Decay Oscillator
+          </button>
+          <button class="instrument-option" type="button" data-code="T6" data-name="Compression Spark" data-desc="Breakout ignition and compression spark behavior.">
+            T6 · Compression Spark
+          </button>
+          <button class="instrument-option" type="button" data-code="T10" data-name="Kinetic Anchor" data-desc="Anchors structure to kinetic force behavior.">
+            T10 · Kinetic Anchor
+          </button>
         </div>
+      </button>
 
-        <!-- Instrument list -->
-        <div class="instrument-list hidden" id="instrumentList"></div>
-
-        <!-- Active instrument -->
-        <div class="instrument-active hidden" id="instrumentActive">
-          <h3 id="activeName"></h3>
-          <p id="activeDesc"></p>
-
-          <div class="instrument-actions">
-            <button id="changeInstrument">Change</button>
-            <button id="removeInstrument">Remove</button>
-          </div>
-
-          <div class="instrument-workspace">
-            Instrument workspace lives here
-          </div>
+      <button class="instrument-category-card" type="button" data-category="entropy">
+        <div class="instrument-category-card-header">
+          <span class="instrument-category-name">Entropy</span>
+          <span class="instrument-category-arrow">▾</span>
         </div>
+        <div class="instrument-category-body is-hidden">
+          <button class="instrument-option" type="button" data-code="E6" data-name="Entropy Phase Shifter" data-desc="Measures instability in structural phase.">
+            E6 · Entropy Phase Shifter
+          </button>
+          <button class="instrument-option" type="button" data-code="E8" data-name="Entropy Momentum" data-desc="Tracks momentum inside randomness and decay.">
+            E8 · Entropy Momentum
+          </button>
+          <button class="instrument-option" type="button" data-code="E10" data-name="Ghost Floor" data-desc="Identifies fading structural floor behavior.">
+            E10 · Ghost Floor
+          </button>
+        </div>
+      </button>
 
-      </div>
+      <button class="instrument-category-card" type="button" data-category="liar-index">
+        <div class="instrument-category-card-header">
+          <span class="instrument-category-name">Liar Index</span>
+          <span class="instrument-category-arrow">▾</span>
+        </div>
+        <div class="instrument-category-body is-hidden">
+          <button class="instrument-option" type="button" data-code="L1" data-name="Deception Pulse" data-desc="Detects spoofing pulse and trap signals.">
+            L1 · Deception Pulse
+          </button>
+          <button class="instrument-option" type="button" data-code="L5" data-name="Liar Step-Ladder" data-desc="Tracks staged deception ladder behavior.">
+            L5 · Liar Step-Ladder
+          </button>
+        </div>
+      </button>
+
+      <button class="instrument-category-card" type="button" data-category="mismatch">
+        <div class="instrument-category-card-header">
+          <span class="instrument-category-name">Mismatch</span>
+          <span class="instrument-category-arrow">▾</span>
+        </div>
+        <div class="instrument-category-body is-hidden">
+          <button class="instrument-option" type="button" data-code="M4" data-name="Mismatch Regime Ladder" data-desc="Shows price-force mismatch regimes.">
+            M4 · Mismatch Regime Ladder
+          </button>
+          <button class="instrument-option" type="button" data-code="M9" data-name="Force Decay Oscillator" data-desc="Measures fading force against movement.">
+            M9 · Force Decay Oscillator
+          </button>
+          <button class="instrument-option" type="button" data-code="M10" data-name="Stability-Weighted Volume" data-desc="Weights volume by stability structure.">
+            M10 · Stability-Weighted Volume
+          </button>
+        </div>
+      </button>
+
+      <button class="instrument-category-card" type="button" data-category="reality-gap">
+        <div class="instrument-category-card-header">
+          <span class="instrument-category-name">Reality Gap</span>
+          <span class="instrument-category-arrow">▾</span>
+        </div>
+        <div class="instrument-category-body is-hidden">
+          <button class="instrument-option" type="button" data-code="R6" data-name="Sync Stutter" data-desc="Detects sync lag and hesitation.">
+            R6 · Sync Stutter
+          </button>
+          <button class="instrument-option" type="button" data-code="R7" data-name="Structural Decay Sawtooth" data-desc="Tracks repeating structural decay patterns.">
+            R7 · Structural Decay Sawtooth
+          </button>
+          <button class="instrument-option" type="button" data-code="R8" data-name="Reality Buffer" data-desc="Measures buffered latency distortion.">
+            R8 · Reality Buffer
+          </button>
+        </div>
+      </button>
 
     </div>
+  </div>
 
+  <!-- STATE 4: active instrument -->
+  <div class="instrument-active-state is-hidden" id="instrumentActiveState">
+
+    <!-- active instrument directly under volume -->
+    <div class="instrument-live-box" id="instrumentLiveBox">
+      <span class="instrument-live-placeholder">Active instrument lives here</span>
+    </div>
+
+    <!-- title/header underneath active instrument -->
+    <div class="instrument-live-header">
+      <div class="instrument-live-meta">
+        <h3 class="instrument-live-title" id="instrumentLiveTitle">T6 · Compression Spark</h3>
+        <p class="instrument-live-description" id="instrumentLiveDescription">
+          Breakout ignition and compression spark behavior.
+        </p>
+      </div>
+
+      <div class="instrument-live-actions">
+        <button class="instrument-live-button" id="instrumentChangeButton" type="button">Change</button>
+        <button class="instrument-live-button" id="instrumentRemoveButton" type="button">Remove</button>
+      </div>
+    </div>
   </div>
 
 </section>
 
 <style>
-.center-section {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
+  .instrument-section {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
 
-/* Sticky area */
-.center-sticky {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
+  .is-hidden {
+    display: none !important;
+  }
 
-/* Chart */
-.chart-area {
-  height: 44vh;
-  border: 1px solid #3a3a3a;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+  /* DEFAULT */
+  .instrument-default-state {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+  }
 
-/* Volume */
-.volume-area {
-  height: 48px;
-  border: 1px solid #3a3a3a;
-  display: flex;
-  align-items: center;
-  padding: 0 10px;
-}
+  .instrument-add-button {
+    min-height: 40px;
+    padding: 0 14px;
+    border: 1px solid #3a3a3a;
+    background: transparent;
+    color: #e8e8e8;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+  }
 
-/* Scroll content */
-.center-scroll {
-  flex: 1;
-  overflow-y: auto;
-  padding-top: 10px;
-}
+  .instrument-add-plus {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1;
+  }
 
-/* Instrument */
-.instrument-inline {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
+  /* CHOOSER */
+  .instrument-chooser-state {
+    display: block;
+  }
 
-.instrument-add {
-  height: 42px;
-  border: 1px solid #3a3a3a;
-  background: none;
-  color: white;
-}
+  .instrument-category-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
 
-.instrument-panel {
-  border: 1px solid #3a3a3a;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
+  .instrument-category-card {
+    width: 100%;
+    border: 1px solid #3a3a3a;
+    background: transparent;
+    color: #e8e8e8;
+    padding: 0;
+    text-align: left;
+    cursor: pointer;
+  }
 
-.hidden {
-  display: none;
-}
+  .instrument-category-card-header {
+    min-height: 56px;
+    padding: 0 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
 
-.instrument-header {
-  display: flex;
-  justify-content: space-between;
-}
+  .instrument-category-name {
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.1;
+  }
 
-.instrument-categories,
-.instrument-list {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
-}
+  .instrument-category-arrow {
+    font-size: 15px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
 
-.instrument-active {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
+  .instrument-category-body {
+    border-top: 1px solid #3a3a3a;
+    display: flex;
+    flex-direction: column;
+  }
 
-.instrument-workspace {
-  height: 120px;
-  border: 1px solid #3a3a3a;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+  .instrument-option {
+    width: 100%;
+    min-height: 46px;
+    padding: 0 14px;
+    border: 0;
+    border-bottom: 1px solid #3a3a3a;
+    background: transparent;
+    color: #dcdcdc;
+    text-align: left;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  .instrument-option:last-child {
+    border-bottom: 0;
+  }
+
+  /* ACTIVE */
+  .instrument-active-state {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .instrument-live-box {
+    min-height: 120px;
+    border: 1px solid #3a3a3a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    text-align: center;
+  }
+
+  .instrument-live-placeholder {
+    font-size: 13px;
+    color: #b5b5b5;
+  }
+
+  .instrument-live-header {
+    border: 1px solid #3a3a3a;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .instrument-live-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .instrument-live-title {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.15;
+    color: #e8e8e8;
+  }
+
+  .instrument-live-description {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.3;
+    color: #b5b5b5;
+  }
+
+  .instrument-live-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .instrument-live-button {
+    min-height: 36px;
+    padding: 0 12px;
+    border: 1px solid #3a3a3a;
+    background: transparent;
+    color: #e8e8e8;
+    font-size: 13px;
+    cursor: pointer;
+  }
 </style>
 
 <script>
-const addBtn = document.getElementById("instrumentAddBtn");
-const panel = document.getElementById("instrumentPanel");
-const closeBtn = document.getElementById("instrumentClose");
-const backBtn = document.getElementById("instrumentBack");
+  (function () {
+    const defaultState = document.getElementById("instrumentDefaultState");
+    const chooserState = document.getElementById("instrumentChooserState");
+    const activeState = document.getElementById("instrumentActiveState");
 
-const categories = document.getElementById("instrumentCategories");
-const list = document.getElementById("instrumentList");
-const active = document.getElementById("instrumentActive");
+    const addButton = document.getElementById("instrumentAddButton");
+    const categoryCards = Array.from(document.querySelectorAll(".instrument-category-card"));
+    const optionButtons = Array.from(document.querySelectorAll(".instrument-option"));
 
-const title = document.getElementById("instrumentTitle");
-const subtitle = document.getElementById("instrumentSubtitle");
+    const liveTitle = document.getElementById("instrumentLiveTitle");
+    const liveDescription = document.getElementById("instrumentLiveDescription");
 
-const activeName = document.getElementById("activeName");
-const activeDesc = document.getElementById("activeDesc");
+    const changeButton = document.getElementById("instrumentChangeButton");
+    const removeButton = document.getElementById("instrumentRemoveButton");
 
-addBtn.onclick = () => {
-  panel.classList.remove("hidden");
-};
+    function showDefaultState() {
+      defaultState.classList.remove("is-hidden");
+      chooserState.classList.add("is-hidden");
+      activeState.classList.add("is-hidden");
+      collapseAllCategories();
+    }
 
-closeBtn.onclick = () => {
-  panel.classList.add("hidden");
-};
+    function showChooserState() {
+      defaultState.classList.add("is-hidden");
+      chooserState.classList.remove("is-hidden");
+      activeState.classList.add("is-hidden");
+    }
 
-categories.querySelectorAll("button").forEach(btn => {
-  btn.onclick = () => {
-    categories.classList.add("hidden");
-    list.classList.remove("hidden");
-    backBtn.classList.remove("hidden");
+    function showActiveState(code, name, desc) {
+      liveTitle.textContent = `${code} · ${name}`;
+      liveDescription.textContent = desc;
 
-    title.textContent = btn.textContent;
+      defaultState.classList.add("is-hidden");
+      chooserState.classList.add("is-hidden");
+      activeState.classList.remove("is-hidden");
+      collapseAllCategories();
+    }
 
-    list.innerHTML = `
-      <button data-i="A3">A3 Absorption Memory Curve</button>
-      <button data-i="T6">T6 Compression Spark</button>
-    `;
+    function collapseAllCategories() {
+      categoryCards.forEach((card) => {
+        const body = card.querySelector(".instrument-category-body");
+        const arrow = card.querySelector(".instrument-category-arrow");
+        body.classList.add("is-hidden");
+        arrow.textContent = "▾";
+      });
+    }
 
-    list.querySelectorAll("button").forEach(i => {
-      i.onclick = () => {
-        list.classList.add("hidden");
-        active.classList.remove("hidden");
+    function toggleCategory(card) {
+      const body = card.querySelector(".instrument-category-body");
+      const arrow = card.querySelector(".instrument-category-arrow");
+      const isHidden = body.classList.contains("is-hidden");
 
-        activeName.textContent = i.textContent;
-        activeDesc.textContent = "Active instrument selected.";
-      };
+      collapseAllCategories();
+
+      if (isHidden) {
+        body.classList.remove("is-hidden");
+        arrow.textContent = "▴";
+      }
+    }
+
+    addButton.addEventListener("click", () => {
+      showChooserState();
     });
-  };
-});
 
-backBtn.onclick = () => {
-  list.classList.add("hidden");
-  active.classList.add("hidden");
-  categories.classList.remove("hidden");
-  backBtn.classList.add("hidden");
-};
+    categoryCards.forEach((card) => {
+      const header = card.querySelector(".instrument-category-card-header");
+
+      header.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        toggleCategory(card);
+      });
+    });
+
+    optionButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const code = button.dataset.code;
+        const name = button.dataset.name;
+        const desc = button.dataset.desc;
+        showActiveState(code, name, desc);
+      });
+    });
+
+    changeButton.addEventListener("click", () => {
+      showChooserState();
+    });
+
+    removeButton.addEventListener("click", () => {
+      showDefaultState();
+    });
+
+    showDefaultState();
+  })();
 </script>
