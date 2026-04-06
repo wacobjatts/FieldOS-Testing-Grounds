@@ -1,596 +1,235 @@
-<!-- INSTRUMENT SECTION ONLY -->
-<section class="instrument-section" id="instrumentSection">
-  <div class="instrument-shell">
+<!-- CENTER SECTION ONLY -->
+<section class="center-section">
 
-    <!-- Default compact trigger -->
-    <div class="instrument-trigger-row" id="instrumentTriggerRow">
-      <button
-        class="instrument-add-button"
-        id="instrumentAddButton"
-        type="button"
-        aria-expanded="false"
-        aria-controls="instrumentPickerPanel"
-      >
-        <span class="instrument-add-plus">+</span>
-        <span class="instrument-add-text">Add Instrument</span>
-      </button>
+  <!-- Sticky stack -->
+  <div class="center-sticky">
+
+    <!-- Chart -->
+    <div class="chart-area">
+      <h2>Chart Area</h2>
     </div>
 
-    <!-- Picker / active workspace -->
-    <div
-      class="instrument-picker-panel is-hidden"
-      id="instrumentPickerPanel"
-    >
-      <!-- Picker header -->
-      <div class="instrument-picker-header">
-        <div class="instrument-picker-title-wrap">
-          <h2 class="instrument-picker-title" id="instrumentPanelTitle">FieldOS Instruments</h2>
-          <p class="instrument-picker-subtitle" id="instrumentPanelSubtitle">
-            Choose a market physics category
-          </p>
-        </div>
+    <!-- Volume -->
+    <div class="volume-area">
+      <span>Volume</span>
+    </div>
 
-        <div class="instrument-picker-actions">
-          <button
-            class="instrument-back-button is-hidden"
-            id="instrumentBackButton"
-            type="button"
-          >
-            Back
-          </button>
+  </div>
 
-          <button
-            class="instrument-close-button"
-            id="instrumentCloseButton"
-            type="button"
-            aria-label="Close instrument panel"
-          >
-            Hide
-          </button>
-        </div>
-      </div>
+  <!-- Scrollable content -->
+  <div class="center-scroll">
 
-      <!-- Category state -->
-      <div class="instrument-category-grid" id="instrumentCategoryGrid">
-        <button class="instrument-category-card" type="button" data-category="absorption">
-          <span class="instrument-category-name">Absorption</span>
-          <span class="instrument-category-desc">Memory layer · soaked liquidity and structural memory</span>
-        </button>
+    <!-- Instrument Section -->
+    <div class="instrument-inline" id="instrumentInline">
 
-        <button class="instrument-category-card" type="button" data-category="core-tension">
-          <span class="instrument-category-name">Core Tension</span>
-          <span class="instrument-category-desc">Spring layer · compression, coiling, breakout energy</span>
-        </button>
+      <!-- Default trigger -->
+      <button class="instrument-add" id="instrumentAddBtn">
+        + Add Instrument
+      </button>
 
-        <button class="instrument-category-card" type="button" data-category="entropy">
-          <span class="instrument-category-name">Entropy</span>
-          <span class="instrument-category-desc">Randomness layer · noise vs. structural signal</span>
-        </button>
+      <!-- Expanded panel -->
+      <div class="instrument-panel hidden" id="instrumentPanel">
 
-        <button class="instrument-category-card" type="button" data-category="liar-index">
-          <span class="instrument-category-name">Liar Index</span>
-          <span class="instrument-category-desc">Deception layer · spoofing and trap behavior</span>
-        </button>
-
-        <button class="instrument-category-card" type="button" data-category="mismatch">
-          <span class="instrument-category-name">Mismatch</span>
-          <span class="instrument-category-desc">Efficiency layer · friction between price and force</span>
-        </button>
-
-        <button class="instrument-category-card" type="button" data-category="reality-gap">
-          <span class="instrument-category-name">Reality Gap</span>
-          <span class="instrument-category-desc">Latency layer · sync lag and structural decay</span>
-        </button>
-      </div>
-
-      <!-- Instrument list state -->
-      <div class="instrument-list-view is-hidden" id="instrumentListView">
-        <div class="instrument-list" id="instrumentList"></div>
-      </div>
-
-      <!-- Active instrument state -->
-      <div class="active-instrument-view is-hidden" id="activeInstrumentView">
-        <div class="active-instrument-card">
-          <div class="active-instrument-meta">
-            <div class="active-instrument-label">Active Instrument</div>
-            <h3 class="active-instrument-name" id="activeInstrumentName">A3 · Absorption Memory Curve</h3>
-            <p class="active-instrument-desc" id="activeInstrumentDesc">
-              Primary absorption structure view for memory and soak behavior.
-            </p>
+        <!-- Header -->
+        <div class="instrument-header">
+          <div>
+            <strong id="instrumentTitle">FieldOS Instruments</strong>
+            <p id="instrumentSubtitle">Select a category</p>
           </div>
 
-          <div class="active-instrument-actions">
-            <button class="active-instrument-action" id="changeInstrumentButton" type="button">
-              Change
-            </button>
-            <button class="active-instrument-action" id="removeInstrumentButton" type="button">
-              Remove
-            </button>
+          <div class="instrument-actions">
+            <button id="instrumentBack" class="hidden">Back</button>
+            <button id="instrumentClose">Hide</button>
+          </div>
+        </div>
+
+        <!-- Category view -->
+        <div class="instrument-categories" id="instrumentCategories">
+
+          <button data-cat="absorption">Absorption</button>
+          <button data-cat="tension">Core Tension</button>
+          <button data-cat="entropy">Entropy</button>
+          <button data-cat="liar">Liar Index</button>
+          <button data-cat="mismatch">Mismatch</button>
+          <button data-cat="reality">Reality Gap</button>
+
+        </div>
+
+        <!-- Instrument list -->
+        <div class="instrument-list hidden" id="instrumentList"></div>
+
+        <!-- Active instrument -->
+        <div class="instrument-active hidden" id="instrumentActive">
+          <h3 id="activeName"></h3>
+          <p id="activeDesc"></p>
+
+          <div class="instrument-actions">
+            <button id="changeInstrument">Change</button>
+            <button id="removeInstrument">Remove</button>
           </div>
 
-          <div class="active-instrument-placeholder">
+          <div class="instrument-workspace">
             Instrument workspace lives here
           </div>
         </div>
+
       </div>
+
     </div>
+
   </div>
+
 </section>
 
 <style>
-  .instrument-section {
-    min-width: 0;
-    min-height: 0;
-  }
+.center-section {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
 
-  .instrument-shell {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    min-width: 0;
-  }
+/* Sticky area */
+.center-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 
-  .instrument-trigger-row {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-  }
+/* Chart */
+.chart-area {
+  height: 44vh;
+  border: 1px solid #3a3a3a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-  .instrument-add-button {
-    min-height: 40px;
-    padding: 0 14px;
-    border: 1px solid #3a3a3a;
-    background: transparent;
-    color: #e8e8e8;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    cursor: pointer;
-    font-size: 14px;
-    line-height: 1;
-  }
+/* Volume */
+.volume-area {
+  height: 48px;
+  border: 1px solid #3a3a3a;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+}
 
-  .instrument-add-plus {
-    font-size: 18px;
-    font-weight: 700;
-    line-height: 1;
-  }
+/* Scroll content */
+.center-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding-top: 10px;
+}
 
-  .instrument-picker-panel {
-    border: 1px solid #3a3a3a;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    padding: 12px;
-  }
+/* Instrument */
+.instrument-inline {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 
-  .instrument-picker-panel.is-hidden,
-  .instrument-list-view.is-hidden,
-  .active-instrument-view.is-hidden,
-  .instrument-back-button.is-hidden {
-    display: none;
-  }
+.instrument-add {
+  height: 42px;
+  border: 1px solid #3a3a3a;
+  background: none;
+  color: white;
+}
 
-  .instrument-picker-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 10px;
-  }
+.instrument-panel {
+  border: 1px solid #3a3a3a;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 
-  .instrument-picker-title-wrap {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    min-width: 0;
-  }
+.hidden {
+  display: none;
+}
 
-  .instrument-picker-title {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 700;
-    color: #e8e8e8;
-    line-height: 1.1;
-  }
+.instrument-header {
+  display: flex;
+  justify-content: space-between;
+}
 
-  .instrument-picker-subtitle {
-    margin: 0;
-    font-size: 12px;
-    line-height: 1.3;
-    color: #b5b5b5;
-  }
+.instrument-categories,
+.instrument-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
 
-  .instrument-picker-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
-  }
+.instrument-active {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 
-  .instrument-back-button,
-  .instrument-close-button,
-  .active-instrument-action {
-    min-height: 36px;
-    padding: 0 12px;
-    border: 1px solid #3a3a3a;
-    background: transparent;
-    color: #e8e8e8;
-    font-size: 13px;
-    cursor: pointer;
-  }
-
-  .instrument-category-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-
-  .instrument-category-card,
-  .instrument-list-item {
-    width: 100%;
-    min-height: 82px;
-    padding: 12px;
-    border: 1px solid #3a3a3a;
-    background: transparent;
-    color: #e8e8e8;
-    text-align: left;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 6px;
-    cursor: pointer;
-  }
-
-  .instrument-category-name,
-  .instrument-code {
-    display: block;
-    font-size: 15px;
-    font-weight: 700;
-    line-height: 1.1;
-  }
-
-  .instrument-category-desc,
-  .instrument-summary {
-    display: block;
-    font-size: 12px;
-    line-height: 1.3;
-    color: #b5b5b5;
-  }
-
-  .instrument-list-view {
-    display: block;
-  }
-
-  .instrument-list {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-
-  .active-instrument-view {
-    display: block;
-  }
-
-  .active-instrument-card {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    border: 1px solid #3a3a3a;
-    padding: 12px;
-  }
-
-  .active-instrument-meta {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .active-instrument-label {
-    font-size: 11px;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: #b5b5b5;
-    font-weight: 700;
-  }
-
-  .active-instrument-name {
-    margin: 0;
-    font-size: 16px;
-    line-height: 1.15;
-    color: #e8e8e8;
-  }
-
-  .active-instrument-desc {
-    margin: 0;
-    font-size: 12px;
-    line-height: 1.3;
-    color: #b5b5b5;
-  }
-
-  .active-instrument-actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .active-instrument-placeholder {
-    min-height: 120px;
-    border: 1px solid #3a3a3a;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    font-size: 13px;
-    color: #b5b5b5;
-    padding: 12px;
-  }
-
-  @media (min-width: 430px) {
-    .instrument-category-grid,
-    .instrument-list {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
+.instrument-workspace {
+  height: 120px;
+  border: 1px solid #3a3a3a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 </style>
 
 <script>
-  (function () {
-    const instrumentAddButton = document.getElementById("instrumentAddButton");
-    const instrumentPickerPanel = document.getElementById("instrumentPickerPanel");
-    const instrumentCloseButton = document.getElementById("instrumentCloseButton");
-    const instrumentBackButton = document.getElementById("instrumentBackButton");
+const addBtn = document.getElementById("instrumentAddBtn");
+const panel = document.getElementById("instrumentPanel");
+const closeBtn = document.getElementById("instrumentClose");
+const backBtn = document.getElementById("instrumentBack");
 
-    const instrumentPanelTitle = document.getElementById("instrumentPanelTitle");
-    const instrumentPanelSubtitle = document.getElementById("instrumentPanelSubtitle");
+const categories = document.getElementById("instrumentCategories");
+const list = document.getElementById("instrumentList");
+const active = document.getElementById("instrumentActive");
 
-    const instrumentCategoryGrid = document.getElementById("instrumentCategoryGrid");
-    const instrumentListView = document.getElementById("instrumentListView");
-    const instrumentList = document.getElementById("instrumentList");
-    const activeInstrumentView = document.getElementById("activeInstrumentView");
+const title = document.getElementById("instrumentTitle");
+const subtitle = document.getElementById("instrumentSubtitle");
 
-    const activeInstrumentName = document.getElementById("activeInstrumentName");
-    const activeInstrumentDesc = document.getElementById("activeInstrumentDesc");
-    const changeInstrumentButton = document.getElementById("changeInstrumentButton");
-    const removeInstrumentButton = document.getElementById("removeInstrumentButton");
+const activeName = document.getElementById("activeName");
+const activeDesc = document.getElementById("activeDesc");
 
-    const instrumentData = {
-      absorption: {
-        title: "Absorption",
-        subtitle: "Memory layer instruments",
-        items: [
-          {
-            code: "A3",
-            name: "Absorption Memory Curve",
-            summary: "Primary 3D absorption memory visual."
-          },
-          {
-            code: "A7",
-            name: "Cumulative Absorption Velocity",
-            summary: "Measures absorption acceleration over time."
-          },
-          {
-            code: "A9",
-            name: "Step-Decay Hybrid",
-            summary: "Tracks stepped memory decay behavior."
-          }
-        ]
-      },
-      "core-tension": {
-        title: "Core Tension",
-        subtitle: "Spring layer instruments",
-        items: [
-          {
-            code: "T3",
-            name: "Tension Regime Ladder",
-            summary: "Maps compression state transitions."
-          },
-          {
-            code: "T4",
-            name: "Coil Decay Oscillator",
-            summary: "Measures coiled energy loss."
-          },
-          {
-            code: "T6",
-            name: "Compression Spark",
-            summary: "Breakout ignition and spark detection."
-          },
-          {
-            code: "T10",
-            name: "Kinetic Anchor",
-            summary: "Anchors the system to structural force."
-          }
-        ]
-      },
-      entropy: {
-        title: "Entropy",
-        subtitle: "Randomness layer instruments",
-        items: [
-          {
-            code: "E6",
-            name: "Entropy Phase Shifter",
-            summary: "Measures trend phase instability."
-          },
-          {
-            code: "E8",
-            name: "Entropy Momentum",
-            summary: "Tracks structural randomness momentum."
-          },
-          {
-            code: "E10",
-            name: "Ghost Floor",
-            summary: "Identifies fading structural support."
-          }
-        ]
-      },
-      "liar-index": {
-        title: "Liar Index",
-        subtitle: "Deception layer instruments",
-        items: [
-          {
-            code: "L1",
-            name: "Deception Pulse",
-            summary: "Detects spoofing pulse behavior."
-          },
-          {
-            code: "L5",
-            name: "Liar Step-Ladder",
-            summary: "Tracks staged deceptive order ladders."
-          }
-        ]
-      },
-      mismatch: {
-        title: "Mismatch",
-        subtitle: "Efficiency layer instruments",
-        items: [
-          {
-            code: "M4",
-            name: "Mismatch Regime Ladder",
-            summary: "Shows price-force mismatch regimes."
-          },
-          {
-            code: "M9",
-            name: "Force Decay Oscillator",
-            summary: "Measures fading engine force."
-          },
-          {
-            code: "M10",
-            name: "Stability-Weighted Volume",
-            summary: "Weights volume by structural stability."
-          }
-        ]
-      },
-      "reality-gap": {
-        title: "Reality Gap",
-        subtitle: "Latency layer instruments",
-        items: [
-          {
-            code: "R6",
-            name: "Sync Stutter",
-            summary: "Detects sync lag and hesitation."
-          },
-          {
-            code: "R7",
-            name: "Structural Decay Sawtooth",
-            summary: "Tracks repeating decay structure."
-          },
-          {
-            code: "R8",
-            name: "Reality Buffer",
-            summary: "Measures buffered latency distortion."
-          }
-        ]
-      }
-    };
+addBtn.onclick = () => {
+  panel.classList.remove("hidden");
+};
 
-    let currentCategoryKey = null;
+closeBtn.onclick = () => {
+  panel.classList.add("hidden");
+};
 
-    function openPicker() {
-      instrumentPickerPanel.classList.remove("is-hidden");
-      instrumentAddButton.setAttribute("aria-expanded", "true");
-      showCategories();
-    }
+categories.querySelectorAll("button").forEach(btn => {
+  btn.onclick = () => {
+    categories.classList.add("hidden");
+    list.classList.remove("hidden");
+    backBtn.classList.remove("hidden");
 
-    function closePicker() {
-      instrumentPickerPanel.classList.add("is-hidden");
-      instrumentAddButton.setAttribute("aria-expanded", "false");
-      currentCategoryKey = null;
-    }
+    title.textContent = btn.textContent;
 
-    function showCategories() {
-      instrumentPanelTitle.textContent = "FieldOS Instruments";
-      instrumentPanelSubtitle.textContent = "Choose a market physics category";
+    list.innerHTML = `
+      <button data-i="A3">A3 Absorption Memory Curve</button>
+      <button data-i="T6">T6 Compression Spark</button>
+    `;
 
-      instrumentCategoryGrid.classList.remove("is-hidden");
-      instrumentListView.classList.add("is-hidden");
-      activeInstrumentView.classList.add("is-hidden");
-      instrumentBackButton.classList.add("is-hidden");
-    }
+    list.querySelectorAll("button").forEach(i => {
+      i.onclick = () => {
+        list.classList.add("hidden");
+        active.classList.remove("hidden");
 
-    function showInstrumentList(categoryKey) {
-      currentCategoryKey = categoryKey;
-      const category = instrumentData[categoryKey];
-      if (!category) return;
-
-      instrumentPanelTitle.textContent = category.title;
-      instrumentPanelSubtitle.textContent = category.subtitle;
-
-      instrumentCategoryGrid.classList.add("is-hidden");
-      instrumentListView.classList.remove("is-hidden");
-      activeInstrumentView.classList.add("is-hidden");
-      instrumentBackButton.classList.remove("is-hidden");
-
-      instrumentList.innerHTML = "";
-
-      category.items.forEach((item) => {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "instrument-list-item";
-        button.innerHTML = `
-          <span class="instrument-code">${item.code} · ${item.name}</span>
-          <span class="instrument-summary">${item.summary}</span>
-        `;
-
-        button.addEventListener("click", () => {
-          showActiveInstrument(item);
-        });
-
-        instrumentList.appendChild(button);
-      });
-    }
-
-    function showActiveInstrument(item) {
-      instrumentPanelTitle.textContent = "Active Instrument";
-      instrumentPanelSubtitle.textContent = "Live instrument workspace";
-
-      instrumentCategoryGrid.classList.add("is-hidden");
-      instrumentListView.classList.add("is-hidden");
-      activeInstrumentView.classList.remove("is-hidden");
-      instrumentBackButton.classList.remove("is-hidden");
-
-      activeInstrumentName.textContent = `${item.code} · ${item.name}`;
-      activeInstrumentDesc.textContent = item.summary;
-    }
-
-    instrumentAddButton.addEventListener("click", () => {
-      const hidden = instrumentPickerPanel.classList.contains("is-hidden");
-      if (hidden) {
-        openPicker();
-      } else {
-        closePicker();
-      }
+        activeName.textContent = i.textContent;
+        activeDesc.textContent = "Active instrument selected.";
+      };
     });
+  };
+});
 
-    instrumentCloseButton.addEventListener("click", () => {
-      closePicker();
-    });
-
-    instrumentBackButton.addEventListener("click", () => {
-      if (!instrumentListView.classList.contains("is-hidden") && currentCategoryKey) {
-        showCategories();
-        return;
-      }
-
-      if (!activeInstrumentView.classList.contains("is-hidden") && currentCategoryKey) {
-        showInstrumentList(currentCategoryKey);
-      }
-    });
-
-    document.querySelectorAll(".instrument-category-card").forEach((button) => {
-      button.addEventListener("click", () => {
-        const categoryKey = button.dataset.category;
-        showInstrumentList(categoryKey);
-      });
-    });
-
-    changeInstrumentButton.addEventListener("click", () => {
-      if (currentCategoryKey) {
-        showInstrumentList(currentCategoryKey);
-      }
-    });
-
-    removeInstrumentButton.addEventListener("click", () => {
-      closePicker();
-    });
-  })();
+backBtn.onclick = () => {
+  list.classList.add("hidden");
+  active.classList.add("hidden");
+  categories.classList.remove("hidden");
+  backBtn.classList.add("hidden");
+};
 </script>
