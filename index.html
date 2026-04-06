@@ -39,15 +39,23 @@
     /* CENTER WORKSPACE */
     .center-workspace { display: flex; flex-direction: column; overflow-y: auto; gap: 10px; scrollbar-width: none; }
     .center-workspace::-webkit-scrollbar { display: none; }
-    .chart-box { position: sticky; top: 0; z-index: 20; background: #000; width: 100%; aspect-ratio: 1.2 / 1; border: 1px solid #353535; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+    
+    /* CHART BOX */
+    .chart-box { position: sticky; top: 0; z-index: 20; background: #000; width: 100%; aspect-ratio: 1.1 / 1; border: 1px solid #353535; display: flex; align-items: center; justify-content: center; font-weight: bold; }
 
-    .active-box { min-height: 120px; border: 1px solid #353535; background: #050505; display: flex; align-items: center; justify-content: center; color: #00ffff; font-weight: bold; font-size: 14px; text-align: center; padding: 10px; }
-    .volume-strip { height: 34px; border: 1px solid #353535; display: flex; align-items: center; padding: 0 10px; font-size: 11px; font-weight: bold; color: #444; }
+    /* REORDERABLE STACK */
+    .middle-stack { display: flex; flex-direction: column; gap: 10px; }
+    .stack-card { border: 1px solid #353535; background: #000; display: flex; flex-direction: column; }
+    
+    .card-visual { min-height: 120px; background: #050505; display: flex; align-items: center; justify-content: center; color: #00ffff; font-weight: bold; font-size: 14px; text-align: center; padding: 10px; border-bottom: 1px solid #353535; }
+    .volume-card-visual { height: 34px; min-height: 34px; background: #000; display: flex; align-items: center; padding: 0 10px; font-size: 11px; font-weight: bold; color: #00ffff; border-bottom: 1px solid #353535; text-transform: uppercase; letter-spacing: 1px; }
 
-    /* INSTRUMENT INFO STRIP */
-    .active-header { border: 1px solid #353535; padding: 8px; display: flex; justify-content: space-between; align-items: center; background: #000; }
-    .active-title { font-size: 12px; font-weight: bold; margin: 0; }
-    .active-desc { font-size: 10px; color: #666; margin: 2px 0 0 0; }
+    /* CARD HEADER / STRIP */
+    .card-header { padding: 8px; display: flex; justify-content: space-between; align-items: center; background: #000; }
+    .card-info { flex: 1; }
+    .card-title { font-size: 12px; font-weight: bold; margin: 0; }
+    .card-desc { font-size: 10px; color: #666; margin: 2px 0 0 0; }
+    .card-controls { display: flex; gap: 4px; align-items: center; }
 
     /* CHOOSER */
     .chooser-panel { border: 1px solid #353535; display: flex; flex-direction: column; background: #000; }
@@ -56,6 +64,7 @@
     
     .quick-access-list { padding: 4px 10px 10px 10px; display: flex; flex-direction: column; gap: 4px; }
     .quick-btn { background: transparent; border: 1px solid #222; color: #ccc; padding: 10px; text-align: left; cursor: pointer; font-size: 11px; }
+    .quick-btn:disabled { color: #333; border-color: #111; cursor: default; }
 
     .category-card { border-bottom: 1px solid #222; }
     .category-head { width: 100%; background: transparent; border: none; color: #fff; padding: 10px; text-align: left; display: flex; justify-content: space-between; cursor: pointer; font-size: 11px; }
@@ -69,10 +78,8 @@
     .module-head { padding: 4px 8px; border-bottom: 1px solid #353535; display: flex; justify-content: space-between; align-items: center; background: #111; font-size: 9px; font-weight: bold; }
     .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 10px; color: #444; font-size: 10px; }
     
-    /* MODULE PICKER OVERLAY */
     .module-picker-overlay { border: 1px solid #353535; padding: 8px; display: flex; flex-direction: column; gap: 4px; background: #000; margin-bottom: 10px; }
     .picker-btn { background: transparent; border: 1px solid #222; color: #ccc; font-size: 9px; padding: 6px; cursor: pointer; display: block; width: 100%; text-align: left; }
-    .picker-btn:active { background: #111; border-color: #444; }
 
     /* BOTTOM MENU */
     .bottom-menu-wrap { border: 1px solid #353535; height: 54px; display: grid; grid-template-columns: repeat(6, 1fr) 40px; background: #000; }
@@ -107,37 +114,22 @@
     <main class="center-workspace">
       <section class="chart-box" id="chartBox">CHART: <span id="activeTickerDisplay">AAPL</span></section>
 
-      <section class="active-box is-hidden" id="activeBox">
-        <div id="activeBoxContent">Instrument Visual</div>
-      </section>
-
-      <section class="volume-strip">VOLUME: RELATIVE CLOUD</section>
-
-      <section class="active-header is-hidden" id="activeHeader">
-        <div class="info-meta">
-          <h3 class="active-title" id="activeTitle">---</h3>
-          <p class="active-desc" id="activeDesc">---</p>
-        </div>
-        <div style="display:flex; gap:6px;">
-          <button class="ghost-btn" onclick="openChooser()">Change</button>
-          <button class="ghost-btn" onclick="clearActiveInstrument()">×</button>
-        </div>
-      </section>
+      <div class="middle-stack" id="middleStack"></div>
 
       <section class="instrument-chooser-area">
-        <button class="ghost-btn" id="addInstrBtn" onclick="openChooser()" style="margin: 0 auto; display: block; padding: 10px 20px;">+ Add Instrument</button>
+        <button class="ghost-btn" id="addInstrBtn" onclick="openChooser()" style="margin: 0 auto; display: block; padding: 10px 20px;">+ Add Tool</button>
 
         <div class="chooser-panel is-hidden" id="chooserPanel">
           <div class="chooser-top-bar">
-            <span class="panel-title" style="color:#fff">Instruments</span>
+            <span class="panel-title" style="color:#fff">Tools</span>
             <button class="ghost-btn" onclick="closeChooser()">Hide</button>
           </div>
           
           <div class="chooser-section-label">Quick Access</div>
           <div class="quick-access-list">
-            <button class="quick-btn" onclick="selectInstrument('Kinetic Manifold', 'Combines force and truth into a single live view.')">Kinetic Manifold</button>
-            <button class="quick-btn" onclick="selectInstrument('Compression / Expansion', 'Tracks the breathing cycle of market compression.')">Compression / Expansion</button>
-            <button class="quick-btn" onclick="selectInstrument('Precision / Confidence', 'Shows confidence conditions for the current structure.')">Precision / Confidence</button>
+            <button class="quick-btn" id="volQuickBtn" onclick="addModuleToStack('volume', 'Relative Cloud', 'Deep structural volume analysis.')">Volume (Relative Cloud)</button>
+            <button class="quick-btn" onclick="addModuleToStack('instrument', 'Kinetic Manifold', 'Combines force and truth into a single live view.')">Kinetic Manifold</button>
+            <button class="quick-btn" onclick="addModuleToStack('instrument', 'Compression / Expansion', 'Tracks the breathing cycle of market compression.')">Compression / Expansion</button>
           </div>
 
           <div class="chooser-section-label">Categories</div>
@@ -156,17 +148,16 @@
         </div>
 
         <div class="module-picker-overlay is-hidden" id="modulePicker">
-          <button class="picker-btn" onclick="addModule('Order Book')">Order Book</button>
-          <button class="picker-btn" onclick="addModule('Notes')">Notes</button>
-          <button class="picker-btn" onclick="addModule('Signals')">Signals</button>
-          <button class="picker-btn" onclick="addModule('News')">News</button>
+          <button class="picker-btn" onclick="addRightModule('Order Book')">Order Book</button>
+          <button class="picker-btn" onclick="addRightModule('Notes')">Notes</button>
+          <button class="picker-btn" onclick="addRightModule('Signals')">Signals</button>
         </div>
 
         <div class="empty-state" id="rightEmpty">
           <span>Workspace Empty</span>
           <button class="ghost-btn" onclick="toggleModulePicker()">+ Add</button>
         </div>
-        <div class="module-stack is-hidden" id="moduleStack"></div>
+        <div class="module-stack is-hidden" id="rightModuleStack"></div>
       </div>
     </aside>
   </div>
@@ -200,10 +191,15 @@
     { name: '6. Decision Field', items: [['Alignment Score', 'System aggregate.'], ['Entry Readiness', 'Action state.']] }
   ];
 
-  let activeModules = [];
+  let stackItems = [
+    { id: 'instr-initial', type: 'instrument', name: 'Kinetic Manifold', desc: 'Combines force and truth into a single live view.' }
+  ];
+  
+  let rightModules = [];
 
   function init() {
     renderTickers('Main');
+    renderStack();
     const container = document.getElementById('categoryContainer');
     categories.forEach(cat => {
       const card = document.createElement('div');
@@ -211,23 +207,20 @@
       card.innerHTML = `
         <button class="category-head" onclick="toggleCategory(this)"><span>${cat.name}</span><span>▾</span></button>
         <div class="category-content">
-          ${cat.items.map(i => `<button class="sub-item" onclick="selectInstrument('${i[0]}','${i[1]}')">${i[0]}</button>`).join('')}
+          ${cat.items.map(i => `<button class="sub-item" onclick="addModuleToStack('instrument', '${i[0]}','${i[1]}')">${i[0]}</button>`).join('')}
         </div>
       `;
       container.appendChild(card);
     });
   }
 
+  /* CURTAINS */
   function toggleCurtain(id) {
     const curtain = document.getElementById(id);
     const handle = curtain.querySelector('.curtain-handle');
     const isCollapsed = curtain.classList.toggle('is-collapsed');
-    
-    if (id === 'leftCurtain') {
-      handle.innerText = isCollapsed ? '›' : '‹';
-    } else {
-      handle.innerText = isCollapsed ? '‹' : '›';
-    }
+    if (id === 'leftCurtain') handle.innerText = isCollapsed ? '›' : '‹';
+    else handle.innerText = isCollapsed ? '‹' : '›';
   }
   
   function toggleBottomMenu(show) {
@@ -235,6 +228,7 @@
     document.getElementById('reopenMenu').style.display = show ? 'none' : 'block';
   }
 
+  /* WATCHLIST */
   function switchList(btn, name) {
     document.querySelectorAll('#listSelector .list-tab').forEach(t => t.classList.remove('is-active'));
     btn.classList.add('is-active');
@@ -259,6 +253,61 @@
     });
   }
 
+  /* STACK LOGIC */
+  function addModuleToStack(type, name, desc) {
+    if (type === 'volume' && stackItems.some(i => i.type === 'volume')) return;
+    // Appending to preserve user-defined stack order
+    stackItems.push({ id: type === 'volume' ? 'vol-01' : Date.now(), type, name, desc });
+    renderStack();
+    closeChooser();
+  }
+
+  function moveItem(index, dir) {
+    const newIndex = index + dir;
+    if (newIndex < 0 || newIndex >= stackItems.length) return;
+    const item = stackItems.splice(index, 1)[0];
+    stackItems.splice(newIndex, 0, item);
+    renderStack();
+  }
+
+  function removeItem(index) {
+    stackItems.splice(index, 1);
+    renderStack();
+  }
+
+  function renderStack() {
+    const stack = document.getElementById('middleStack');
+    stack.innerHTML = '';
+    
+    const hasVol = stackItems.some(i => i.type === 'volume');
+    const volBtn = document.getElementById('volQuickBtn');
+    volBtn.disabled = hasVol;
+    volBtn.innerText = hasVol ? "Volume Strip (Active)" : "Volume (Relative Cloud)";
+
+    stackItems.forEach((item, i) => {
+      const card = document.createElement('section');
+      card.className = 'stack-card';
+      const isVol = item.type === 'volume';
+      
+      card.innerHTML = `
+        ${isVol ? `<div class="volume-card-visual">Volume: ${item.name}</div>` : `<div class="card-visual">${item.name}</div>`}
+        <div class="card-header">
+          <div class="card-info">
+            <h3 class="card-title">${isVol ? 'Volume Analysis' : item.name}</h3>
+            <p class="card-desc">${item.desc}</p>
+          </div>
+          <div class="card-controls">
+            <button class="icon-btn" style="border:none;" onclick="moveItem(${i}, -1)">▲</button>
+            <button class="icon-btn" style="border:none;" onclick="moveItem(${i}, 1)">▼</button>
+            <button class="icon-btn" style="border:none; color:#ff4444;" onclick="removeItem(${i})">×</button>
+          </div>
+        </div>
+      `;
+      stack.appendChild(card);
+    });
+  }
+
+  /* CHOOSER */
   function openChooser() {
     document.getElementById('chooserPanel').classList.remove('is-hidden');
     document.getElementById('addInstrBtn').classList.add('is-hidden');
@@ -282,55 +331,41 @@
     document.querySelectorAll('.category-card').forEach(c => c.classList.remove('is-expanded')); 
   }
 
-  function selectInstrument(name, desc) {
-    document.getElementById('activeBoxContent').innerText = name;
-    document.getElementById('activeTitle').innerText = name;
-    document.getElementById('activeDesc').innerText = desc;
-    document.getElementById('activeBox').classList.remove('is-hidden');
-    document.getElementById('activeHeader').classList.remove('is-hidden');
-    closeChooser();
-  }
-
-  function clearActiveInstrument() {
-    document.getElementById('activeBox').classList.add('is-hidden');
-    document.getElementById('activeHeader').classList.add('is-hidden');
-    closeChooser();
-  }
-
+  /* RIGHT SIDE MODULES */
   function toggleModulePicker() { 
     document.getElementById('modulePicker').classList.toggle('is-hidden'); 
   }
 
-  function addModule(type) {
-    activeModules.push(type);
+  function addRightModule(type) {
+    rightModules.push(type);
     document.getElementById('modulePicker').classList.add('is-hidden');
-    renderModules();
+    renderRightModules();
   }
 
-  function removeModule(index) {
-    activeModules.splice(index, 1);
-    renderModules();
+  function removeRightModule(index) {
+    rightModules.splice(index, 1);
+    renderRightModules();
   }
 
-  function renderModules() {
-    const stack = document.getElementById('moduleStack');
+  function renderRightModules() {
+    const stack = document.getElementById('rightModuleStack');
     const empty = document.getElementById('rightEmpty');
-    if (activeModules.length === 0) {
+    if (rightModules.length === 0) {
       stack.classList.add('is-hidden');
       empty.classList.remove('is-hidden');
       return;
     }
     empty.classList.add('is-hidden');
     stack.classList.remove('is-hidden');
-    stack.style.gridTemplateRows = `repeat(${activeModules.length}, minmax(0, 1fr))`;
+    stack.style.gridTemplateRows = `repeat(${rightModules.length}, minmax(0, 1fr))`;
     stack.innerHTML = '';
-    activeModules.forEach((m, i) => {
+    rightModules.forEach((m, i) => {
       const card = document.createElement('div');
       card.className = 'module-card';
       card.innerHTML = `
         <div class="module-head">
           <span>${m}</span>
-          <button class="icon-btn" style="border:none; height:auto; width:auto; font-size:14px;" onclick="removeModule(${i})">×</button>
+          <button class="icon-btn" style="border:none; height:auto; width:auto; font-size:14px;" onclick="removeRightModule(${i})">×</button>
         </div>
         <div style="flex:1;padding:8px;font-size:9px;color:#666">
           ${m === 'Notes' ? '<textarea style="width:100%;height:100%;background:transparent;color:#fff;border:none;outline:none;resize:none;"></textarea>' : 'Live data feed...'}
