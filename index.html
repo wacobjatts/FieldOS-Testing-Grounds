@@ -1,423 +1,339 @@
-<!-- INSTRUMENT SECTION ONLY -->
-<section class="instrument-section" id="instrumentSection">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>FieldOS / Kinetic</title>
+    <style>
+        :root {
+            --bg: #000000;
+            --surface: #0a0a0a;
+            --border: #222222;
+            --accent: #00ffff;
+            --text: #ffffff;
+            --dim: #888888;
+            --nav-h: 60px;
+            --curtain-w: 260px;
+        }
 
-  <!-- STATE 1: default -->
-  <div class="instrument-default-state" id="instrumentDefaultState">
-    <button
-      class="instrument-add-button"
-      id="instrumentAddButton"
-      type="button"
-      aria-label="Add Instrument"
-    >
-      <span class="instrument-add-plus">+</span>
-      <span class="instrument-add-text">Add Instrument</span>
-    </button>
-  </div>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body, html { 
+            margin: 0; padding: 0; background: var(--bg); color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            height: 100%; width: 100%; overflow: hidden;
+        }
 
-  <!-- STATE 2 + 3: category chooser -->
-  <div class="instrument-chooser-state is-hidden" id="instrumentChooserState">
-    <div class="instrument-category-list">
+        /* APP SHELL STRUCTURE */
+        .app-shell {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            position: relative;
+        }
 
-      <button class="instrument-category-card" type="button" data-category="absorption">
-        <div class="instrument-category-card-header">
-          <span class="instrument-category-name">Absorption</span>
-          <span class="instrument-category-arrow">▾</span>
-        </div>
-        <div class="instrument-category-body is-hidden">
-          <button class="instrument-option" type="button" data-code="A3" data-name="Absorption Memory Curve" data-desc="Primary absorption structure visual for memory and soak behavior.">
-            A3 · Absorption Memory Curve
-          </button>
-          <button class="instrument-option" type="button" data-code="A7" data-name="Cumulative Absorption Velocity" data-desc="Measures cumulative absorption acceleration over time.">
-            A7 · Cumulative Absorption Velocity
-          </button>
-          <button class="instrument-option" type="button" data-code="A9" data-name="Step-Decay Hybrid" data-desc="Tracks stepped structural memory decay.">
-            A9 · Step-Decay Hybrid
-          </button>
-        </div>
-      </button>
+        /* CURTAIN SYSTEM */
+        .curtain {
+            height: 100%;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            transition: width 0.2s ease;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+        .curtain.right { border-right: none; border-left: 1px solid var(--border); }
+        .curtain.collapsed { width: 0; border: none; }
 
-      <button class="instrument-category-card" type="button" data-category="core-tension">
-        <div class="instrument-category-card-header">
-          <span class="instrument-category-name">Core Tension</span>
-          <span class="instrument-category-arrow">▾</span>
-        </div>
-        <div class="instrument-category-body is-hidden">
-          <button class="instrument-option" type="button" data-code="T3" data-name="Tension Regime Ladder" data-desc="Maps compression state transitions.">
-            T3 · Tension Regime Ladder
-          </button>
-          <button class="instrument-option" type="button" data-code="T4" data-name="Coil Decay Oscillator" data-desc="Measures coiled energy decay.">
-            T4 · Coil Decay Oscillator
-          </button>
-          <button class="instrument-option" type="button" data-code="T6" data-name="Compression Spark" data-desc="Breakout ignition and compression spark behavior.">
-            T6 · Compression Spark
-          </button>
-          <button class="instrument-option" type="button" data-code="T10" data-name="Kinetic Anchor" data-desc="Anchors structure to kinetic force behavior.">
-            T10 · Kinetic Anchor
-          </button>
-        </div>
-      </button>
+        .curtain-content { width: var(--curtain-w); height: 100%; display: flex; flex-direction: column; padding: 15px; }
+        .curtain-title { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; color: var(--accent); }
 
-      <button class="instrument-category-card" type="button" data-category="entropy">
-        <div class="instrument-category-card-header">
-          <span class="instrument-category-name">Entropy</span>
-          <span class="instrument-category-arrow">▾</span>
-        </div>
-        <div class="instrument-category-body is-hidden">
-          <button class="instrument-option" type="button" data-code="E6" data-name="Entropy Phase Shifter" data-desc="Measures instability in structural phase.">
-            E6 · Entropy Phase Shifter
-          </button>
-          <button class="instrument-option" type="button" data-code="E8" data-name="Entropy Momentum" data-desc="Tracks momentum inside randomness and decay.">
-            E8 · Entropy Momentum
-          </button>
-          <button class="instrument-option" type="button" data-code="E10" data-name="Ghost Floor" data-desc="Identifies fading structural floor behavior.">
-            E10 · Ghost Floor
-          </button>
-        </div>
-      </button>
+        /* REOPEN HANDLES */
+        .handle {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            width: 12px; height: 60px; background: var(--border);
+            display: none; cursor: pointer; z-index: 11; opacity: 0.5;
+        }
+        .handle.left { left: 0; border-radius: 0 4px 4px 0; }
+        .handle.right { right: 0; border-radius: 4px 0 0 4px; }
+        .collapsed + .handle { display: block; }
 
-      <button class="instrument-category-card" type="button" data-category="liar-index">
-        <div class="instrument-category-card-header">
-          <span class="instrument-category-name">Liar Index</span>
-          <span class="instrument-category-arrow">▾</span>
-        </div>
-        <div class="instrument-category-body is-hidden">
-          <button class="instrument-option" type="button" data-code="L1" data-name="Deception Pulse" data-desc="Detects spoofing pulse and trap signals.">
-            L1 · Deception Pulse
-          </button>
-          <button class="instrument-option" type="button" data-code="L5" data-name="Liar Step-Ladder" data-desc="Tracks staged deception ladder behavior.">
-            L5 · Liar Step-Ladder
-          </button>
-        </div>
-      </button>
+        /* CENTER WORKSPACE */
+        .center-workspace {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            overflow-x: hidden;
+            position: relative;
+            padding-bottom: var(--nav-h); /* Space for bottom menu */
+        }
 
-      <button class="instrument-category-card" type="button" data-category="mismatch">
-        <div class="instrument-category-card-header">
-          <span class="instrument-category-name">Mismatch</span>
-          <span class="instrument-category-arrow">▾</span>
-        </div>
-        <div class="instrument-category-body is-hidden">
-          <button class="instrument-option" type="button" data-code="M4" data-name="Mismatch Regime Ladder" data-desc="Shows price-force mismatch regimes.">
-            M4 · Mismatch Regime Ladder
-          </button>
-          <button class="instrument-option" type="button" data-code="M9" data-name="Force Decay Oscillator" data-desc="Measures fading force against movement.">
-            M9 · Force Decay Oscillator
-          </button>
-          <button class="instrument-option" type="button" data-code="M10" data-name="Stability-Weighted Volume" data-desc="Weights volume by stability structure.">
-            M10 · Stability-Weighted Volume
-          </button>
-        </div>
-      </button>
+        /* LOCKED CENTER ORDER COMPONENTS */
+        .chart-region {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            aspect-ratio: 1 / 0.9; /* Near square */
+            background: #050505;
+            border-bottom: 1px solid var(--border);
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-      <button class="instrument-category-card" type="button" data-category="reality-gap">
-        <div class="instrument-category-card-header">
-          <span class="instrument-category-name">Reality Gap</span>
-          <span class="instrument-category-arrow">▾</span>
-        </div>
-        <div class="instrument-category-body is-hidden">
-          <button class="instrument-option" type="button" data-code="R6" data-name="Sync Stutter" data-desc="Detects sync lag and hesitation.">
-            R6 · Sync Stutter
-          </button>
-          <button class="instrument-option" type="button" data-code="R7" data-name="Structural Decay Sawtooth" data-desc="Tracks repeating structural decay patterns.">
-            R7 · Structural Decay Sawtooth
-          </button>
-          <button class="instrument-option" type="button" data-code="R8" data-name="Reality Buffer" data-desc="Measures buffered latency distortion.">
-            R8 · Reality Buffer
-          </button>
-        </div>
-      </button>
+        .active-instrument-region {
+            width: 100%;
+            padding: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+        .inst-box { width: 100%; height: 120px; border: 1px dashed var(--border); background: #080808; margin-bottom: 8px; position: relative; }
+        .inst-header { font-size: 11px; font-weight: bold; color: var(--accent); text-transform: uppercase; }
 
+        .volume-region {
+            width: 100%;
+            height: 60px;
+            padding: 5px 10px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+        }
+        .vol-bar { flex: 1; background: #333; }
+
+        /* INSTRUMENT CHOOSER */
+        .chooser-region { padding: 15px; }
+        .add-trigger { 
+            background: none; border: 1px solid var(--border); color: var(--dim);
+            padding: 10px; width: 100%; font-size: 12px; border-radius: 4px;
+        }
+        .chooser-ui { display: none; margin-top: 15px; }
+        .chooser-ui.open { display: block; }
+        
+        .section-label { font-size: 10px; color: var(--dim); margin: 15px 0 8px 0; text-transform: uppercase; }
+        .quick-access { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+        .qa-item { 
+            font-size: 9px; padding: 10px 5px; border: 1px solid var(--border); 
+            text-align: center; background: #0a0a0a; border-radius: 4px;
+        }
+
+        .category-card { 
+            border: 1px solid var(--border); margin-bottom: 8px; border-radius: 4px; overflow: hidden;
+        }
+        .cat-header { padding: 12px; font-size: 11px; font-weight: bold; background: #0f0f0f; display: flex; justify-content: space-between; }
+        .cat-content { display: none; padding: 10px; background: #000; border-top: 1px solid var(--border); }
+        .cat-card.expanded .cat-content { display: block; }
+        .inst-option { padding: 8px; font-size: 11px; border-bottom: 1px solid #111; color: var(--dim); }
+
+        /* RIGHT WORKSPACE MODULES */
+        .right-content { display: flex; flex-direction: column; height: 100%; gap: 1px; background: var(--border); }
+        .module { background: var(--bg); flex: 1; padding: 10px; overflow-y: auto; }
+        .module-header { font-size: 10px; color: var(--dim); margin-bottom: 8px; text-transform: uppercase; border-bottom: 1px solid #111; padding-bottom: 4px; }
+
+        /* BOTTOM MENU */
+        .bottom-menu {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: var(--nav-h);
+            background: var(--surface); border-top: 1px solid var(--border);
+            display: flex; justify-content: space-around; align-items: center;
+            z-index: 100;
+        }
+        .bottom-menu.hidden { display: none; }
+        .nav-item { font-size: 9px; color: var(--dim); text-align: center; flex: 1; display: flex; flex-direction: column; gap: 4px; }
+        .nav-item.active { color: var(--accent); }
+        .nav-icon-box { width: 20px; height: 20px; border: 1px solid currentColor; margin: 0 auto; border-radius: 2px; }
+
+        /* INPUTS */
+        input { 
+            background: #111; border: 1px solid var(--border); color: #fff; 
+            padding: 8px; border-radius: 4px; font-size: 13px; width: 100%; margin-bottom: 10px;
+        }
+        .ticker-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #111; font-size: 13px; }
+    </style>
+</head>
+<body>
+
+    <div class="app-shell">
+        <aside class="curtain" id="left-curtain">
+            <div class="curtain-content">
+                <div class="curtain-title">Tickers</div>
+                <input type="text" placeholder="Search Symbols...">
+                <div style="flex: 1; overflow-y: auto;">
+                    <div class="ticker-row"><span>TSLA</span><span style="color:#00ff88">+2.4%</span></div>
+                    <div class="ticker-row"><span>NVDA</span><span style="color:#00ff88">+1.1%</span></div>
+                    <div class="ticker-row"><span>BTC/USD</span><span style="color:#ff4d4d">-0.5%</span></div>
+                    <div class="ticker-row"><span>AAPL</span><span style="color:#00ff88">+0.8%</span></div>
+                </div>
+                <button class="add-trigger" onclick="toggleCurtain('left-curtain')">Collapse Tickers</button>
+            </div>
+        </aside>
+        <div class="handle left" onclick="toggleCurtain('left-curtain')"></div>
+
+        <main class="center-workspace" id="center-main">
+            
+            <div class="chart-region">
+                <div style="font-size: 10px; color: #333;">[ KINETIC_CHART_READY ]</div>
+            </div>
+
+            <div class="active-instrument-region" id="active-instrument-wrap" style="display: none;">
+                <div class="inst-box" id="active-box">
+                    <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #222;">DATA_STREAM_WAITING</div>
+                </div>
+                <div class="inst-header" id="active-title">INSTRUMENT_ID</div>
+            </div>
+
+            <div class="volume-region">
+                <div class="vol-bar" style="height: 30%;"></div>
+                <div class="vol-bar" style="height: 50%;"></div>
+                <div class="vol-bar" style="height: 80%;"></div>
+                <div class="vol-bar" style="height: 40%;"></div>
+                <div class="vol-bar" style="height: 90%;"></div>
+                <div class="vol-bar" style="height: 60%;"></div>
+                <div class="vol-bar" style="height: 20%;"></div>
+            </div>
+
+            <div class="chooser-region">
+                <button class="add-trigger" id="add-inst-btn" onclick="toggleChooser()">+ Add Instrument</button>
+                
+                <div class="chooser-ui" id="chooser-ui">
+                    <div class="section-label">Quick Access</div>
+                    <div class="quick-access">
+                        <div class="qa-item" onclick="selectInstrument('Kinetic Manifold')">Kinetic Manifold</div>
+                        <div class="qa-item" onclick="selectInstrument('Compression / Expansion')">Comp / Exp</div>
+                        <div class="qa-item" onclick="selectInstrument('Precision / Confidence')">Prec / Conf</div>
+                    </div>
+
+                    <div class="section-label">Categories</div>
+                    
+                    <div class="category-card" onclick="expandCategory(this)">
+                        <div class="cat-header">1. Structural Field <span>+</span></div>
+                        <div class="cat-content">
+                            <div class="inst-option" onclick="selectInstrument('Phase Boundaries')">Phase Boundaries</div>
+                            <div class="inst-option" onclick="selectInstrument('Compression Zones')">Compression Zones</div>
+                        </div>
+                    </div>
+
+                    <div class="category-card" onclick="expandCategory(this)">
+                        <div class="cat-header">2. Force Field <span>+</span></div>
+                        <div class="cat-content">
+                            <div class="inst-option" onclick="selectInstrument('Momentum Vector')">Momentum Vector</div>
+                            <div class="inst-option" onclick="selectInstrument('Acceleration Gradient')">Acceleration Gradient</div>
+                        </div>
+                    </div>
+
+                    <div class="category-card" onclick="expandCategory(this)">
+                        <div class="cat-header">3. Resistance Field <span>+</span></div>
+                        <div class="cat-content">
+                            <div class="inst-option" onclick="selectInstrument('Cost-to-Move Curve')">Cost-to-Move Curve</div>
+                            <div class="inst-option" onclick="selectInstrument('Liquidity Density Map')">Liquidity Density Map</div>
+                        </div>
+                    </div>
+
+                    <div class="category-card" onclick="expandCategory(this)">
+                        <div class="cat-header">4. Inertia Field <span>+</span></div>
+                        <div class="cat-content">
+                            <div class="inst-option" onclick="selectInstrument('Move Inertia')">Move Inertia</div>
+                            <div class="inst-option" onclick="selectInstrument('Mass Classification')">Mass Classification</div>
+                        </div>
+                    </div>
+
+                    <div class="category-card" onclick="expandCategory(this)">
+                        <div class="cat-header">5. Interpretation Field <span>+</span></div>
+                        <div class="cat-content">
+                            <div class="inst-option" onclick="selectInstrument('Truth Field')">Truth Field</div>
+                            <div class="inst-option" onclick="selectInstrument('Confidence Metrics')">Confidence Metrics</div>
+                        </div>
+                    </div>
+
+                    <div class="category-card" onclick="expandCategory(this)">
+                        <div class="cat-header">6. Decision Field <span>+</span></div>
+                        <div class="cat-content">
+                            <div class="inst-option" onclick="selectInstrument('Alignment Score')">Alignment Score</div>
+                            <div class="inst-option" onclick="selectInstrument('Entry Readiness')">Entry Readiness</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <aside class="curtain right" id="right-curtain">
+            <div class="curtain-content">
+                <div class="curtain-title">Workspace</div>
+                <div class="right-content">
+                    <div class="module">
+                        <div class="module-header">Order Book</div>
+                        <div style="font-size: 10px; color: #444;">[ L2_EMPTY ]</div>
+                    </div>
+                    <div class="module">
+                        <div class="module-header">Signals</div>
+                        <div style="font-size: 10px; color: #444;">[ SCANNING... ]</div>
+                    </div>
+                </div>
+                <button class="add-trigger" style="margin-top: 10px;" onclick="toggleCurtain('right-curtain')">Collapse Info</button>
+            </div>
+        </aside>
+        <div class="handle right" onclick="toggleCurtain('right-curtain')"></div>
+
+        <nav class="bottom-menu" id="bottom-menu">
+            <div class="nav-item active"><div class="nav-icon-box"></div>Chart</div>
+            <div class="nav-item"><div class="nav-icon-box"></div>Volume</div>
+            <div class="nav-item" onclick="toggleMaxFocus()"><div class="nav-icon-box"></div>Focus</div>
+            <div class="nav-item"><div class="nav-icon-box"></div>L2</div>
+            <div class="nav-item"><div class="nav-icon-box"></div>Alerts</div>
+            <div class="nav-item" onclick="toggleBottomMenu()"><div class="nav-icon-box"></div>Hide</div>
+        </nav>
     </div>
-  </div>
 
-  <!-- STATE 4: active instrument -->
-  <div class="instrument-active-state is-hidden" id="instrumentActiveState">
+    <script>
+        // CURTAIN TOGGLES
+        function toggleCurtain(id) {
+            document.getElementById(id).classList.toggle('collapsed');
+        }
 
-    <!-- active instrument directly under volume -->
-    <div class="instrument-live-box" id="instrumentLiveBox">
-      <span class="instrument-live-placeholder">Active instrument lives here</span>
-    </div>
+        // BOTTOM MENU TOGGLE
+        function toggleBottomMenu() {
+            document.getElementById('bottom-menu').classList.toggle('hidden');
+        }
 
-    <!-- title/header underneath active instrument -->
-    <div class="instrument-live-header">
-      <div class="instrument-live-meta">
-        <h3 class="instrument-live-title" id="instrumentLiveTitle">T6 · Compression Spark</h3>
-        <p class="instrument-live-description" id="instrumentLiveDescription">
-          Breakout ignition and compression spark behavior.
-        </p>
-      </div>
+        // CHOOSER LOGIC
+        function toggleChooser() {
+            const ui = document.getElementById('chooser-ui');
+            const btn = document.getElementById('add-inst-btn');
+            if (ui.style.display === 'block') {
+                ui.style.display = 'none';
+                btn.style.display = 'block';
+            } else {
+                ui.style.display = 'block';
+                btn.style.display = 'none';
+            }
+        }
 
-      <div class="instrument-live-actions">
-        <button class="instrument-live-button" id="instrumentChangeButton" type="button">Change</button>
-        <button class="instrument-live-button" id="instrumentRemoveButton" type="button">Remove</button>
-      </div>
-    </div>
-  </div>
+        function expandCategory(card) {
+            const isExpanded = card.classList.contains('expanded');
+            // Close others
+            document.querySelectorAll('.category-card').forEach(c => c.classList.remove('expanded'));
+            if (!isExpanded) card.classList.add('expanded');
+        }
 
-</section>
+        function selectInstrument(name) {
+            // Close Chooser
+            document.getElementById('chooser-ui').style.display = 'none';
+            document.getElementById('add-inst-btn').style.display = 'block';
+            
+            // Update Active Instrument
+            document.getElementById('active-instrument-wrap').style.display = 'block';
+            document.getElementById('active-title').innerText = name;
+            
+            // Scroll to top to ensure visibility tie to chart
+            document.getElementById('center-main').scrollTo({ top: 0, behavior: 'smooth' });
+        }
 
-<style>
-  .instrument-section {
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .is-hidden {
-    display: none !important;
-  }
-
-  /* DEFAULT */
-  .instrument-default-state {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-  }
-
-  .instrument-add-button {
-    min-height: 40px;
-    padding: 0 14px;
-    border: 1px solid #3a3a3a;
-    background: transparent;
-    color: #e8e8e8;
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    font-size: 14px;
-    line-height: 1;
-  }
-
-  .instrument-add-plus {
-    font-size: 18px;
-    font-weight: 700;
-    line-height: 1;
-  }
-
-  /* CHOOSER */
-  .instrument-chooser-state {
-    display: block;
-  }
-
-  .instrument-category-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .instrument-category-card {
-    width: 100%;
-    border: 1px solid #3a3a3a;
-    background: transparent;
-    color: #e8e8e8;
-    padding: 0;
-    text-align: left;
-    cursor: pointer;
-  }
-
-  .instrument-category-card-header {
-    min-height: 56px;
-    padding: 0 14px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-  }
-
-  .instrument-category-name {
-    font-size: 15px;
-    font-weight: 700;
-    line-height: 1.1;
-  }
-
-  .instrument-category-arrow {
-    font-size: 15px;
-    line-height: 1;
-    flex-shrink: 0;
-  }
-
-  .instrument-category-body {
-    border-top: 1px solid #3a3a3a;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .instrument-option {
-    width: 100%;
-    min-height: 46px;
-    padding: 0 14px;
-    border: 0;
-    border-bottom: 1px solid #3a3a3a;
-    background: transparent;
-    color: #dcdcdc;
-    text-align: left;
-    font-size: 13px;
-    cursor: pointer;
-  }
-
-  .instrument-option:last-child {
-    border-bottom: 0;
-  }
-
-  /* ACTIVE */
-  .instrument-active-state {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .instrument-live-box {
-    min-height: 120px;
-    border: 1px solid #3a3a3a;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 12px;
-    text-align: center;
-  }
-
-  .instrument-live-placeholder {
-    font-size: 13px;
-    color: #b5b5b5;
-  }
-
-  .instrument-live-header {
-    border: 1px solid #3a3a3a;
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .instrument-live-meta {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .instrument-live-title {
-    margin: 0;
-    font-size: 16px;
-    line-height: 1.15;
-    color: #e8e8e8;
-  }
-
-  .instrument-live-description {
-    margin: 0;
-    font-size: 12px;
-    line-height: 1.3;
-    color: #b5b5b5;
-  }
-
-  .instrument-live-actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .instrument-live-button {
-    min-height: 36px;
-    padding: 0 12px;
-    border: 1px solid #3a3a3a;
-    background: transparent;
-    color: #e8e8e8;
-    font-size: 13px;
-    cursor: pointer;
-  }
-</style>
-
-<script>
-  (function () {
-    const defaultState = document.getElementById("instrumentDefaultState");
-    const chooserState = document.getElementById("instrumentChooserState");
-    const activeState = document.getElementById("instrumentActiveState");
-
-    const addButton = document.getElementById("instrumentAddButton");
-    const categoryCards = Array.from(document.querySelectorAll(".instrument-category-card"));
-    const optionButtons = Array.from(document.querySelectorAll(".instrument-option"));
-
-    const liveTitle = document.getElementById("instrumentLiveTitle");
-    const liveDescription = document.getElementById("instrumentLiveDescription");
-
-    const changeButton = document.getElementById("instrumentChangeButton");
-    const removeButton = document.getElementById("instrumentRemoveButton");
-
-    function showDefaultState() {
-      defaultState.classList.remove("is-hidden");
-      chooserState.classList.add("is-hidden");
-      activeState.classList.add("is-hidden");
-      collapseAllCategories();
-    }
-
-    function showChooserState() {
-      defaultState.classList.add("is-hidden");
-      chooserState.classList.remove("is-hidden");
-      activeState.classList.add("is-hidden");
-    }
-
-    function showActiveState(code, name, desc) {
-      liveTitle.textContent = `${code} · ${name}`;
-      liveDescription.textContent = desc;
-
-      defaultState.classList.add("is-hidden");
-      chooserState.classList.add("is-hidden");
-      activeState.classList.remove("is-hidden");
-      collapseAllCategories();
-    }
-
-    function collapseAllCategories() {
-      categoryCards.forEach((card) => {
-        const body = card.querySelector(".instrument-category-body");
-        const arrow = card.querySelector(".instrument-category-arrow");
-        body.classList.add("is-hidden");
-        arrow.textContent = "▾";
-      });
-    }
-
-    function toggleCategory(card) {
-      const body = card.querySelector(".instrument-category-body");
-      const arrow = card.querySelector(".instrument-category-arrow");
-      const isHidden = body.classList.contains("is-hidden");
-
-      collapseAllCategories();
-
-      if (isHidden) {
-        body.classList.remove("is-hidden");
-        arrow.textContent = "▴";
-      }
-    }
-
-    addButton.addEventListener("click", () => {
-      showChooserState();
-    });
-
-    categoryCards.forEach((card) => {
-      const header = card.querySelector(".instrument-category-card-header");
-
-      header.addEventListener("click", (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        toggleCategory(card);
-      });
-    });
-
-    optionButtons.forEach((button) => {
-      button.addEventListener("click", () => {
-        const code = button.dataset.code;
-        const name = button.dataset.name;
-        const desc = button.dataset.desc;
-        showActiveState(code, name, desc);
-      });
-    });
-
-    changeButton.addEventListener("click", () => {
-      showChooserState();
-    });
-
-    removeButton.addEventListener("click", () => {
-      showDefaultState();
-    });
-
-    showDefaultState();
-  })();
-</script>
+        // FOCUS MODE
+        function toggleMaxFocus() {
+            document.getElementById('left-curtain').classList.add('collapsed');
+            document.getElementById('right-curtain').classList.add('collapsed');
+            document.getElementById('bottom-menu').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
