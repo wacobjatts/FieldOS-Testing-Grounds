@@ -1,301 +1,596 @@
-<!-- LEFT TICKER SECTION ONLY -->
-<section class="left-ticker-panel" id="leftTickerPanel">
-  <div class="left-ticker-shell">
+<!-- INSTRUMENT SECTION ONLY -->
+<section class="instrument-section" id="instrumentSection">
+  <div class="instrument-shell">
 
-    <!-- Main ticker content -->
-    <div class="left-ticker-content">
-      <div class="ticker-panel-header">
-        <h2 class="ticker-panel-title">Tickers</h2>
-        <button class="ticker-list-add-btn" type="button" aria-label="Create new list">+</button>
-      </div>
+    <!-- Default compact trigger -->
+    <div class="instrument-trigger-row" id="instrumentTriggerRow">
+      <button
+        class="instrument-add-button"
+        id="instrumentAddButton"
+        type="button"
+        aria-expanded="false"
+        aria-controls="instrumentPickerPanel"
+      >
+        <span class="instrument-add-plus">+</span>
+        <span class="instrument-add-text">Add Instrument</span>
+      </button>
+    </div>
 
-      <div class="ticker-search-wrap">
-        <input
-          type="text"
-          class="ticker-search-input"
-          id="tickerSearchInput"
-          placeholder="Search symbol"
-          autocomplete="off"
-        />
-      </div>
-
-      <div class="ticker-lists-wrap">
-        <div class="ticker-lists-header">
-          <span class="ticker-lists-title">Lists</span>
+    <!-- Picker / active workspace -->
+    <div
+      class="instrument-picker-panel is-hidden"
+      id="instrumentPickerPanel"
+    >
+      <!-- Picker header -->
+      <div class="instrument-picker-header">
+        <div class="instrument-picker-title-wrap">
+          <h2 class="instrument-picker-title" id="instrumentPanelTitle">FieldOS Instruments</h2>
+          <p class="instrument-picker-subtitle" id="instrumentPanelSubtitle">
+            Choose a market physics category
+          </p>
         </div>
 
-        <div class="ticker-lists" id="tickerLists">
-          <button class="ticker-list-chip is-active" type="button">Main</button>
-          <button class="ticker-list-chip" type="button">Tech</button>
-          <button class="ticker-list-chip" type="button">Crypto</button>
+        <div class="instrument-picker-actions">
+          <button
+            class="instrument-back-button is-hidden"
+            id="instrumentBackButton"
+            type="button"
+          >
+            Back
+          </button>
+
+          <button
+            class="instrument-close-button"
+            id="instrumentCloseButton"
+            type="button"
+            aria-label="Close instrument panel"
+          >
+            Hide
+          </button>
         </div>
       </div>
 
-      <div class="ticker-watchlist-wrap">
-        <div class="ticker-watchlist-header">
-          <span class="ticker-watchlist-title">Watchlist</span>
-        </div>
+      <!-- Category state -->
+      <div class="instrument-category-grid" id="instrumentCategoryGrid">
+        <button class="instrument-category-card" type="button" data-category="absorption">
+          <span class="instrument-category-name">Absorption</span>
+          <span class="instrument-category-desc">Memory layer · soaked liquidity and structural memory</span>
+        </button>
 
-        <div class="ticker-watchlist" id="tickerWatchlist">
-          <button class="ticker-row is-active" type="button" data-symbol="AAPL">
-            <span class="ticker-symbol">AAPL</span>
-            <span class="ticker-price">214.43</span>
-          </button>
+        <button class="instrument-category-card" type="button" data-category="core-tension">
+          <span class="instrument-category-name">Core Tension</span>
+          <span class="instrument-category-desc">Spring layer · compression, coiling, breakout energy</span>
+        </button>
 
-          <button class="ticker-row" type="button" data-symbol="NVDA">
-            <span class="ticker-symbol">NVDA</span>
-            <span class="ticker-price">132.17</span>
-          </button>
+        <button class="instrument-category-card" type="button" data-category="entropy">
+          <span class="instrument-category-name">Entropy</span>
+          <span class="instrument-category-desc">Randomness layer · noise vs. structural signal</span>
+        </button>
 
-          <button class="ticker-row" type="button" data-symbol="TSLA">
-            <span class="ticker-symbol">TSLA</span>
-            <span class="ticker-price">176.80</span>
-          </button>
+        <button class="instrument-category-card" type="button" data-category="liar-index">
+          <span class="instrument-category-name">Liar Index</span>
+          <span class="instrument-category-desc">Deception layer · spoofing and trap behavior</span>
+        </button>
 
-          <button class="ticker-row" type="button" data-symbol="SPY">
-            <span class="ticker-symbol">SPY</span>
-            <span class="ticker-price">518.22</span>
-          </button>
+        <button class="instrument-category-card" type="button" data-category="mismatch">
+          <span class="instrument-category-name">Mismatch</span>
+          <span class="instrument-category-desc">Efficiency layer · friction between price and force</span>
+        </button>
 
-          <button class="ticker-row" type="button" data-symbol="QQQ">
-            <span class="ticker-symbol">QQQ</span>
-            <span class="ticker-price">442.11</span>
-          </button>
+        <button class="instrument-category-card" type="button" data-category="reality-gap">
+          <span class="instrument-category-name">Reality Gap</span>
+          <span class="instrument-category-desc">Latency layer · sync lag and structural decay</span>
+        </button>
+      </div>
+
+      <!-- Instrument list state -->
+      <div class="instrument-list-view is-hidden" id="instrumentListView">
+        <div class="instrument-list" id="instrumentList"></div>
+      </div>
+
+      <!-- Active instrument state -->
+      <div class="active-instrument-view is-hidden" id="activeInstrumentView">
+        <div class="active-instrument-card">
+          <div class="active-instrument-meta">
+            <div class="active-instrument-label">Active Instrument</div>
+            <h3 class="active-instrument-name" id="activeInstrumentName">A3 · Absorption Memory Curve</h3>
+            <p class="active-instrument-desc" id="activeInstrumentDesc">
+              Primary absorption structure view for memory and soak behavior.
+            </p>
+          </div>
+
+          <div class="active-instrument-actions">
+            <button class="active-instrument-action" id="changeInstrumentButton" type="button">
+              Change
+            </button>
+            <button class="active-instrument-action" id="removeInstrumentButton" type="button">
+              Remove
+            </button>
+          </div>
+
+          <div class="active-instrument-placeholder">
+            Instrument workspace lives here
+          </div>
         </div>
       </div>
     </div>
-
-    <!-- Curtain handle -->
-    <button
-      class="left-ticker-curtain-handle"
-      id="leftTickerCurtainHandle"
-      type="button"
-      aria-label="Collapse ticker panel"
-    >
-      ‹
-    </button>
   </div>
 </section>
 
 <style>
-  .left-ticker-panel {
-    width: 88px;
-    min-width: 88px;
-    overflow: hidden;
-    transition: width 0.22s ease;
+  .instrument-section {
+    min-width: 0;
+    min-height: 0;
   }
 
-  .left-ticker-panel.is-open {
-    width: 88px;
-    min-width: 88px;
-  }
-
-  .left-ticker-panel.is-collapsed {
-    width: 18px;
-    min-width: 18px;
-  }
-
-  .left-ticker-shell {
-    height: 100%;
-    display: grid;
-    grid-template-columns: 1fr 18px;
-    gap: 0;
-  }
-
-  .left-ticker-panel.is-collapsed .left-ticker-shell {
-    grid-template-columns: 0 18px;
-  }
-
-  .left-ticker-content {
-    border: 1px solid #3a3a3a;
-    overflow: hidden;
+  .instrument-shell {
     display: flex;
     flex-direction: column;
+    gap: 10px;
     min-width: 0;
-    padding: 10px 8px;
+  }
+
+  .instrument-trigger-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .instrument-add-button {
+    min-height: 40px;
+    padding: 0 14px;
+    border: 1px solid #3a3a3a;
+    background: transparent;
+    color: #e8e8e8;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  .instrument-add-plus {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .instrument-picker-panel {
+    border: 1px solid #3a3a3a;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .instrument-picker-panel.is-hidden,
+  .instrument-list-view.is-hidden,
+  .active-instrument-view.is-hidden,
+  .instrument-back-button.is-hidden {
+    display: none;
+  }
+
+  .instrument-picker-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
     gap: 10px;
   }
 
-  .left-ticker-panel.is-collapsed .left-ticker-content {
-    border: 0;
-    padding: 0;
-  }
-
-  .ticker-panel-header {
+  .instrument-picker-title-wrap {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
   }
 
-  .ticker-panel-title {
+  .instrument-picker-title {
     margin: 0;
     font-size: 16px;
     font-weight: 700;
+    color: #e8e8e8;
     line-height: 1.1;
-    color: #e8e8e8;
   }
 
-  .ticker-list-add-btn {
-    width: 28px;
-    height: 28px;
-    border: 1px solid #3a3a3a;
-    background: transparent;
-    color: #e8e8e8;
-    font-size: 18px;
-    line-height: 1;
-    cursor: pointer;
-    flex: 0 0 auto;
-  }
-
-  .ticker-search-wrap {
-    width: 100%;
-  }
-
-  .ticker-search-input {
-    width: 100%;
-    height: 34px;
-    border: 1px solid #3a3a3a;
-    background: transparent;
-    color: #e8e8e8;
-    padding: 0 10px;
+  .instrument-picker-subtitle {
+    margin: 0;
     font-size: 12px;
-    outline: none;
+    line-height: 1.3;
+    color: #b5b5b5;
   }
 
-  .ticker-search-input::placeholder {
-    color: #9f9f9f;
-  }
-
-  .ticker-lists-wrap,
-  .ticker-watchlist-wrap {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    min-width: 0;
-  }
-
-  .ticker-lists-header,
-  .ticker-watchlist-header {
+  .instrument-picker-actions {
     display: flex;
     align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
   }
 
-  .ticker-lists-title,
-  .ticker-watchlist-title {
-    font-size: 11px;
+  .instrument-back-button,
+  .instrument-close-button,
+  .active-instrument-action {
+    min-height: 36px;
+    padding: 0 12px;
+    border: 1px solid #3a3a3a;
+    background: transparent;
+    color: #e8e8e8;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  .instrument-category-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .instrument-category-card,
+  .instrument-list-item {
+    width: 100%;
+    min-height: 82px;
+    padding: 12px;
+    border: 1px solid #3a3a3a;
+    background: transparent;
+    color: #e8e8e8;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+  }
+
+  .instrument-category-name,
+  .instrument-code {
+    display: block;
+    font-size: 15px;
     font-weight: 700;
+    line-height: 1.1;
+  }
+
+  .instrument-category-desc,
+  .instrument-summary {
+    display: block;
+    font-size: 12px;
+    line-height: 1.3;
+    color: #b5b5b5;
+  }
+
+  .instrument-list-view {
+    display: block;
+  }
+
+  .instrument-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .active-instrument-view {
+    display: block;
+  }
+
+  .active-instrument-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border: 1px solid #3a3a3a;
+    padding: 12px;
+  }
+
+  .active-instrument-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .active-instrument-label {
+    font-size: 11px;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: #b8b8b8;
-  }
-
-  .ticker-lists {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .ticker-list-chip {
-    width: 100%;
-    min-height: 32px;
-    border: 1px solid #3a3a3a;
-    background: transparent;
-    color: #d9d9d9;
-    font-size: 12px;
-    text-align: left;
-    padding: 0 10px;
-    cursor: pointer;
-  }
-
-  .ticker-list-chip.is-active {
+    color: #b5b5b5;
     font-weight: 700;
   }
 
-  .ticker-watchlist {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    min-width: 0;
+  .active-instrument-name {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.15;
+    color: #e8e8e8;
   }
 
-  .ticker-row {
-    width: 100%;
-    min-height: 40px;
+  .active-instrument-desc {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.3;
+    color: #b5b5b5;
+  }
+
+  .active-instrument-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .active-instrument-placeholder {
+    min-height: 120px;
     border: 1px solid #3a3a3a;
-    background: transparent;
-    color: #e8e8e8;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    padding: 0 10px;
-    cursor: pointer;
-    text-align: left;
-  }
-
-  .ticker-row.is-active {
-    font-weight: 700;
-  }
-
-  .ticker-symbol,
-  .ticker-price {
-    font-size: 12px;
-    line-height: 1;
-    white-space: nowrap;
-  }
-
-  .left-ticker-curtain-handle {
-    border: 1px solid #3a3a3a;
-    background: transparent;
-    color: #d8d8d8;
+    justify-content: center;
+    text-align: center;
     font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    width: 18px;
-    padding: 0;
+    color: #b5b5b5;
+    padding: 12px;
   }
 
   @media (min-width: 430px) {
-    .left-ticker-panel,
-    .left-ticker-panel.is-open {
-      width: 96px;
-      min-width: 96px;
+    .instrument-category-grid,
+    .instrument-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 </style>
 
 <script>
   (function () {
-    const panel = document.getElementById("leftTickerPanel");
-    const handle = document.getElementById("leftTickerCurtainHandle");
-    const rows = Array.from(document.querySelectorAll(".ticker-row"));
-    const chips = Array.from(document.querySelectorAll(".ticker-list-chip"));
+    const instrumentAddButton = document.getElementById("instrumentAddButton");
+    const instrumentPickerPanel = document.getElementById("instrumentPickerPanel");
+    const instrumentCloseButton = document.getElementById("instrumentCloseButton");
+    const instrumentBackButton = document.getElementById("instrumentBackButton");
 
-    panel.classList.add("is-open");
+    const instrumentPanelTitle = document.getElementById("instrumentPanelTitle");
+    const instrumentPanelSubtitle = document.getElementById("instrumentPanelSubtitle");
 
-    handle.addEventListener("click", () => {
-      const collapsed = panel.classList.toggle("is-collapsed");
-      panel.classList.toggle("is-open", !collapsed);
-      handle.textContent = collapsed ? "›" : "‹";
-      handle.setAttribute(
-        "aria-label",
-        collapsed ? "Open ticker panel" : "Collapse ticker panel"
-      );
+    const instrumentCategoryGrid = document.getElementById("instrumentCategoryGrid");
+    const instrumentListView = document.getElementById("instrumentListView");
+    const instrumentList = document.getElementById("instrumentList");
+    const activeInstrumentView = document.getElementById("activeInstrumentView");
+
+    const activeInstrumentName = document.getElementById("activeInstrumentName");
+    const activeInstrumentDesc = document.getElementById("activeInstrumentDesc");
+    const changeInstrumentButton = document.getElementById("changeInstrumentButton");
+    const removeInstrumentButton = document.getElementById("removeInstrumentButton");
+
+    const instrumentData = {
+      absorption: {
+        title: "Absorption",
+        subtitle: "Memory layer instruments",
+        items: [
+          {
+            code: "A3",
+            name: "Absorption Memory Curve",
+            summary: "Primary 3D absorption memory visual."
+          },
+          {
+            code: "A7",
+            name: "Cumulative Absorption Velocity",
+            summary: "Measures absorption acceleration over time."
+          },
+          {
+            code: "A9",
+            name: "Step-Decay Hybrid",
+            summary: "Tracks stepped memory decay behavior."
+          }
+        ]
+      },
+      "core-tension": {
+        title: "Core Tension",
+        subtitle: "Spring layer instruments",
+        items: [
+          {
+            code: "T3",
+            name: "Tension Regime Ladder",
+            summary: "Maps compression state transitions."
+          },
+          {
+            code: "T4",
+            name: "Coil Decay Oscillator",
+            summary: "Measures coiled energy loss."
+          },
+          {
+            code: "T6",
+            name: "Compression Spark",
+            summary: "Breakout ignition and spark detection."
+          },
+          {
+            code: "T10",
+            name: "Kinetic Anchor",
+            summary: "Anchors the system to structural force."
+          }
+        ]
+      },
+      entropy: {
+        title: "Entropy",
+        subtitle: "Randomness layer instruments",
+        items: [
+          {
+            code: "E6",
+            name: "Entropy Phase Shifter",
+            summary: "Measures trend phase instability."
+          },
+          {
+            code: "E8",
+            name: "Entropy Momentum",
+            summary: "Tracks structural randomness momentum."
+          },
+          {
+            code: "E10",
+            name: "Ghost Floor",
+            summary: "Identifies fading structural support."
+          }
+        ]
+      },
+      "liar-index": {
+        title: "Liar Index",
+        subtitle: "Deception layer instruments",
+        items: [
+          {
+            code: "L1",
+            name: "Deception Pulse",
+            summary: "Detects spoofing pulse behavior."
+          },
+          {
+            code: "L5",
+            name: "Liar Step-Ladder",
+            summary: "Tracks staged deceptive order ladders."
+          }
+        ]
+      },
+      mismatch: {
+        title: "Mismatch",
+        subtitle: "Efficiency layer instruments",
+        items: [
+          {
+            code: "M4",
+            name: "Mismatch Regime Ladder",
+            summary: "Shows price-force mismatch regimes."
+          },
+          {
+            code: "M9",
+            name: "Force Decay Oscillator",
+            summary: "Measures fading engine force."
+          },
+          {
+            code: "M10",
+            name: "Stability-Weighted Volume",
+            summary: "Weights volume by structural stability."
+          }
+        ]
+      },
+      "reality-gap": {
+        title: "Reality Gap",
+        subtitle: "Latency layer instruments",
+        items: [
+          {
+            code: "R6",
+            name: "Sync Stutter",
+            summary: "Detects sync lag and hesitation."
+          },
+          {
+            code: "R7",
+            name: "Structural Decay Sawtooth",
+            summary: "Tracks repeating decay structure."
+          },
+          {
+            code: "R8",
+            name: "Reality Buffer",
+            summary: "Measures buffered latency distortion."
+          }
+        ]
+      }
+    };
+
+    let currentCategoryKey = null;
+
+    function openPicker() {
+      instrumentPickerPanel.classList.remove("is-hidden");
+      instrumentAddButton.setAttribute("aria-expanded", "true");
+      showCategories();
+    }
+
+    function closePicker() {
+      instrumentPickerPanel.classList.add("is-hidden");
+      instrumentAddButton.setAttribute("aria-expanded", "false");
+      currentCategoryKey = null;
+    }
+
+    function showCategories() {
+      instrumentPanelTitle.textContent = "FieldOS Instruments";
+      instrumentPanelSubtitle.textContent = "Choose a market physics category";
+
+      instrumentCategoryGrid.classList.remove("is-hidden");
+      instrumentListView.classList.add("is-hidden");
+      activeInstrumentView.classList.add("is-hidden");
+      instrumentBackButton.classList.add("is-hidden");
+    }
+
+    function showInstrumentList(categoryKey) {
+      currentCategoryKey = categoryKey;
+      const category = instrumentData[categoryKey];
+      if (!category) return;
+
+      instrumentPanelTitle.textContent = category.title;
+      instrumentPanelSubtitle.textContent = category.subtitle;
+
+      instrumentCategoryGrid.classList.add("is-hidden");
+      instrumentListView.classList.remove("is-hidden");
+      activeInstrumentView.classList.add("is-hidden");
+      instrumentBackButton.classList.remove("is-hidden");
+
+      instrumentList.innerHTML = "";
+
+      category.items.forEach((item) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "instrument-list-item";
+        button.innerHTML = `
+          <span class="instrument-code">${item.code} · ${item.name}</span>
+          <span class="instrument-summary">${item.summary}</span>
+        `;
+
+        button.addEventListener("click", () => {
+          showActiveInstrument(item);
+        });
+
+        instrumentList.appendChild(button);
+      });
+    }
+
+    function showActiveInstrument(item) {
+      instrumentPanelTitle.textContent = "Active Instrument";
+      instrumentPanelSubtitle.textContent = "Live instrument workspace";
+
+      instrumentCategoryGrid.classList.add("is-hidden");
+      instrumentListView.classList.add("is-hidden");
+      activeInstrumentView.classList.remove("is-hidden");
+      instrumentBackButton.classList.remove("is-hidden");
+
+      activeInstrumentName.textContent = `${item.code} · ${item.name}`;
+      activeInstrumentDesc.textContent = item.summary;
+    }
+
+    instrumentAddButton.addEventListener("click", () => {
+      const hidden = instrumentPickerPanel.classList.contains("is-hidden");
+      if (hidden) {
+        openPicker();
+      } else {
+        closePicker();
+      }
     });
 
-    rows.forEach((row) => {
-      row.addEventListener("click", () => {
-        rows.forEach((r) => r.classList.remove("is-active"));
-        row.classList.add("is-active");
+    instrumentCloseButton.addEventListener("click", () => {
+      closePicker();
+    });
+
+    instrumentBackButton.addEventListener("click", () => {
+      if (!instrumentListView.classList.contains("is-hidden") && currentCategoryKey) {
+        showCategories();
+        return;
+      }
+
+      if (!activeInstrumentView.classList.contains("is-hidden") && currentCategoryKey) {
+        showInstrumentList(currentCategoryKey);
+      }
+    });
+
+    document.querySelectorAll(".instrument-category-card").forEach((button) => {
+      button.addEventListener("click", () => {
+        const categoryKey = button.dataset.category;
+        showInstrumentList(categoryKey);
       });
     });
 
-    chips.forEach((chip) => {
-      chip.addEventListener("click", () => {
-        chips.forEach((c) => c.classList.remove("is-active"));
-        chip.classList.add("is-active");
-      });
+    changeInstrumentButton.addEventListener("click", () => {
+      if (currentCategoryKey) {
+        showInstrumentList(currentCategoryKey);
+      }
+    });
+
+    removeInstrumentButton.addEventListener("click", () => {
+      closePicker();
     });
   })();
 </script>
