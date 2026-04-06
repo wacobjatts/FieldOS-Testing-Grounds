@@ -1,0 +1,22 @@
+/* Tightened Chart Logic */
+.center-workspace {
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* Fill the grid cell */
+}
+
+.chart-box {
+  flex: 0 0 auto; /* Do not grow or shrink */
+  width: 100%;
+  aspect-ratio: 1.2 / 1; /* Pure ratio-driven height */
+  border: 1px solid #353535;
+  background: #000;
+  z-index: 10;
+}
+
+.controls-scroll-area {
+  flex: 1; /* Take all remaining space */
+  overflow-y: auto;
+  padding-top: 10px;
+  -webkit-overflow-scrolling: touch; /* Smooth iOS scroll */
+}
