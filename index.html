@@ -3,262 +3,514 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Field-OS // Kinetic Live Screen</title>
-  <link rel="stylesheet" href="styles.css" />
+  <title>FieldOS Shell</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #000000;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      overflow: hidden;
+      color: #d9d9d9;
+    }
+
+    .app {
+      height: 100vh;
+      display: grid;
+      grid-template-rows: 1fr 64px;
+      gap: 12px;
+      padding: 12px 12px 0;
+    }
+
+    .workspace {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    /* LEFT CURTAIN */
+    .left-panel {
+      width: 240px;
+      min-width: 240px;
+      transition: width 0.25s ease, min-width 0.25s ease;
+      overflow: hidden;
+    }
+
+    .left-panel.collapsed {
+      width: 20px;
+      min-width: 20px;
+    }
+
+    .left-shell {
+      height: 100%;
+      display: grid;
+      grid-template-columns: 1fr 20px;
+    }
+
+    .left-panel.collapsed .left-shell {
+      grid-template-columns: 0 20px;
+    }
+
+    .left-content {
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid #3a3a3a;
+      display: flex;
+      flex-direction: column;
+      padding: 12px;
+      gap: 12px;
+    }
+
+    .left-panel.collapsed .left-content {
+      border: 0;
+      padding: 0;
+    }
+
+    .curtain-handle {
+      border: 1px solid #3a3a3a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+      font-size: 14px;
+    }
+
+    .left-panel.collapsed .curtain-handle {
+      border: 1px solid #3a3a3a;
+    }
+
+    /* CENTER */
+    .center {
+      min-width: 0;
+      min-height: 0;
+      display: grid;
+      grid-template-rows: minmax(360px, 52vh) 56px auto;
+      gap: 12px;
+    }
+
+    .chart-wrap {
+      min-width: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .chart-box {
+      width: min(100%, 1100px);
+      height: 100%;
+      aspect-ratio: 1.18 / 1;
+      border: 1px solid #3a3a3a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 16px;
+    }
+
+    .volume-box {
+      border: 1px solid #3a3a3a;
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+    }
+
+    .instrument-panel {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      border: 1px solid #3a3a3a;
+      overflow: hidden;
+      transition: grid-template-rows 0.25s ease;
+    }
+
+    .instrument-panel.collapsed {
+      grid-template-rows: auto 0fr;
+    }
+
+    .instrument-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border-bottom: 1px solid #3a3a3a;
+      gap: 12px;
+    }
+
+    .instrument-panel.collapsed .instrument-header {
+      border-bottom: 0;
+    }
+
+    .instrument-title-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .instrument-toggle {
+      border: 1px solid #3a3a3a;
+      background: transparent;
+      color: #d9d9d9;
+      cursor: pointer;
+      padding: 6px 10px;
+      min-width: 44px;
+    }
+
+    .instrument-body {
+      min-height: 0;
+      overflow: hidden;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .instrument-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .instrument-card {
+      min-height: 110px;
+      border: 1px solid #3a3a3a;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 8px;
+      text-align: left;
+      background: transparent;
+      color: #d9d9d9;
+      cursor: pointer;
+    }
+
+    /* RIGHT CURTAIN */
+    .right-panel {
+      width: 320px;
+      min-width: 320px;
+      transition: width 0.25s ease, min-width 0.25s ease;
+      overflow: hidden;
+    }
+
+    .right-panel.collapsed {
+      width: 20px;
+      min-width: 20px;
+    }
+
+    .right-shell {
+      height: 100%;
+      display: grid;
+      grid-template-columns: 20px 1fr;
+    }
+
+    .right-panel.collapsed .right-shell {
+      grid-template-columns: 20px 0;
+    }
+
+    .right-content {
+      min-width: 0;
+      border: 1px solid #3a3a3a;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      overflow: hidden;
+    }
+
+    .right-panel.collapsed .right-content {
+      border: 0;
+    }
+
+    .right-topbar {
+      display: flex;
+      justify-content: flex-end;
+      padding: 12px;
+      border-bottom: 1px solid #3a3a3a;
+    }
+
+    .module-add-icon {
+      width: 32px;
+      height: 32px;
+      border: 1px solid #3a3a3a;
+      background: transparent;
+      color: #d9d9d9;
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .right-empty {
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+      gap: 14px;
+    }
+
+    .add-module-btn {
+      border: 1px solid #3a3a3a;
+      background: transparent;
+      color: #d9d9d9;
+      cursor: pointer;
+      padding: 10px 16px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* PAGE BAR */
+    .page-bar {
+      border: 1px solid #3a3a3a;
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 0;
+      min-height: 0;
+    }
+
+    .page-tab {
+      border: 0;
+      border-right: 1px solid #3a3a3a;
+      background: transparent;
+      color: #d9d9d9;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .page-tab:last-child {
+      border-right: 0;
+    }
+
+    .page-tab.active {
+      font-weight: 700;
+    }
+
+    /* TEXT */
+    h1, h2, p {
+      margin: 0;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .section-subtitle {
+      font-size: 14px;
+      line-height: 1.35;
+      color: #b3b3b3;
+    }
+
+    .small-label {
+      font-size: 15px;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .card-text {
+      font-size: 14px;
+      line-height: 1.35;
+      color: #b3b3b3;
+    }
+
+    /* MOBILE */
+    @media (max-width: 900px) {
+      body {
+        overflow: auto;
+      }
+
+      .app {
+        height: auto;
+        min-height: 100vh;
+        grid-template-rows: auto 64px;
+      }
+
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .left-panel,
+      .right-panel {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .left-panel.collapsed,
+      .right-panel.collapsed {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .left-shell,
+      .right-shell,
+      .left-panel.collapsed .left-shell,
+      .right-panel.collapsed .right-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .curtain-handle {
+        min-height: 40px;
+      }
+
+      .center {
+        grid-template-rows: minmax(280px, auto) 52px auto;
+      }
+
+      .chart-box {
+        width: 100%;
+        aspect-ratio: 1.08 / 1;
+      }
+
+      .instrument-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .page-bar {
+        overflow-x: auto;
+        grid-template-columns: repeat(6, minmax(100px, 1fr));
+      }
+    }
+  </style>
 </head>
 <body>
-  <div class="app-shell">
-    <header class="topbar glass">
-      <div class="brand-wrap">
-        <div class="brand-mark">
-          <div class="brand-core"></div>
+  <div class="app">
+    <div class="workspace">
+      <!-- LEFT -->
+      <aside class="left-panel" id="leftPanel">
+        <div class="left-shell">
+          <div class="left-content">
+            <h2 class="section-title">Tickers</h2>
+          </div>
+          <div class="curtain-handle" id="leftHandle" aria-label="Toggle left panel">‹</div>
         </div>
-        <div>
-          <div class="brand-title">FIELD-OS // KINETIC</div>
-          <div class="brand-sub">live market physics interface</div>
-        </div>
-      </div>
+      </aside>
 
-      <div class="topbar-controls">
-        <input id="symbolSearch" class="search-input" type="text" placeholder="Search BTC, ETH, AAPL..." />
-        <select id="timeframeSelect" class="control-select">
-          <option value="1m">1m</option>
-          <option value="5m" selected>5m</option>
-          <option value="15m">15m</option>
-          <option value="1h">1h</option>
-          <option value="4h">4h</option>
-          <option value="1d">1d</option>
-        </select>
-        <button class="ghost-btn">★ Favorite</button>
-        <div class="live-chip"><span class="live-dot"></span> LIVE</div>
-      </div>
-    </header>
-
-    <main class="page-column">
-      <section class="hero-card glass">
-        <div class="hero-header">
-          <div>
-            <div class="hero-kicker">System Overview</div>
-            <h1 class="hero-title">Market movement translated into force, resistance, distortion, and trust.</h1>
+      <!-- CENTER -->
+      <main class="center">
+        <section class="chart-wrap">
+          <div class="chart-box">
+            <h1 class="section-title">Chart Area</h1>
           </div>
-          <div class="hero-price-block">
-            <div id="assetName" class="asset-name">BTC/USD</div>
-            <div id="assetPrice" class="asset-price">42,865.12</div>
-            <div id="assetChange" class="asset-change positive">+1.42%</div>
-          </div>
-        </div>
-        <div class="hero-grid">
-          <div class="hero-text">
-            <p>
-              Field-OS // Kinetic is a market physics screen. It does not treat price as the full story.
-              It measures whether movement is supported, absorbed, hollow, stale, dense, or structurally trustworthy.
-            </p>
-            <p>
-              The live screen keeps price and volume visible at all times, then layers instrument panes underneath.
-              Every visible line is driven by an actual formula output, and every metric card includes an info tab with
-              the exact definition of what it is measuring.
-            </p>
-          </div>
-
-          <div class="hero-summary">
-            <div class="summary-card">
-              <div class="summary-label">State</div>
-              <div id="stateSentence" class="summary-value">Upward pressure building with structural support</div>
-            </div>
-            <div class="summary-row">
-              <div class="mini-summary">
-                <div class="summary-label">Kinetic Score</div>
-                <div id="kineticScore" class="summary-number">78</div>
-              </div>
-              <div class="mini-summary">
-                <div class="summary-label">Compression</div>
-                <div id="compressionScore" class="summary-number">64</div>
-              </div>
-              <div class="mini-summary">
-                <div class="summary-label">Confidence</div>
-                <div id="confidenceScore" class="summary-number">71</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="sticky-stack">
-        <section class="chart-card glass">
-          <div class="card-head">
-            <div>
-              <div class="card-title-row">
-                <div class="card-title">Price Chart</div>
-                <button class="info-btn" data-info="priceInfo">i</button>
-              </div>
-              <div class="card-sub">Price remains visible as the anchor for every instrument below.</div>
-            </div>
-            <div class="timestamp-wrap">
-              <div class="timestamp-label">Cursor Time</div>
-              <div id="cursorTime" class="timestamp-value">14:38:22</div>
-            </div>
-          </div>
-          <div id="priceInfo" class="info-panel">
-            Standard candlestick view for context. Price is the result, not the whole story. Use this together with
-            volume and the active instrument pane to compare movement against force, truth, and precision.
-          </div>
-          <canvas id="priceCanvas" class="chart-canvas price-canvas"></canvas>
         </section>
 
-        <section class="volume-card glass">
-          <div class="card-head compact">
-            <div class="card-title-row">
-              <div class="card-title">Volume</div>
-              <button class="info-btn" data-info="volumeInfo">i</button>
-            </div>
-          </div>
-          <div id="volumeInfo" class="info-panel">
-            Standard volume bars. This stays conventional on purpose so participation remains immediately readable.
-          </div>
-          <canvas id="volumeCanvas" class="chart-canvas volume-canvas"></canvas>
+        <section class="volume-box">
+          <h2 class="small-label">Volume</h2>
         </section>
-      </section>
 
-      <section class="instrument-selector-card glass">
-        <div class="selector-left">
-          <div class="card-title-row">
-            <div class="card-title">Active Instrument</div>
-            <button class="info-btn" data-info="instrumentInfo">i</button>
-          </div>
-          <div id="instrumentInfo" class="info-panel">
-            Select one instrument at a time. This keeps the live screen clean, comparable, and divergence-friendly,
-            just like strong technical tools, while still using Field-OS formulas.
-          </div>
-        </div>
-        <select id="instrumentSelect" class="instrument-select">
-          <option value="kinetic">Kinetic Manifold</option>
-          <option value="compression">Compression / Expansion</option>
-          <option value="absorptionPrecision">Absorption Precision</option>
-          <option value="entropyPrecision">Entropy Precision</option>
-          <option value="liarPrecision">Liar Index Precision</option>
-          <option value="realityGapPrecision">Reality Gap Precision</option>
-          <option value="tensionPrecision">Tension Precision</option>
-        </select>
-      </section>
-
-      <section class="instrument-card glass">
-        <div class="card-head">
-          <div>
-            <div class="card-title-row">
-              <div id="instrumentTitle" class="card-title">Kinetic Manifold</div>
-              <button class="info-btn" data-info="activeInstrumentInfo">i</button>
+        <section class="instrument-panel" id="instrumentPanel">
+          <div class="instrument-header">
+            <div class="instrument-title-wrap">
+              <h2 class="section-title">FieldOS Instruments</h2>
+              <p class="section-subtitle">Choose a category to open instruments</p>
             </div>
-            <div id="instrumentSub" class="card-sub">
-              Force versus Truth over time. This is the main relationship pane.
+            <button class="instrument-toggle" id="instrumentToggle" type="button">Hide</button>
+          </div>
+
+          <div class="instrument-body">
+            <div class="instrument-grid">
+              <button class="instrument-card" type="button">
+                <span class="card-title">Flow</span>
+                <span class="card-text">Order book pressure, absorption</span>
+              </button>
+
+              <button class="instrument-card" type="button">
+                <span class="card-title">Momentum</span>
+                <span class="card-text">Impulse, continuation, decay behavior</span>
+              </button>
+
+              <button class="instrument-card" type="button">
+                <span class="card-title">Structure</span>
+                <span class="card-text">Anchors, levels, compression zones</span>
+              </button>
+
+              <button class="instrument-card" type="button">
+                <span class="card-title">Volatility</span>
+                <span class="card-text">Turbulence, range expansion</span>
+              </button>
+
+              <button class="instrument-card" type="button">
+                <span class="card-title">Signal</span>
+                <span class="card-text">Confirmation, divergence</span>
+              </button>
+
+              <button class="instrument-card" type="button">
+                <span class="card-title">Custom</span>
+                <span class="card-text">Saved user instruments</span>
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <!-- RIGHT -->
+      <aside class="right-panel" id="rightPanel">
+        <div class="right-shell">
+          <div class="curtain-handle" id="rightHandle" aria-label="Toggle right panel">›</div>
+          <div class="right-content">
+            <div class="right-topbar">
+              <button class="module-add-icon" type="button" aria-label="Add module">+</button>
+            </div>
+            <div class="right-empty">
+              <h2 class="section-title">Info Workspace</h2>
+              <p class="section-subtitle">Add a module for market context, notes, or live tools</p>
+              <button class="add-module-btn" type="button">
+                <span>+</span>
+                <span>Add Module</span>
+              </button>
             </div>
           </div>
         </div>
-        <div id="activeInstrumentInfo" class="info-panel"></div>
-        <canvas id="indicatorCanvas" class="chart-canvas indicator-canvas"></canvas>
-      </section>
+      </aside>
+    </div>
 
-      <section class="overview-row">
-        <section class="score-card glass">
-          <div class="card-title-row">
-            <div class="card-title">Score Stack</div>
-            <button class="info-btn" data-info="scoreInfo">i</button>
-          </div>
-          <div id="scoreInfo" class="info-panel">
-            Score bars summarize the current state. They are not buy/sell signals. They compress multiple live readings
-            into a fast overview of energy, compression, and trust.
-          </div>
-          <div class="score-grid">
-            <div class="score-box">
-              <div class="score-label">Kinetic</div>
-              <div id="scoreKinetic" class="score-value">78</div>
-              <div class="score-bar"><div id="barKinetic" class="score-fill"></div></div>
-            </div>
-            <div class="score-box">
-              <div class="score-label">Compression</div>
-              <div id="scoreCompression" class="score-value">64</div>
-              <div class="score-bar"><div id="barCompression" class="score-fill amber"></div></div>
-            </div>
-            <div class="score-box">
-              <div class="score-label">Confidence</div>
-              <div id="scoreConfidence" class="score-value">71</div>
-              <div class="score-bar"><div id="barConfidence" class="score-fill pale"></div></div>
-            </div>
-          </div>
-        </section>
-
-        <section class="compass-card glass">
-          <div class="card-title-row">
-            <div class="card-title">Kinetic Compass</div>
-            <button class="info-btn" data-info="compassInfo">i</button>
-          </div>
-          <div id="compassInfo" class="info-panel">
-            The compass is a directional summary. X-axis = mismatch. Y-axis = truth. The dot shows whether current force
-            is aligned, distorted, or unresolved.
-          </div>
-          <div class="compass">
-            <div class="compass-axis h"></div>
-            <div class="compass-axis v"></div>
-            <div class="compass-ring ring-1"></div>
-            <div class="compass-ring ring-2"></div>
-            <div class="compass-ring ring-3"></div>
-            <div id="compassDot" class="compass-dot"></div>
-          </div>
-        </section>
-      </section>
-
-      <section class="data-grid">
-        <section class="data-card glass">
-          <div class="card-title-row">
-            <div class="card-title">Current Values</div>
-            <button class="info-btn" data-info="currentValuesInfo">i</button>
-          </div>
-          <div id="currentValuesInfo" class="info-panel">
-            Current outputs for the active screen. These are separate from the graph so the chart can stay clean and the
-            values can stay exact.
-          </div>
-          <div id="currentValues" class="metric-list"></div>
-        </section>
-
-        <section class="data-card glass">
-          <div class="card-title-row">
-            <div class="card-title">Inputs</div>
-            <button class="info-btn" data-info="inputsInfo">i</button>
-          </div>
-          <div id="inputsInfo" class="info-panel">
-            Raw components feeding the current instrument. These include mismatch, participation, entropy, liar index,
-            decay, density, and the underlying precision variables.
-          </div>
-          <div id="inputValues" class="metric-list"></div>
-        </section>
-
-        <section class="data-card glass">
-          <div class="card-title-row">
-            <div class="card-title">Formula</div>
-            <button class="info-btn" data-info="formulaInfo">i</button>
-          </div>
-          <div id="formulaInfo" class="info-panel">
-            The active formula shown in readable form. This is the exact conceptual equation driving the visible output.
-          </div>
-          <div id="formulaBox" class="formula-box"></div>
-        </section>
-
-        <section class="data-card glass">
-          <div class="card-title-row">
-            <div class="card-title">Interpretation</div>
-            <button class="info-btn" data-info="interpretInfo">i</button>
-          </div>
-          <div id="interpretInfo" class="info-panel">
-            Plain-English reading of the current state. This is where the system tells the user what is happening instead
-            of making them decode the screen manually.
-          </div>
-          <div id="interpretationBox" class="formula-box">
-            Upward pressure building with structural support.
-          </div>
-        </section>
-      </section>
-    </main>
+    <!-- PAGE BAR -->
+    <nav class="page-bar" aria-label="Page navigation">
+      <button class="page-tab active" type="button">Chart</button>
+      <button class="page-tab" type="button">Volume</button>
+      <button class="page-tab" type="button">Instruments</button>
+      <button class="page-tab" type="button">Order Book</button>
+      <button class="page-tab" type="button">Signals</button>
+      <button class="page-tab" type="button">News</button>
+    </nav>
   </div>
 
-  <script src="app.js"></script>
+  <script>
+    const leftPanel = document.getElementById("leftPanel");
+    const rightPanel = document.getElementById("rightPanel");
+    const leftHandle = document.getElementById("leftHandle");
+    const rightHandle = document.getElementById("rightHandle");
+    const instrumentPanel = document.getElementById("instrumentPanel");
+    const instrumentToggle = document.getElementById("instrumentToggle");
+
+    leftHandle.addEventListener("click", () => {
+      leftPanel.classList.toggle("collapsed");
+      leftHandle.textContent = leftPanel.classList.contains("collapsed") ? "›" : "‹";
+    });
+
+    rightHandle.addEventListener("click", () => {
+      rightPanel.classList.toggle("collapsed");
+      rightHandle.textContent = rightPanel.classList.contains("collapsed") ? "‹" : "›";
+    });
+
+    instrumentToggle.addEventListener("click", () => {
+      instrumentPanel.classList.toggle("collapsed");
+      instrumentToggle.textContent = instrumentPanel.classList.contains("collapsed") ? "Show" : "Hide";
+    });
+  </script>
 </body>
 </html>
