@@ -5,246 +5,102 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>FieldOS / Kinetic</title>
     <style>
-        /* CORE BUILD RULES: Pure Black, No Frameworks, iPhone-First */
+        /* STRICT CONTRACT: #000000, NO FRAMEWORKS, IPHONE-FIRST */
         :root {
             --bg: #000000;
-            --surface: #0a0a0a;
-            --border: #222222;
-            --accent: #00ffff;
-            --text: #ffffff;
-            --nav-h: 65px;
+            --panel: #0a0a0a;
+            --border: #1a1a1a;
+            --cyan: #00ffff;
+            --nav-h: 70px;
             --curtain-w: 260px;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body, html { 
-            margin: 0; padding: 0; background: var(--bg); color: var(--text);
+            margin: 0; padding: 0; background: var(--bg); color: #fff;
             font-family: -apple-system, system-ui, sans-serif;
-            height: 100vh; width: 100vw; overflow: hidden;
+            height: 100%; width: 100%; overflow: hidden; position: fixed;
         }
 
+        /* THE APP SHELL - LOCKS TO IPHONE SCREEN */
         .app-shell {
             display: flex;
-            height: 100%;
-            width: 100%;
+            width: 100vw;
+            height: 100vh;
             position: relative;
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
-        /* CURTAIN SYSTEM: Sideways Collapse */
+        /* CURTAIN SYSTEM - SIDEWAYS COLLAPSE */
         .curtain {
             height: 100%;
             width: var(--curtain-w);
-            background: var(--surface);
+            background: var(--panel);
             border-right: 1px solid var(--border);
-            transition: width 0.2s ease;
-            overflow: hidden;
+            transition: transform 0.2s ease, width 0.2s ease;
             flex-shrink: 0;
-            z-index: 20;
+            z-index: 100;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
         .curtain.right { border-right: none; border-left: 1px solid var(--border); }
         .curtain.collapsed { width: 0; border: none; }
 
-        .curtain-inner { width: var(--curtain-w); padding: 15px; display: flex; flex-direction: column; height: 100%; }
+        .curtain-inner { width: var(--curtain-w); height: 100%; padding: 20px; display: flex; flex-direction: column; }
         
-        /* HANDLES: Slim reopen handles */
+        /* HANDLES */
         .handle {
-            position: absolute; top: 50%; transform: translateY(-50%);
-            width: 15px; height: 80px; background: var(--border);
-            z-index: 21; cursor: pointer; display: none;
+            position: absolute; top: 40%; width: 12px; height: 100px; 
+            background: var(--border); z-index: 101; cursor: pointer; display: none;
         }
-        .handle.left-h { left: 0; border-radius: 0 4px 4px 0; }
-        .handle.right-h { right: 0; border-radius: 4px 0 0 4px; }
-        
-        /* CENTER WORKSPACE */
+        .handle-left { left: 0; border-radius: 0 4px 4px 0; }
+        .handle-right { right: 0; border-radius: 4px 0 0 4px; }
+
+        /* CENTER WORKSPACE - THE CORE STACK */
         .center-workspace {
             flex: 1;
             display: flex;
             flex-direction: column;
-            overflow-y: auto;
+            height: 100%;
+            overflow: hidden; /* Contains the scroll inside */
             position: relative;
-            background: var(--bg);
         }
 
-        /* 1. CHART (STICKY & DOMINANT) */
+        /* 1. CHART - STICKY/FIXED AT TOP */
         .chart-region {
-            position: sticky;
-            top: 0;
+            flex-shrink: 0;
             width: 100%;
-            aspect-ratio: 1 / 1; /* Near Square */
+            aspect-ratio: 1 / 1;
             background: #050505;
             border-bottom: 1px solid var(--border);
-            z-index: 10;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        /* 2. ACTIVE INSTRUMENT REGION */
+        /* SCROLLABLE AREA STARTING FROM ACTIVE INSTRUMENT */
+        .scroll-content {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: var(--nav-h);
+        }
+
+        /* 2. ACTIVE INSTRUMENT */
         .active-instrument-region { padding: 10px; border-bottom: 1px solid var(--border); display: none; }
-        .inst-box { width: 100%; height: 140px; border: 1px solid var(--border); background: #080808; margin-bottom: 5px; }
-        .inst-header { font-size: 11px; font-weight: 800; color: var(--accent); text-transform: uppercase; padding-top: 5px; }
+        .inst-box { width: 100%; height: 160px; background: #080808; border: 1px solid var(--border); margin-bottom: 6px; }
+        .inst-header { font-size: 11px; font-weight: 900; color: var(--cyan); text-transform: uppercase; }
 
         /* 3. VOLUME */
-        .volume-region { width: 100%; height: 50px; padding: 5px 10px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-end; gap: 2px; }
-        .vol-bar { flex: 1; background: #222; min-height: 5px; }
+        .volume-region { width: 100%; height: 60px; padding: 10px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-end; gap: 2px; }
+        .vol-bar { flex: 1; background: #333; min-height: 2px; }
 
-        /* 4. INSTRUMENT CHOOSER AREA */
+        /* 4. INSTRUMENT CHOOSER */
         .chooser-region { padding: 20px; }
-        .add-btn { background: none; border: 1px solid var(--border); color: #444; padding: 12px; width: 100%; border-radius: 4px; font-size: 12px; }
+        .add-btn { background: none; border: 1px solid var(--border); color: #666; width: 100%; padding: 15px; border-radius: 4px; font-size: 13px; font-weight: 700; }
         
         .chooser-ui { display: none; margin-top: 20px; }
-        .quick-access { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
-        .qa-item { font-size: 9px; border: 1px solid var(--border); padding: 10px 4px; text-align: center; border-radius: 4px; }
-        
-        .category-card { border: 1px solid var(--border); border-radius: 4px; margin-bottom: 10px; overflow: hidden; }
-        .cat-head { padding: 12px; font-size: 11px; font-weight: bold; background: #0f0f0f; cursor: pointer; }
-        .cat-body { display: none; padding: 10px; background: #000; border-top: 1px solid var(--border); }
-        .category-card.active .cat-body { display: block; }
-        .inst-select { padding: 10px; font-size: 11px; border-bottom: 1px solid #111; color: #888; }
-
-        /* BOTTOM MENU (FIXED) */
-        .bottom-menu {
-            position: fixed; bottom: 0; left: 0; width: 100%; height: var(--nav-h);
-            background: var(--surface); border-top: 1px solid var(--border);
-            display: flex; z-index: 100;
-        }
-        .bottom-menu.hidden { display: none; }
-        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; color: #555; }
-        .nav-item.active { color: var(--accent); }
-
-        /* HELPERS */
-        .label { font-size: 10px; color: #444; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px; }
-        input { background: #111; border: 1px solid var(--border); color: #fff; padding: 10px; width: 100%; border-radius: 4px; margin-bottom: 15px; }
-    </style>
-</head>
-<body>
-
-<div class="app-shell">
-    
-    <aside class="curtain" id="left-c">
-        <div class="curtain-inner">
-            <div class="label" style="color:var(--accent)">Tickers</div>
-            <input type="text" placeholder="Search Symbol...">
-            <div style="flex:1; overflow-y:auto;">
-                <div style="padding: 10px 0; border-bottom: 1px solid #111;">TSLA <span style="float:right; color:#00ff88">+2.1%</span></div>
-                <div style="padding: 10px 0; border-bottom: 1px solid #111;">NVDA <span style="float:right; color:#00ff88">+4.3%</span></div>
-            </div>
-            <button class="add-btn" onclick="toggleSide('left-c')">COLLAPSE</button>
-        </div>
-    </aside>
-    <div class="handle left-h" id="left-h" onclick="toggleSide('left-c')"></div>
-
-    <main class="center-workspace" id="center-w">
-        
-        <div class="chart-region">
-            <span style="color:#222; font-size: 10px;">[ STICKY_CHART_DOMINANT ]</span>
-        </div>
-
-        <div class="active-instrument-region" id="active-region">
-            <div class="inst-box"></div>
-            <div class="inst-header" id="inst-name">INSTRUMENT_NAME</div>
-        </div>
-
-        <div class="volume-region">
-            <div class="vol-bar" style="height:40%"></div>
-            <div class="vol-bar" style="height:70%"></div>
-            <div class="vol-bar" style="height:30%"></div>
-            <div class="vol-bar" style="height:90%"></div>
-            <div class="vol-bar" style="height:50%"></div>
-        </div>
-
-        <div class="chooser-region">
-            <button class="add-btn" id="add-btn-main" onclick="openChooser()">+ Add Instrument</button>
-            
-            <div class="chooser-ui" id="chooser-ui">
-                <div class="label">Quick Access</div>
-                <div class="quick-access">
-                    <div class="qa-item" onclick="loadInst('Kinetic Manifold')">Kinetic Manifold</div>
-                    <div class="qa-item" onclick="loadInst('Compression / Expansion')">Comp / Exp</div>
-                    <div class="qa-item" onclick="loadInst('Precision / Confidence')">Prec / Conf</div>
-                </div>
-
-                <div class="label">Categories</div>
-                <div id="cat-stack">
-                    <div class="category-card" onclick="expandCat(this)">
-                        <div class="cat-head">1. Structural Field</div>
-                        <div class="cat-body">
-                            <div class="inst-select" onclick="loadInst('Phase Boundaries')">Phase Boundaries</div>
-                            <div class="inst-select" onclick="loadInst('Compression Zones')">Compression Zones</div>
-                        </div>
-                    </div>
-                    <div class="category-card" onclick="expandCat(this)">
-                        <div class="cat-head">2. Force Field</div>
-                        <div class="cat-body">
-                            <div class="inst-select" onclick="loadInst('Momentum Vector')">Momentum Vector</div>
-                            <div class="inst-select" onclick="loadInst('Acceleration Gradient')">Acceleration Gradient</div>
-                        </div>
-                    </div>
-                    </div>
-            </div>
-        </div>
-
-        <div style="height: 100px; flex-shrink: 0;"></div>
-    </main>
-
-    <aside class="curtain right" id="right-c">
-        <div class="curtain-inner">
-            <div class="label" style="color:var(--accent)">Workspace</div>
-            <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; color:#222; font-size:10px; border:1px dashed #111;">
-                EMPTY_WORKSPACE
-            </div>
-            <button class="add-btn" style="margin-top:10px;">+ ADD MODULE</button>
-            <button class="add-btn" style="margin-top:10px;" onclick="toggleSide('right-c')">COLLAPSE</button>
-        </div>
-    </aside>
-    <div class="handle right-h" id="right-h" onclick="toggleSide('right-c')"></div>
-
-    <nav class="bottom-menu" id="bot-m">
-        <div class="nav-item active">CHART</div>
-        <div class="nav-item">VOLUME</div>
-        <div class="nav-item" onclick="toggleBottom()">HIDE</div>
-        <div class="nav-item">L2</div>
-        <div class="nav-item">SIGNALS</div>
-        <div class="nav-item">NEWS</div>
-    </nav>
-</div>
-
-<script>
-    function toggleSide(id) {
-        const curtain = document.getElementById(id);
-        const handle = document.getElementById(id === 'left-c' ? 'left-h' : 'right-h');
-        curtain.classList.toggle('collapsed');
-        handle.style.display = curtain.classList.contains('collapsed') ? 'block' : 'none';
-    }
-
-    function toggleBottom() {
-        document.getElementById('bot-m').classList.toggle('hidden');
-    }
-
-    function openChooser() {
-        document.getElementById('add-btn-main').style.display = 'none';
-        document.getElementById('chooser-ui').style.display = 'block';
-    }
-
-    function expandCat(el) {
-        const isActive = el.classList.contains('active');
-        document.querySelectorAll('.category-card').forEach(c => c.classList.remove('active'));
-        if (!isActive) el.classList.add('active');
-    }
-
-    function loadInst(name) {
-        // 1. Hide Chooser
-        document.getElementById('chooser-ui').style.display = 'none';
-        document.getElementById('add-btn-main').style.display = 'block';
-        // 2. Load into Active Instrument Region
-        document.getElementById('active-region').style.display = 'block';
-        document.getElementById('inst-name').innerText = name;
-        // 3. Ensure chart remains visible
-        document.getElementById('center-w').scrollTo({top: 0, behavior: 'smooth'});
-    }
-</script>
-
-</body>
-</html>
+        .section-label { font-size: 10px; color: #444; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px; }
+        .qa-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 25px; }
+        .qa-item { font-size: 9px; border: 1px solid var(--border); padding: 12px 2px; text-align: center; border-radius:
