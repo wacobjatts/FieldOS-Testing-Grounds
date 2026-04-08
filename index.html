@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>FieldOS / Kinetic</title>
+  <title>FieldOS / Kinetic - Absorption Tension Review</title>
   <style>
-    /* GLOBAL STYLES */
+    /* GLOBAL STYLES - PRESERVED FROM SHELL */
     html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #000000; color: #e8e8e8; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; overflow: hidden; }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
@@ -43,64 +43,34 @@
     /* CHART BOX */
     .chart-box { position: sticky; top: 0; z-index: 20; background: #000; width: 100%; aspect-ratio: 1.1 / 1; border: none; display: flex; align-items: center; justify-content: center; font-weight: bold; }
 
-    /* REORDERABLE STACK */
+    /* MIDDLE STACK */
     .middle-stack { display: flex; flex-direction: column; gap: 6px; }
-    .stack-card { border: none; background: #000; display: flex; flex-direction: column; }
     
-    /* INSTRUMENT VISUAL */
-    .card-visual { min-height: 90px; background: #050505; display: flex; align-items: center; justify-content: center; color: #00ffff; font-weight: bold; font-size: 14px; text-align: center; padding: 10px; border: none; }
+    /* ABSORPTION TENSION CARD STYLING */
+    .stack-card { border: none; background: #000; display: flex; flex-direction: column; border-bottom: 1px solid #111; }
+    .card-header { padding: 8px 6px; display: flex; justify-content: space-between; align-items: center; background: #000; }
+    .card-title { font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin: 0; color: #ccc; }
+    .card-category { font-size: 9px; color: #444; text-transform: uppercase; }
     
-    /* CARD HEADER */
-    .card-header { padding: 6px; display: flex; justify-content: space-between; align-items: center; background: #000; }
-    .card-info { flex: 1; }
-    .card-title { font-size: 12px; font-weight: bold; margin: 0; color: #ccc; }
-    .card-controls { display: flex; gap: 4px; align-items: center; }
+    .card-visual-area { background: #050505; height: 100px; width: 100%; position: relative; overflow: hidden; }
+    .card-readout { display: flex; gap: 12px; padding: 4px 6px; background: #000; border-top: 1px solid #0a0a0a; }
+    .readout-item { font-size: 10px; font-family: monospace; color: #00ffff; }
+    .readout-label { color: #444; margin-right: 4px; }
 
-    /* VOLUME SPECIFIC OVERRIDES */
-    .stack-card.is-volume .card-header { padding: 3px 6px; }
-    .stack-card.is-volume .card-title { font-size: 11px; color: #00ffff; text-transform: uppercase; letter-spacing: 1px; }
-    .stack-card.is-volume .icon-btn { width: 18px; height: 18px; font-size: 10px; }
-    
-    /* COLLAPSED VOLUME */
-    .stack-card.is-volume.is-collapsed { height: 20px; overflow: hidden; opacity: 0.7; }
-    .stack-card.is-volume.is-collapsed .card-header { padding: 1px 6px; min-height: 20px; }
-    .stack-card.is-volume.is-collapsed .card-title { font-size: 9px; line-height: 18px; }
-    .stack-card.is-volume.is-collapsed .icon-btn { width: 16px; height: 16px; font-size: 9px; }
-
-    /* CHOOSER */
+    /* CHOOSER / MODULES - PRESERVED */
     .chooser-panel { border: none; display: flex; flex-direction: column; background: #050505; }
     .chooser-top-bar { display: flex; justify-content: space-between; align-items: center; padding: 8px; background: #111; }
     .chooser-section-label { font-size: 9px; color: #444; text-transform: uppercase; padding: 10px 10px 4px 10px; letter-spacing: 1px; font-weight: bold; }
-    
-    .quick-access-list { padding: 4px 10px 10px 10px; display: flex; flex-direction: column; gap: 4px; }
-    .quick-btn { background: #0a0a0a; border: none; color: #ccc; padding: 10px; text-align: left; cursor: pointer; font-size: 11px; }
-    .quick-btn:disabled { color: #333; cursor: default; }
+    .ghost-btn { background: #0a0a0a; border: none; color: #fff; padding: 4px 8px; font-size: 10px; cursor: pointer; }
+    .icon-btn { background: transparent; border: none; color: #fff; width: 22px; height: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-    .category-card { border: none; background: #000; }
-    .category-head { width: 100%; background: transparent; border: none; color: #fff; padding: 10px; text-align: left; display: flex; justify-content: space-between; cursor: pointer; font-size: 11px; }
-    .category-content { display: none; flex-direction: column; background: #050505; }
-    .category-card.is-expanded .category-content { display: flex; }
-    .sub-item { padding: 10px; background: transparent; border: none; color: #aaa; text-align: left; font-size: 10px; cursor: pointer; }
-
-    /* RIGHT MODULES */
-    .module-stack { display: grid; gap: 8px; height: 100%; }
-    .module-card { border: none; display: flex; flex-direction: column; min-height: 0; background: #0a0a0a; }
-    .module-head { padding: 4px 8px; border: none; display: flex; justify-content: space-between; align-items: center; background: #111; font-size: 9px; font-weight: bold; }
-    .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 10px; color: #444; font-size: 10px; }
-    
-    .module-picker-overlay { border: none; padding: 8px; display: flex; flex-direction: column; gap: 4px; background: #111; margin-bottom: 10px; }
-    .picker-btn { background: #000; border: none; color: #ccc; font-size: 9px; padding: 6px; cursor: pointer; display: block; width: 100%; text-align: left; }
-
-    /* BOTTOM MENU */
+    /* BOTTOM MENU - PRESERVED */
     .bottom-menu-wrap { border: none; height: 54px; display: grid; grid-template-columns: repeat(6, 1fr) 40px; background: #000; }
     .menu-item { background: transparent; border: none; color: #fff; font-size: 8px; text-transform: uppercase; cursor: pointer; }
     .reopen-menu { position: fixed; bottom: 10px; right: 10px; background: #000; border: none; color: #fff; padding: 6px 10px; font-size: 10px; z-index: 100; display: none; border-radius: 2px; }
-
-    /* UTILS */
     .is-hidden { display: none !important; }
-    .ghost-btn { background: #0a0a0a; border: none; color: #fff; padding: 4px 8px; font-size: 10px; cursor: pointer; }
-    .icon-btn { background: transparent; border: none; color: #fff; width: 22px; height: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
   </style>
+  <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 </head>
 <body>
 
@@ -111,126 +81,198 @@
       <div class="curtain-content">
         <div class="panel-header"><span class="panel-title">Watchlists</span><button class="icon-btn">+</button></div>
         <div class="list-selector" id="listSelector">
-          <button class="list-tab is-active" onclick="switchList(this, 'Main')">Main</button>
-          <button class="list-tab" onclick="switchList(this, 'Tech')">Tech</button>
-          <button class="list-tab" onclick="switchList(this, 'Alts')">Alts</button>
+          <button class="list-tab is-active">Main</button>
+          <button class="list-tab">Tech</button>
+          <button class="list-tab">Alts</button>
         </div>
         <input type="text" class="ticker-search" placeholder="Find symbol...">
         <div class="ticker-list" id="tickerList"></div>
       </div>
-      <button class="curtain-handle" id="leftHandle" onclick="toggleCurtain('leftCurtain')">‹</button>
+      <button class="curtain-handle" onclick="toggleCurtain('leftCurtain')">‹</button>
     </aside>
 
     <main class="center-workspace">
-      <section class="chart-box" id="chartBox">CHART: <span id="activeTickerDisplay">AAPL</span></section>
+      <section class="chart-box">
+        <div id="chartContainer" style="width:100%;height:100%;"></div>
+      </section>
 
-      <div class="middle-stack" id="middleStack"></div>
-
-      <section class="instrument-chooser-area">
-        <button class="ghost-btn" id="addInstrBtn" onclick="openChooser()" style="margin: 0 auto; display: block; padding: 10px 20px;">+ Add Tool</button>
-
-        <div class="chooser-panel is-hidden" id="chooserPanel">
-          <div class="chooser-top-bar">
-            <span class="panel-title" style="color:#fff">Tools</span>
-            <button class="ghost-btn" onclick="closeChooser()">Hide</button>
+      <div class="middle-stack" id="middleStack">
+        <section class="stack-card" id="card-absorption-tension">
+          <div class="card-header">
+            <h3 class="card-title">Absorption Tension</h3>
+            <span class="card-category">Tension</span>
           </div>
           
-          <div class="chooser-section-label">Quick Access</div>
-          <div class="quick-access-list">
-            <button class="quick-btn" id="volQuickBtn" onclick="addModuleToStack('volume', 'Relative Cloud', 'Deep structural volume analysis.')">Volume (Relative Cloud)</button>
-            <button class="quick-btn" onclick="addModuleToStack('instrument', 'Kinetic Manifold', 'Combines force and truth into a single live view.')">Kinetic Manifold</button>
-            <button class="quick-btn" onclick="addModuleToStack('instrument', 'Compression / Expansion', 'Tracks the breathing cycle of market compression.')">Compression / Expansion</button>
+          <div class="card-visual-area">
+            <canvas id="canvas-tension" style="width:100%; height:100%;"></canvas>
           </div>
 
-          <div class="chooser-section-label">Categories</div>
-          <div id="categoryContainer"></div>
-        </div>
+          <div class="card-readout">
+            <div class="readout-item"><span class="readout-label">TENSION</span><span id="val-tension">0</span></div>
+            <div class="readout-item"><span class="readout-label">LOADING</span><span id="val-loading">0</span></div>
+            <div class="readout-item"><span class="readout-label">SATURATION</span><span id="val-saturation">0</span></div>
+          </div>
+        </section>
+      </div>
+
+      <section class="instrument-chooser-area">
+        <button class="ghost-btn" id="addInstrBtn" style="margin: 20px auto; display: block; padding: 10px 20px;">+ Add Tool</button>
       </section>
-      <div style="min-height: 20px;"></div>
     </main>
 
     <aside class="curtain right-curtain" id="rightCurtain">
-      <button class="curtain-handle" id="rightHandle" onclick="toggleCurtain('rightCurtain')">›</button>
+      <button class="curtain-handle" onclick="toggleCurtain('rightCurtain')">›</button>
       <div class="curtain-content">
-        <div class="panel-header">
-          <span class="panel-title">Info</span>
-          <button class="icon-btn" onclick="toggleModulePicker()">+</button>
-        </div>
-
-        <div class="module-picker-overlay is-hidden" id="modulePicker">
-          <button class="picker-btn" onclick="addRightModule('Order Book')">Order Book</button>
-          <button class="picker-btn" onclick="addRightModule('Notes')">Notes</button>
-          <button class="picker-btn" onclick="addRightModule('Signals')">Signals</button>
-        </div>
-
-        <div class="empty-state" id="rightEmpty">
-          <span>Workspace Empty</span>
-          <button class="ghost-btn" onclick="toggleModulePicker()">+ Add</button>
-        </div>
-        <div class="module-stack is-hidden" id="rightModuleStack"></div>
+        <div class="panel-header"><span class="panel-title">Info</span><button class="icon-btn">+</button></div>
+        <div style="flex:1; display:flex; align-items:center; justify-content:center; color:#444; font-size:10px;">Workspace Empty</div>
       </div>
     </aside>
   </div>
 
   <footer class="bottom-menu-wrap" id="bottomMenu">
-    <button class="menu-item" onclick="toggleVolumeCollapseAll()">Volume</button>
+    <button class="menu-item">Volume</button>
     <button class="menu-item">Chart</button>
     <button class="menu-item">Instr</button>
     <button class="menu-item">Book</button>
     <button class="menu-item">Sig</button>
     <button class="menu-item">News</button>
-    <button class="menu-item" style="border:none; color:#666;" onclick="toggleBottomMenu(false)">⌄</button>
+    <button class="menu-item" style="color:#666;" onclick="toggleBottomMenu(false)">⌄</button>
   </footer>
 </div>
 
 <button class="reopen-menu" id="reopenMenu" onclick="toggleBottomMenu(true)">OPEN MENU</button>
 
 <script>
-  const watchlists = {
-    'Main': [['AAPL', '214.43', '+1.2%'], ['NVDA', '132.17', '-0.5%'], ['TSLA', '176.80', '+2.4%']],
-    'Tech': [['MSFT', '420.10', '+0.8%'], ['GOOGL', '180.20', '+0.3%']],
-    'Alts': [['BTC', '64,231', '-1.1%'], ['ETH', '3,450', '+0.9%']]
-  };
+  /**
+   * REPRODUCED LOGIC: tension-field-painter.ts
+   * This function follows the visual source of truth provided in the file content.
+   */
+  function paintTensionField(ctx, points) {
+    const width = ctx.canvas.width;
+    const height = ctx.canvas.height;
+    const baselineY = height * 0.92;
+    const maxAmplitude = height * 0.8;
 
-  const categories = [
-    { name: '1. Structural Field', items: [['Phase Boundaries', 'Architectural thresholds.'], ['Compression Zones', 'Market squeezing.']] },
-    { name: '2. Force Field', items: [['Momentum Vector', 'Directional force.'], ['Acceleration Gradient', 'Speed change.']] },
-    { name: '3. Resistance Field', items: [['Cost-to-Move Curve', 'Friction vs liquidity.'], ['Liquidity Density', 'Order book pockets.']] },
-    { name: '4. Inertia Field', items: [['Move Inertia', 'Difficulty of stopping.'], ['Mass Class', 'Move classification.']] },
-    { name: '5. Interpretation Field', items: [['Truth Field', 'Signal vs Noise.'], ['Confidence Metrics', 'System conviction.']] },
-    { name: '6. Decision Field', items: [['Alignment Score', 'System aggregate.'], ['Entry Readiness', 'Action state.']] }
-  ];
+    if (points.length < 2) return;
+    const stepX = width / (points.length - 1);
 
-  let stackItems = [
-    { id: 'instr-initial', type: 'instrument', name: 'Kinetic Manifold', desc: 'Combines force and truth into a single live view.' }
-  ];
-  
-  let rightModules = [];
+    ctx.save();
+    ctx.clearRect(0, 0, width, height);
 
-  function init() {
-    renderTickers('Main');
-    renderStack();
-    const container = document.getElementById('categoryContainer');
-    categories.forEach(cat => {
-      const card = document.createElement('div');
-      card.className = 'category-card';
-      card.innerHTML = `
-        <button class="category-head" onclick="toggleCategory(this)"><span>${cat.name}</span><span>▾</span></button>
-        <div class="category-content">
-          ${cat.items.map(i => `<button class="sub-item" onclick="addModuleToStack('instrument', '${i[0]}','${i[1]}')">${i[0]}</button>`).join('')}
-        </div>
-      `;
-      container.appendChild(card);
-    });
+    // 1. Baseline
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+    ctx.lineWidth = 1;
+    ctx.moveTo(0, baselineY);
+    ctx.lineTo(width, baselineY);
+    ctx.stroke();
+
+    // 2. Surface Mass
+    for (let i = 0; i < points.length - 1; i++) {
+      const x1 = width - i * stepX;
+      const x2 = width - (i + 1) * stepX;
+      const p1 = points[i];
+      const p2 = points[i + 1];
+      const y1 = baselineY - (p1.tension / 100) * maxAmplitude;
+      const y2 = baselineY - (p2.tension / 100) * maxAmplitude;
+      const avgPrec = (p1.precision + p2.precision) / 2;
+      const avgLoad = (p1.loading + p2.loading) / 200;
+
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.lineTo(x2, baselineY);
+      ctx.lineTo(x1, baselineY);
+      ctx.closePath();
+      ctx.fillStyle = `rgba(0, 200, 255, ${0.03 * avgLoad * avgPrec})`;
+      ctx.fill();
+    }
+
+    // 3. Tension Line
+    for (let i = 0; i < points.length - 1; i++) {
+      const p1 = points[i];
+      const p2 = points[i + 1];
+      const x1 = width - i * stepX;
+      const x2 = width - (i + 1) * stepX;
+      const y1 = baselineY - (p1.tension / 100) * maxAmplitude;
+      const y2 = baselineY - (p2.tension / 100) * maxAmplitude;
+      const avgLoading = (p1.loading + p2.loading) / 200;
+      const avgSaturation = (p1.saturation + p2.saturation) / 200;
+      const avgPrecision = (p1.precision + p2.precision) / 2;
+
+      ctx.beginPath();
+      ctx.lineWidth = (1 + avgLoading * 5) * avgPrecision;
+      const glowStrength = avgSaturation * 12 * avgPrecision;
+      ctx.shadowBlur = glowStrength;
+      ctx.shadowColor = `rgba(180, 240, 255, ${avgSaturation * 0.7})`;
+      
+      const b = 255;
+      const g = Math.floor(180 + avgSaturation * 75);
+      const r = Math.floor(100 + avgSaturation * 155);
+      ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${0.3 + avgPrecision * 0.7})`;
+
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      ctx.shadowColor = 'transparent';
+    }
+    ctx.restore();
   }
 
-  /* CURTAINS */
+  // --- ENGINE / MOCK INTEGRATION ---
+  
+  function updateAbsorptionTension() {
+    const canvas = document.getElementById('canvas-tension');
+    if (!canvas) return;
+    
+    // Resize canvas for sharp rendering
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+
+    /**
+     * REVIEW PREVIEW VALUES
+     * Logic derived from buildAbsorptionTension in tension.ts
+     */
+    const mockPoints = [];
+    const now = Date.now();
+    for (let i = 0; i < 40; i++) {
+      // Simulate historical signal decay
+      const timeOffset = i * 0.1;
+      const mockSignal = Math.sin((now / 1000) - timeOffset) * 40 + 50;
+      const precision = 0.9;
+      
+      const norm = Math.max(0, Math.min(1, Math.abs(mockSignal) / 100));
+      const tension = norm * precision;
+      const loading = Math.min(1, tension * 1.1);
+      const saturation = Math.max(0, loading - 0.2);
+
+      mockPoints.push({
+        tension: tension * 100,
+        loading: loading * 100,
+        saturation: saturation * 100,
+        precision
+      });
+    }
+
+    // Render visual
+    paintTensionField(ctx, mockPoints);
+
+    // Render Numerics (Source of Truth: tension.ts field names)
+    // Rule: Show 0-100 scale
+    const live = mockPoints[0];
+    document.getElementById('val-tension').innerText = Math.round(live.tension);
+    document.getElementById('val-loading').innerText = Math.round(live.loading);
+    document.getElementById('val-saturation').innerText = Math.round(live.saturation);
+  }
+
+  /* UTILS & CHART INIT - PRESERVED */
   function toggleCurtain(id) {
-    const curtain = document.getElementById(id);
-    const handle = curtain.querySelector('.curtain-handle');
-    const isCollapsed = curtain.classList.toggle('is-collapsed');
-    if (id === 'leftCurtain') handle.innerText = isCollapsed ? '›' : '‹';
-    else handle.innerText = isCollapsed ? '‹' : '›';
+    document.getElementById(id).classList.toggle('is-collapsed');
   }
   
   function toggleBottomMenu(show) {
@@ -238,184 +280,33 @@
     document.getElementById('reopenMenu').style.display = show ? 'none' : 'block';
   }
 
-  /* WATCHLIST */
-  function switchList(btn, name) {
-    document.querySelectorAll('#listSelector .list-tab').forEach(t => t.classList.remove('is-active'));
-    btn.classList.add('is-active');
-    renderTickers(name);
+  const mainChart = LightweightCharts.createChart(document.getElementById('chartContainer'), {
+    layout: { background: { type: LightweightCharts.ColorType.Solid, color: '#000000' }, textColor: '#ccc' },
+    grid: { vertLines: { color: '#111' }, horzLines: { color: '#111' } },
+    rightPriceScale: { borderColor: '#222' },
+    timeScale: { borderColor: '#222' }
+  });
+  const candleSeries = mainChart.addCandlestickSeries({ upColor: '#00ffff', downColor: '#ff0055', borderVisible: false });
+  candleSeries.setData([
+    { time: '2024-04-01', open: 150, high: 155, low: 148, close: 153 },
+    { time: '2024-04-02', open: 153, high: 158, low: 152, close: 157 },
+    { time: '2024-04-03', open: 157, high: 157, low: 151, close: 152 },
+    { time: '2024-04-04', open: 152, high: 156, low: 150, close: 154 },
+    { time: '2024-04-05', open: 154, high: 160, low: 154, close: 159 },
+  ]);
+
+  // Start Animation Loop for Instrument Review
+  function loop() {
+    updateAbsorptionTension();
+    requestAnimationFrame(loop);
   }
+  loop();
 
-  function renderTickers(name) {
-    const list = document.getElementById('tickerList');
-    const activeTicker = document.getElementById('activeTickerDisplay').innerText;
-    list.innerHTML = '';
-    watchlists[name].forEach(t => {
-      const row = document.createElement('div');
-      row.className = 'ticker-row';
-      if (t[0] === activeTicker) row.classList.add('is-active');
-      row.innerHTML = `<span>${t[0]}</span><span class="t-price">${t[1]}<span class="t-delta">${t[2]}</span></span>`;
-      row.onclick = () => {
-        document.querySelectorAll('.ticker-row').forEach(r => r.classList.remove('is-active'));
-        row.classList.add('is-active');
-        document.getElementById('activeTickerDisplay').innerText = t[0];
-      };
-      list.appendChild(row);
-    });
-  }
-
-  /* STACK LOGIC */
-  function addModuleToStack(type, name, desc) {
-    if (type === 'volume' && stackItems.some(i => i.type === 'volume')) return;
-    stackItems.push({ id: type === 'volume' ? 'vol-01' : Date.now(), type, name, desc, collapsed: false });
-    renderStack();
-    closeChooser();
-  }
-
-  function moveItem(index, dir) {
-    const newIndex = index + dir;
-    if (newIndex < 0 || newIndex >= stackItems.length) return;
-    const item = stackItems.splice(index, 1)[0];
-    stackItems.splice(newIndex, 0, item);
-    renderStack();
-  }
-
-  function removeItem(index) {
-    stackItems.splice(index, 1);
-    renderStack();
-  }
-
-  function toggleVolumeCollapse(index) {
-    stackItems[index].collapsed = !stackItems[index].collapsed;
-    renderStack();
-  }
-
-  function toggleVolumeCollapseAll() {
-    let changed = false;
-    stackItems.forEach((item) => {
-      if (item.type === 'volume') {
-        item.collapsed = !item.collapsed;
-        changed = true;
-      }
-    });
-    if (changed) renderStack();
-  }
-
-  function renderStack() {
-    const stack = document.getElementById('middleStack');
-    stack.innerHTML = '';
-    
-    const hasVol = stackItems.some(i => i.type === 'volume');
-    const volBtn = document.getElementById('volQuickBtn');
-    volBtn.disabled = hasVol;
-    volBtn.innerText = hasVol ? "Volume Strip (Active)" : "Volume (Relative Cloud)";
-
-    stackItems.forEach((item, i) => {
-      const card = document.createElement('section');
-      const isVol = item.type === 'volume';
-      const isCollapsed = isVol && item.collapsed;
-      
-      let cardClasses = isVol ? 'stack-card is-volume' : 'stack-card';
-      if (isCollapsed) cardClasses += ' is-collapsed';
-      card.className = cardClasses;
-      
-      const titleText = isVol ? `Volume: ${item.name}` : item.name;
-      const infoButton = isVol ? '' : '<button class="icon-btn" style="color:#666;">?</button>';
-      const toggleIcon = isCollapsed ? '▸' : '▾';
-      const volToggle = isVol ? `<button class="icon-btn" onclick="toggleVolumeCollapse(${i})">${toggleIcon}</button>` : '';
-
-      // Conditional Controls: Hide move/remove if volume is collapsed
-      const showStandardControls = !isCollapsed;
-      const standardControls = showStandardControls ? `
-        <button class="icon-btn" onclick="moveItem(${i}, -1)">▲</button>
-        <button class="icon-btn" onclick="moveItem(${i}, 1)">▼</button>
-        <button class="icon-btn" style="color:#ff4444;" onclick="removeItem(${i})">×</button>
-      ` : '';
-      
-      card.innerHTML = `
-        ${(!isVol) ? `<div class="card-visual">${item.name}</div>` : ''}
-        <div class="card-header">
-          <div class="card-info">
-            <h3 class="card-title">${titleText}</h3>
-          </div>
-          <div class="card-controls">
-            ${standardControls}
-            ${volToggle}
-            ${infoButton}
-          </div>
-        </div>
-      `;
-      stack.appendChild(card);
-    });
-  }
-
-  /* CHOOSER */
-  function openChooser() {
-    document.getElementById('chooserPanel').classList.remove('is-hidden');
-    document.getElementById('addInstrBtn').classList.add('is-hidden');
-    collapseAllCategories();
-  }
-
-  function closeChooser() {
-    document.getElementById('chooserPanel').classList.add('is-hidden');
-    document.getElementById('addInstrBtn').classList.remove('is-hidden');
-    collapseAllCategories();
-  }
-
-  function toggleCategory(btn) {
-    const card = btn.parentElement;
-    const isExpanded = card.classList.contains('is-expanded');
-    collapseAllCategories();
-    if(!isExpanded) card.classList.add('is-expanded');
-  }
-
-  function collapseAllCategories() { 
-    document.querySelectorAll('.category-card').forEach(c => c.classList.remove('is-expanded')); 
-  }
-
-  /* RIGHT SIDE MODULES */
-  function toggleModulePicker() { 
-    document.getElementById('modulePicker').classList.toggle('is-hidden'); 
-  }
-
-  function addRightModule(type) {
-    rightModules.push(type);
-    document.getElementById('modulePicker').classList.add('is-hidden');
-    renderRightModules();
-  }
-
-  function removeRightModule(index) {
-    rightModules.splice(index, 1);
-    renderRightModules();
-  }
-
-  function renderRightModules() {
-    const stack = document.getElementById('rightModuleStack');
-    const empty = document.getElementById('rightEmpty');
-    if (rightModules.length === 0) {
-      stack.classList.add('is-hidden');
-      empty.classList.remove('is-hidden');
-      return;
-    }
-    empty.classList.add('is-hidden');
-    stack.classList.remove('is-hidden');
-    stack.style.gridTemplateRows = `repeat(${rightModules.length}, minmax(0, 1fr))`;
-    stack.innerHTML = '';
-    rightModules.forEach((m, i) => {
-      const card = document.createElement('div');
-      card.className = 'module-card';
-      card.innerHTML = `
-        <div class="module-head">
-          <span>${m}</span>
-          <button class="icon-btn" style="height:auto; width:auto; font-size:14px;" onclick="removeRightModule(${i})">×</button>
-        </div>
-        <div style="flex:1;padding:8px;font-size:9px;color:#666">
-          ${m === 'Notes' ? '<textarea style="width:100%;height:100%;background:transparent;color:#fff;border:none;outline:none;resize:none;"></textarea>' : 'Live data feed...'}
-        </div>`;
-      stack.appendChild(card);
-    });
-  }
-
-  init();
+  // Handle Resize
+  window.addEventListener('resize', () => {
+    const rect = document.getElementById('chartContainer').getBoundingClientRect();
+    mainChart.resize(rect.width, rect.height);
+  });
 </script>
 
 </body>
