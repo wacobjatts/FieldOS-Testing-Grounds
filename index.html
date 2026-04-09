@@ -3,255 +3,184 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>FieldOS / Kinetic - Phase 1 Refinement</title>
+  <title>FieldOS / Kinetic - Focused Expansion</title>
   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
   <style>
     :root {
-      /* THE CORE PALETTE */
       --bg: #000000;
       --bg-elev: #050505;
       --panel: #0a0a0a;
       --panel-2: #121212;
-      
-      /* THE ACCENT SYSTEM */
       --accent: #00e5ff;
       --accent-soft: rgba(0, 229, 255, 0.15);
       --accent-glow: rgba(0, 229, 255, 0.4);
-      
-      /* LINE WORK */
       --line: #141414;
       --line-strong: #1a1a1a;
-      
-      /* TYPOGRAPHY */
       --text: #e8e8e8;
       --text-dim: #888888;
       --text-faint: #444444;
-      
       --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
       --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      
+      /* State Heights */
+      --chart-height: 45vh;
+      --card-compact: 110px;
+      --card-expanded: 220px;
     }
 
-    html, body { 
-      margin: 0; padding: 0; width: 100%; height: 100%; 
-      background: var(--bg); color: var(--text); 
-      font-family: var(--font-sans); overflow: hidden; 
-    }
-    
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: var(--text); font-family: var(--font-sans); overflow: hidden; }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-    /* SHELL ARCHITECTURE */
-    .app-shell { 
-      position: fixed; inset: 0; 
-      display: grid; grid-template-rows: 1fr auto; 
-      padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) 0; 
-    }
-    
-    .workspace-shell { 
-      display: grid; grid-template-columns: auto 1fr auto; 
-      gap: 1px; /* Sharp technical spacing */
-      min-height: 0; overflow: hidden;
-      background: var(--line); /* Acting as a thin grid line */
-    }
+    .app-shell { position: fixed; inset: 0; display: grid; grid-template-rows: 1fr auto; padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) 0; }
+    .workspace-shell { display: grid; grid-template-columns: auto 1fr auto; gap: 1px; min-height: 0; overflow: hidden; background: var(--line); }
 
-    /* CURTAINS (INSTRUMENT RAILS) */
-    .curtain { 
-      height: 100%; overflow: hidden; 
-      transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); 
-      display: flex; background: var(--bg-elev);
-      position: relative;
-    }
+    /* CURTAINS */
+    .curtain { height: 100%; overflow: hidden; transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); display: flex; background: var(--bg-elev); position: relative; }
     .left-curtain { width: 140px; border-right: 1px solid var(--line-strong); }
     .right-curtain { width: 130px; border-left: 1px solid var(--line-strong); }
     .curtain.is-collapsed { width: 28px !important; }
-
-    .curtain-content { 
-      flex: 1; display: flex; flex-direction: column; 
-      overflow: hidden; padding: 12px 8px; 
-    }
+    .curtain-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 12px 8px; }
     .curtain.is-collapsed .curtain-content { opacity: 0; pointer-events: none; }
-    
-    .curtain-handle { 
-      width: 28px; background: var(--panel); 
-      color: var(--text-faint); cursor: pointer; 
-      display: flex; align-items: center; justify-content: center; 
-      font-size: 12px; border: none; transition: all 0.2s;
-    }
-    .curtain-handle:hover { color: var(--accent); background: var(--panel-2); }
+    .curtain-handle { width: 28px; background: var(--panel); color: var(--text-faint); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; border: none; outline: none; transition: all 0.2s; }
 
-    /* CENTER WORKSPACE (REACTOR CHAMBER) */
-    .center-workspace { 
-      display: flex; flex-direction: column; 
-      overflow-y: auto; background: var(--bg);
-      scrollbar-width: none;
-    }
+    /* CENTER WORKSPACE */
+    .center-workspace { display: flex; flex-direction: column; overflow-y: auto; background: var(--bg); scrollbar-width: none; }
     .center-workspace::-webkit-scrollbar { display: none; }
-    
-    /* CHART BOX (MAIN STAGE) */
+
+    /* CHART STAGE */
     .chart-box { 
       position: sticky; top: 0; z-index: 20; 
       background: var(--bg); width: 100%; 
-      aspect-ratio: 1.1 / 1; 
+      height: var(--chart-height);
       border-bottom: 2px solid var(--line-strong);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     }
 
     /* INSTRUMENT STACK */
-    .middle-stack { display: flex; flex-direction: column; padding: 8px; gap: 8px; }
+    .middle-stack { display: flex; flex-direction: column; padding: 6px; gap: 6px; }
     
     .stack-card { 
       background: var(--bg-elev); 
       border: 1px solid var(--line);
-      border-radius: 2px;
-      display: flex; flex-direction: column; 
-      transition: border 0.3s, transform 0.2s;
+      border-radius: 2px; 
+      position: relative; 
+      overflow: hidden;
+      transition: border 0.3s;
     }
-    .stack-card:hover { border-color: var(--accent-soft); }
+    .stack-card.is-expanded { border-color: var(--accent-soft); }
 
-    .card-header { 
-      padding: 10px 12px; 
-      display: flex; justify-content: space-between; align-items: center; 
-      border-bottom: 1px solid var(--line);
-    }
-    .card-title { 
-      font-size: 11px; font-weight: 700; 
-      text-transform: uppercase; letter-spacing: 1.2px; 
-      margin: 0; color: var(--text); 
-    }
-    .card-category { 
-      font-size: 9px; color: var(--text-faint); 
-      text-transform: uppercase; font-weight: 800;
-      letter-spacing: 0.5px;
-    }
-    
     .card-visual-area { 
       background: #020202; 
-      height: 110px; width: 100%; 
-      position: relative; overflow: hidden; 
+      width: 100%; 
+      position: relative; 
+      overflow: hidden;
+      height: var(--card-compact); 
+      transition: height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
     
-    .card-readout { 
-      display: flex; gap: 16px; 
-      padding: 10px 12px; 
-      background: var(--panel);
-      border-top: 1px solid var(--line);
-    }
-    .readout-item { 
-      font-size: 11px; font-family: var(--font-mono); 
-      color: var(--accent);
-    }
-    .readout-label { 
-      color: var(--text-faint); margin-right: 6px; 
-      font-size: 9px; font-weight: bold;
-    }
+    /* Height State Modifier */
+    .stack-card.is-expanded .card-visual-area { height: var(--card-expanded); }
 
-    /* BOTTOM MENU (UTILITY STRIP) */
-    .bottom-menu-wrap { 
-      height: 58px; display: grid; 
-      grid-template-columns: repeat(6, 1fr) 40px; 
-      background: var(--panel);
-      border-top: 1px solid var(--line-strong);
-    }
-    .menu-item { 
-      background: transparent; border: none; 
-      color: var(--text-dim); font-size: 9px; 
-      text-transform: uppercase; cursor: pointer;
-      font-weight: 600; letter-spacing: 0.5px;
-      transition: color 0.2s, background 0.2s;
-    }
-    .menu-item:hover { color: var(--accent); background: rgba(255,255,255,0.02); }
+    /* HUD OVERLAYS */
+    .hud-meta { position: absolute; padding: 8px 10px; z-index: 5; pointer-events: none; font-family: var(--font-mono); text-transform: uppercase; }
+    .hud-top-left { top: 0; left: 0; }
+    .hud-top-right { top: 0; right: 0; text-align: right; display: flex; align-items: center; gap: 8px; pointer-events: auto; }
+    .hud-bottom-left { bottom: 0; left: 0; display: flex; gap: 14px; background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 100%); width: 100%; padding-top: 24px; }
 
-    /* UTILITY CLASSES */
-    .panel-title { 
-      font-size: 10px; font-weight: 800; 
-      text-transform: uppercase; letter-spacing: 1.5px; 
-      color: var(--text-faint); margin-bottom: 12px; 
-    }
-    .ghost-btn { 
-      background: var(--panel-2); border: 1px solid var(--line); 
-      color: var(--text-dim); padding: 8px 16px; 
-      font-size: 10px; font-weight: 700;
-      text-transform: uppercase; cursor: pointer; 
+    .hud-title { font-size: 9px; font-weight: 800; letter-spacing: 1.2px; color: var(--text); opacity: 0.7; }
+    .hud-category { font-size: 8px; color: var(--text-faint); font-weight: 800; }
+    
+    /* Focused State Tweaks */
+    .stack-card.is-expanded .hud-title { opacity: 1; color: var(--accent); }
+
+    .readout-item { font-size: 10px; color: var(--accent); transition: transform 0.3s; }
+    .readout-label { color: var(--text-faint); margin-right: 4px; font-size: 8px; }
+
+    /* Expand/Collapse Control */
+    .field-toggle {
+      width: 14px; height: 14px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--line-strong);
+      color: var(--text-faint);
+      font-size: 9px;
+      cursor: pointer;
+      border-radius: 1px;
       transition: all 0.2s;
     }
-    .ghost-btn:hover { color: var(--accent); border-color: var(--accent-soft); }
-    
-    .icon-btn { 
-      background: transparent; border: none; color: var(--text-faint); 
-      width: 24px; height: 24px; cursor: pointer; 
-      display: flex; align-items: center; justify-content: center; 
-      transition: color 0.2s;
+    .stack-card.is-expanded .field-toggle {
+      background: var(--accent-soft);
+      color: var(--accent);
+      transform: rotate(180deg);
     }
-    .icon-btn:hover { color: var(--accent); }
+
+    /* BOTTOM MENU */
+    .bottom-menu-wrap { height: 58px; display: grid; grid-template-columns: repeat(6, 1fr) 40px; background: var(--panel); border-top: 1px solid var(--line-strong); }
+    .menu-item { background: transparent; border: none; color: var(--text-dim); font-size: 9px; text-transform: uppercase; cursor: pointer; font-weight: 600; }
   </style>
 </head>
 <body>
 
 <div class="app-shell">
   <div class="workspace-shell">
-    
     <aside class="curtain left-curtain" id="leftCurtain">
-      <div class="curtain-content">
-        <div class="panel-title">Fields</div>
-        <div style="flex:1"></div> </div>
+      <div class="curtain-content"><div style="font-size: 10px; font-weight: 800; color: var(--text-faint);">FIELDS</div></div>
       <button class="curtain-handle" onclick="toggleCurtain('leftCurtain')">◂</button>
     </aside>
 
-    <main class="center-workspace">
+    <main class="center-workspace" id="centerWorkspace">
       <section class="chart-box" id="chartContainer"></section>
 
-      <div class="middle-stack" id="middleStack">
+      <div class="middle-stack" id="instrumentStack">
         
         <section class="stack-card" id="card-asymmetry-field">
-          <div class="card-header">
-            <h3 class="card-title">Asymmetry Field</h3>
-            <span class="card-category">Force</span>
-          </div>
           <div class="card-visual-area">
+            <div class="hud-meta hud-top-left"><span class="hud-title">Asymmetry Field</span></div>
+            <div class="hud-meta hud-top-right">
+              <span class="hud-category">Force</span>
+              <div class="field-toggle" onclick="toggleCard(this)">⌄</div>
+            </div>
             <canvas id="canvas-asymmetry"></canvas>
-          </div>
-          <div class="card-readout">
-            <div class="readout-item"><span class="readout-label">BIAS</span><span id="val-bias">0</span></div>
-            <div class="readout-item"><span class="readout-label">EFFORT</span><span id="val-effort">0</span></div>
+            <div class="hud-meta hud-bottom-left">
+              <div class="readout-item"><span class="readout-label">BIAS</span><span id="val-bias">0</span></div>
+              <div class="readout-item"><span class="readout-label">EFFORT</span><span id="val-effort">0</span></div>
+            </div>
           </div>
         </section>
 
         <section class="stack-card" id="card-entropy-phase">
-          <div class="card-header">
-            <h3 class="card-title">Entropy Phase</h3>
-            <span class="card-category">Environment</span>
-          </div>
           <div class="card-visual-area">
+            <div class="hud-meta hud-top-left"><span class="hud-title">Entropy Phase</span></div>
+            <div class="hud-meta hud-top-right">
+              <span class="hud-category">Environment</span>
+              <div class="field-toggle" onclick="toggleCard(this)">⌄</div>
+            </div>
             <canvas id="canvas-entropy"></canvas>
-          </div>
-          <div class="card-readout">
-            <div class="readout-item"><span class="readout-label">DISORDER</span><span id="val-disorder">0</span></div>
-            <div class="readout-item"><span class="readout-label">STABILITY</span><span id="val-stability">0</span></div>
+            <div class="hud-meta hud-bottom-left">
+              <div class="readout-item"><span class="readout-label">DISORDER</span><span id="val-disorder">0</span></div>
+              <div class="readout-item"><span class="readout-label">STABILITY</span><span id="val-stability">0</span></div>
+            </div>
           </div>
         </section>
 
         <section class="stack-card" id="card-inertia-field">
-          <div class="card-header">
-            <h3 class="card-title">Inertia Field</h3>
-            <span class="card-category">Inertia</span>
-          </div>
           <div class="card-visual-area">
+            <div class="hud-meta hud-top-left"><span class="hud-title">Inertia Field</span></div>
+            <div class="hud-meta hud-top-right">
+              <span class="hud-category">Inertia</span>
+              <div class="field-toggle" onclick="toggleCard(this)">⌄</div>
+            </div>
             <canvas id="canvas-inertia"></canvas>
-          </div>
-          <div class="card-readout">
-            <div class="readout-item"><span class="readout-label">INERTIA</span><span id="val-inertia">0</span></div>
-            <div class="readout-item"><span class="readout-label">MASS</span><span id="val-mass">0</span></div>
+            <div class="hud-meta hud-bottom-left">
+              <div class="readout-item"><span class="readout-label">INERTIA</span><span id="val-inertia">0</span></div>
+              <div class="readout-item"><span class="readout-label">MASS</span><span id="val-mass">0</span></div>
+            </div>
           </div>
         </section>
-        
-        <button class="ghost-btn" style="margin: 12px 0 24px 0;">+ Integrate Tool</button>
       </div>
     </main>
 
     <aside class="curtain right-curtain" id="rightCurtain">
       <button class="curtain-handle" onclick="toggleCurtain('rightCurtain')">▸</button>
-      <div class="curtain-content">
-        <div class="panel-title">Intelligence</div>
-      </div>
+      <div class="curtain-content"><div style="font-size: 10px; font-weight: 800; color: var(--text-faint);">SYSTEM</div></div>
     </aside>
   </div>
 
@@ -267,22 +196,37 @@
 </div>
 
 <script>
-  // --- CORE SYSTEM LOGIC (PRESERVED) ---
+  // CARD STATE LOGIC
+  function toggleCard(element) {
+    const card = element.closest('.stack-card');
+    const allCards = document.querySelectorAll('.stack-card');
+    const isExpanded = card.classList.contains('is-expanded');
+
+    // Collapse everything
+    allCards.forEach(c => c.classList.remove('is-expanded'));
+
+    // Toggle target
+    if (!isExpanded) {
+      card.classList.add('is-expanded');
+      // Smooth scroll target card into view if needed
+      setTimeout(() => {
+        card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 300);
+    }
+  }
+
   function toggleCurtain(id) { document.getElementById(id).classList.toggle('is-collapsed'); }
 
-  // --- CHART ENGINE INITIALIZATION ---
-  const chart = LightweightCharts.createChart(document.getElementById('chartContainer'), {
+  // CHART SETUP
+  const chartContainer = document.getElementById('chartContainer');
+  const chart = LightweightCharts.createChart(chartContainer, {
     layout: { background: { color: '#000' }, textColor: '#888', fontFamily: 'JetBrains Mono' },
     grid: { vertLines: { color: '#080808' }, horzLines: { color: '#080808' } },
     timeScale: { borderColor: '#111' },
     crosshair: { vertLine: { color: '#00e5ff33' }, horzLine: { color: '#00e5ff33' } }
   });
   
-  const candleSeries = chart.addCandlestickSeries({
-    upColor: '#00e5ff', downColor: '#222', borderVisible: false, wickUpColor: '#00e5ff', wickDownColor: '#222'
-  });
-
-  // MOCK DATA
+  const candleSeries = chart.addCandlestickSeries({ upColor: '#00e5ff', downColor: '#222', borderVisible: false, wickUpColor: '#00e5ff', wickDownColor: '#222' });
   const mockData = []; let t = new Date(2026, 0, 1);
   for(let i=0; i<100; i++) {
     mockData.push({ time: t.toISOString().split('T')[0], open: 100+i, high: 105+i, low: 98+i, close: 103+i });
@@ -290,24 +234,30 @@
   }
   candleSeries.setData(mockData);
 
-  // --- GENERIC PAINTER (PLACEHOLDER) ---
+  // GENERIC PAINTER (Matches state changes automatically via parent rect)
   function paintGeneric(id, color) {
     const canvas = document.getElementById(id);
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.parentElement.getBoundingClientRect();
-    canvas.width = rect.width * dpr; canvas.height = rect.height * dpr;
-    ctx.scale(dpr, dpr);
-    ctx.clearRect(0,0,rect.width, rect.height);
     
-    ctx.beginPath();
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 1.5;
-    ctx.globalAlpha = 0.6;
-    ctx.moveTo(0, rect.height * 0.8);
-    for(let x=0; x<rect.width; x+=8) {
-      ctx.lineTo(x, rect.height * 0.8 - Math.random() * 50);
+    if (canvas.width !== rect.width * dpr || canvas.height !== rect.height * dpr) {
+      canvas.width = rect.width * dpr; 
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+    }
+    
+    ctx.clearRect(0, 0, rect.width, rect.height);
+    ctx.beginPath(); 
+    ctx.strokeStyle = color; 
+    ctx.lineWidth = 1.5; 
+    ctx.globalAlpha = 0.5;
+    
+    // Simple kinetic line
+    ctx.moveTo(0, rect.height * 0.75);
+    for(let x=0; x<rect.width; x+=10) {
+      ctx.lineTo(x, rect.height * 0.75 - Math.random() * (rect.height * 0.3));
     }
     ctx.stroke();
   }
@@ -320,6 +270,5 @@
   }
   loop();
 </script>
-
 </body>
 </html>
