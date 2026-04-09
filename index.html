@@ -1,145 +1,121 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>FieldOS / Kinetic - Fullscreen Fix</title>
+  <title>FieldOS / Kinetic - Action System</title>
   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
   <style>
     :root {
       --bg: #000000;
       --accent: #00e5ff;
-      /* REFINED ARCTIC GLASS - Slightly more visible frost */
       --glass-base: #030405;
       --glass-frost: rgba(130, 220, 255, 0.07); 
       --glass-border: rgba(0, 229, 255, 0.35);
-      
       --access: #ffcc00;
       --text-main: #f0f0f0;
       --text-dim: #777777;
       --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-      
       --card-compact: 105px;
       --card-expanded: 185px;
-      --card-menu-height: 260px;
+      --card-menu-height: 310px; /* Increased for action row */
       --chart-height: 42vh;
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-    html, body { 
-      margin: 0; padding: 0; width: 100%; height: 100%; 
-      background: var(--bg); color: var(--text-main); 
-      font-family: -apple-system, sans-serif; overflow: hidden; 
-    }
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: var(--text-main); font-family: -apple-system, sans-serif; overflow: hidden; }
 
     .app-shell { position: fixed; inset: 0; display: grid; grid-template-rows: 1fr auto; }
     .workspace-shell { display: grid; grid-template-columns: auto 1fr auto; min-height: 0; overflow: hidden; position: relative; }
 
-    /* FULLSCREEN LOGIC - CLEAN CLASS OVERRIDE */
-    body.chart-fullscreen .middle-stack,
-    body.chart-fullscreen .bottom-menu-wrap,
-    body.chart-fullscreen .access-trigger,
-    body.chart-fullscreen .curtain { display: none !important; }
-    
+    body.chart-fullscreen .middle-stack, body.chart-fullscreen .bottom-menu-wrap, body.chart-fullscreen .access-trigger, body.chart-fullscreen .curtain { display: none !important; }
     body.chart-fullscreen .app-shell { grid-template-rows: 1fr; }
     body.chart-fullscreen .workspace-shell { grid-template-columns: 1fr; }
     body.chart-fullscreen .center-workspace { overflow: hidden; }
-    body.chart-fullscreen .chart-box { 
-        position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 500; 
-    }
+    body.chart-fullscreen .chart-box { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 500; }
 
-    /* ACCESS ORBS */
     .access-trigger { position: absolute; top: 12%; width: 48px; height: 60px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 200; }
     .trigger-left { left: 0; }
     .trigger-right { right: 0; }
     .access-orb { width: 4px; height: 4px; background: var(--access); border-radius: 50%; box-shadow: 0 0 10px var(--access); opacity: 0.6; }
 
-    /* CURTAINS */
     .curtain { height: 100%; transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1); background: #030303; z-index: 100; overflow: hidden; }
     .curtain.is-collapsed { width: 0 !important; }
     .left-curtain { width: 160px; }
     .right-curtain { width: 140px; }
 
-    /* WORKSPACE */
     .center-workspace { position: relative; display: flex; flex-direction: column; overflow-y: auto; background: var(--bg); scrollbar-width: none; -webkit-overflow-scrolling: touch; }
     .center-workspace::-webkit-scrollbar { display: none; }
     
     .chart-box { position: sticky; top: 0; z-index: 20; background: var(--bg); width: 100%; height: var(--chart-height); transition: height 0.2s ease-out; }
-    
-    .fs-toggle { 
-        position: absolute; top: 12px; right: 12px; z-index: 600; 
-        font-family: var(--font-mono); font-size: 10px; color: var(--text-dim); 
-        background: rgba(0,0,0,0.6); border: 1px solid #333; padding: 6px 10px; cursor: pointer;
-        letter-spacing: 1px;
-    }
-    .fs-toggle:active { color: var(--accent); border-color: var(--accent); }
+    .fs-toggle { position: absolute; top: 12px; right: 12px; z-index: 600; font-family: var(--font-mono); font-size: 10px; color: var(--text-dim); background: rgba(0,0,0,0.6); border: 1px solid #333; padding: 6px 10px; cursor: pointer; letter-spacing: 1px; }
 
     .middle-stack { display: flex; flex-direction: column; padding: 10px 10px 140px 10px; gap: 10px; position: relative; }
 
-    /* IMPROVED ARCTIC GLASS CARD */
     .stack-card { 
       background: var(--glass-base); position: relative; overflow: hidden; border-radius: 1px;
       box-shadow: 0 12px 35px rgba(0,0,0,0.9); border: 1px solid var(--glass-border);
       transition: transform 0.3s, height 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s;
-      height: var(--card-compact);
+      height: var(--card-compact); flex-shrink: 0;
     }
     .stack-card.is-expanded { height: var(--card-expanded); border-color: var(--accent); }
     .stack-card.mode-menu { height: var(--card-menu-height); border-color: var(--accent); }
 
     .card-visual-area { 
       width: 100%; position: relative; height: 100%;
-      /* Visible frosty/arctic tone overlay */
-      background: 
-        linear-gradient(160deg, var(--glass-frost) 0%, transparent 60%),
-        radial-gradient(circle at 20% 0%, rgba(150, 230, 255, 0.05) 0%, transparent 50%);
+      background: linear-gradient(160deg, var(--glass-frost) 0%, transparent 60%), radial-gradient(circle at 20% 0%, rgba(150, 230, 255, 0.05) 0%, transparent 50%);
     }
 
     .field-canvas { width: 100%; height: 100%; position: absolute; inset: 0; pointer-events: none; }
 
-    /* HUD */
-    .hud-meta { position: absolute; padding: 12px; z-index: 5; pointer-events: none; font-family: var(--font-mono); text-transform: uppercase; }
-    .hud-top-left { top: 0; left: 0; }
+    .hud-meta { position: absolute; padding: 12px; z-index: 5; font-family: var(--font-mono); text-transform: uppercase; }
+    .hud-top-left { top: 0; left: 0; pointer-events: none; }
     .hud-top-right { top: 0; right: 0; display: flex; align-items: center; gap: 16px; pointer-events: auto; }
     .hud-title { font-size: 11px; font-weight: 800; color: var(--text-main); letter-spacing: 0.5px; }
     .hud-category { font-size: 8px; color: var(--text-dim); font-weight: 600; }
     
     .hud-bottom-left { 
       bottom: 0; left: 0; display: flex; gap: 16px; width: 100%; 
-      padding: 35px 12px 12px 12px; 
+      padding: 35px 12px 12px 12px; pointer-events: none;
       background: linear-gradient(0deg, var(--glass-base) 20%, transparent 100%); 
     }
     .readout-item { font-size: 10px; color: var(--accent); font-weight: 700; }
     .readout-label { color: #555; margin-right: 4px; font-size: 8px; }
 
-    .glyph { width: 22px; height: 22px; cursor: pointer; color: #444; display: flex; align-items: center; justify-content: center; font-size: 11px; transition: color 0.2s; }
+    .glyph { width: 22px; height: 22px; cursor: pointer; color: #444; display: flex; align-items: center; justify-content: center; font-size: 11px; }
     .glyph:active { color: var(--accent); }
 
-    /* MENU OVERLAY */
-    .card-menu-overlay {
-      position: absolute; inset: 0; background: var(--glass-base); z-index: 50;
-      display: none; flex-direction: column; font-family: var(--font-mono);
-    }
+    /* MENU SYSTEM */
+    .card-menu-overlay { position: absolute; inset: 0; background: var(--glass-base); z-index: 50; display: none; flex-direction: column; font-family: var(--font-mono); }
     .stack-card.mode-menu .card-menu-overlay { display: flex; }
 
     .menu-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border-bottom: 1px solid #1a1a1a; }
     .header-left { display: flex; align-items: center; gap: 8px; font-size: 9px; color: var(--accent); text-transform: uppercase; }
-    .back-btn { cursor: pointer; font-size: 14px; }
     .close-btn { cursor: pointer; font-size: 12px; color: #555; padding: 4px; }
+
+    /* ACTION ROW */
+    .action-row { display: grid; grid-template-columns: 1fr 1fr; padding: 10px 14px; gap: 1px; background: #0a0a0a; border-bottom: 1px solid #1a1a1a; }
+    .action-btn { 
+      background: transparent; border: none; color: #444; font-family: var(--font-mono); 
+      font-size: 8px; text-transform: uppercase; padding: 8px; cursor: pointer; 
+      letter-spacing: 1px; text-align: center; transition: all 0.2s;
+    }
+    .action-btn.is-active { color: var(--accent); background: rgba(0, 229, 255, 0.05); }
 
     .menu-body { flex: 1; overflow-y: auto; padding: 10px; scrollbar-width: none; }
     .menu-body::-webkit-scrollbar { display: none; }
 
     .category-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .cat-box { background: #080808; border: 1px solid #1a1a1a; padding: 12px; cursor: pointer; }
-    .cat-box:active { border-color: var(--accent); background: #0c0c0c; }
+    .cat-box:active { border-color: var(--accent); }
     .cat-title { font-size: 9px; color: var(--text-main); margin-bottom: 4px; text-transform: uppercase; }
     .cat-desc { font-size: 7px; color: #555; line-height: 1.2; text-transform: none; }
 
     .instrument-list { display: flex; flex-direction: column; gap: 4px; }
     .inst-row { padding: 12px; background: #080808; font-size: 10px; text-transform: uppercase; color: #666; cursor: pointer; border-left: 2px solid transparent; }
-    .inst-row:active { color: var(--accent); background: #0c0c0c; border-left-color: var(--accent); }
+    .inst-row:active { color: var(--accent); border-left-color: var(--accent); }
 
-    /* BOTTOM NAV */
     .bottom-menu-wrap { height: 60px; display: grid; grid-template-columns: repeat(6, 1fr) 44px; background: #020202; border-top: 1px solid #111; }
     .menu-item { background: transparent; border: none; color: #555; font-size: 9px; text-transform: uppercase; font-weight: 700; cursor: pointer; }
   </style>
@@ -159,51 +135,61 @@
       </section>
 
       <div class="middle-stack" id="stack">
-        <section class="stack-card" id="card-1">
-          <div class="card-visual-area">
-            <div class="hud-meta hud-top-left"><span class="hud-title">Asymmetry Field</span></div>
-            <div class="hud-meta hud-top-right">
-              <span class="hud-category">Force</span>
-              <div class="glyph" onclick="toggleMenu(1)">⧉</div>
-              <div class="glyph" onclick="toggleExpand(1)">▿</div>
-            </div>
-            <canvas id="canvas-1" class="field-canvas"></canvas>
-            <div class="hud-meta hud-bottom-left">
-              <div class="readout-item"><span class="readout-label">BIAS</span><span>0.419</span></div>
-              <div class="readout-item"><span class="readout-label">VOL</span><span>0.177</span></div>
-            </div>
-          </div>
-          <div class="card-menu-overlay" id="menu-1">
-            <div class="menu-header">
-              <div class="header-left" id="header-left-1">Select Category</div>
-              <div class="close-btn" onclick="toggleMenu(1)">X</div>
-            </div>
-            <div class="menu-body" id="menu-body-1"></div>
-          </div>
-        </section>
+        <script>
+            let cardCounter = 0;
+            const instrumentData = {
+                Force: { desc: 'directional imbalance and push', items: ['Asymmetry Field', 'Momentum Vector', 'Participation Flux'] },
+                Inertia: { desc: 'resistance and mass behavior', items: ['Inertia Field', 'Mass Classification', 'Inertia Decay'] },
+                Environment: { desc: 'entropy, stability, conditions', items: ['Entropy Phase', 'Stability Index', 'Distortion Field'] },
+                Resistance: { desc: 'friction, density, obstruction', items: ['Cost to Move', 'Liquidity Density', 'Slippage Friction'] },
+                Interpretation: { desc: 'truth, confidence, clarity', items: ['Truth Field', 'Confidence Field', 'Precision Field'] },
+                Decision: { desc: 'alignment, continuation, reversal pressure', items: ['Alignment Score', 'Continuation Pressure', 'Reversal Pressure'] }
+            };
 
-        <section class="stack-card" id="card-2">
-          <div class="card-visual-area">
-            <div class="hud-meta hud-top-left"><span class="hud-title">Entropy Phase</span></div>
-            <div class="hud-meta hud-top-right">
-              <span class="hud-category">Environment</span>
-              <div class="glyph" onclick="toggleMenu(2)">⧉</div>
-              <div class="glyph" onclick="toggleExpand(2)">▿</div>
-            </div>
-            <canvas id="canvas-2" class="field-canvas"></canvas>
-            <div class="hud-meta hud-bottom-left">
-              <div class="readout-item"><span class="readout-label">ENTR</span><span>0.884</span></div>
-              <div class="readout-item"><span class="readout-label">STAB</span><span>0.116</span></div>
-            </div>
-          </div>
-          <div class="card-menu-overlay" id="menu-2">
-            <div class="menu-header">
-              <div class="header-left" id="header-left-2">Select Category</div>
-              <div class="close-btn" onclick="toggleMenu(2)">X</div>
-            </div>
-            <div class="menu-body" id="menu-body-2"></div>
-          </div>
-        </section>
+            function createCard(title, category) {
+                cardCounter++;
+                const id = cardCounter;
+                const card = document.createElement('section');
+                card.className = 'stack-card';
+                card.id = `card-${id}`;
+                card.dataset.actionMode = 'replace';
+                
+                card.innerHTML = `
+                    <div class="card-visual-area">
+                        <div class="hud-meta hud-top-left"><span class="hud-title">${title}</span></div>
+                        <div class="hud-top-right hud-meta">
+                            <span class="hud-category">${category}</span>
+                            <div class="glyph" onclick="toggleMenu(${id})">⧉</div>
+                            <div class="glyph" onclick="toggleExpand(${id})">▿</div>
+                        </div>
+                        <canvas id="canvas-${id}" class="field-canvas"></canvas>
+                        <div class="hud-bottom-left hud-meta">
+                            <div class="readout-item"><span class="readout-label">SIG</span><span>0.${Math.floor(Math.random()*900)+100}</span></div>
+                            <div class="readout-item"><span class="readout-label">VAL</span><span>0.${Math.floor(Math.random()*900)+100}</span></div>
+                        </div>
+                    </div>
+                    <div class="card-menu-overlay" id="menu-${id}">
+                        <div class="menu-header">
+                            <div class="header-left" id="head-label-${id}">Instrument Menu</div>
+                            <div class="close-btn" onclick="toggleMenu(${id})">X</div>
+                        </div>
+                        <div class="action-row" id="action-row-${id}">
+                            <button class="action-btn is-active" id="btn-replace-${id}" onclick="setActionMode(${id}, 'replace')">Replace</button>
+                            <button class="action-btn" id="btn-add-${id}" onclick="setActionMode(${id}, 'add')">Add Below</button>
+                        </div>
+                        <div class="menu-body" id="menu-body-${id}"></div>
+                    </div>
+                `;
+                return card;
+            }
+
+            function initStack() {
+                const stack = document.getElementById('stack');
+                stack.appendChild(createCard('Asymmetry Field', 'Force'));
+                stack.appendChild(createCard('Entropy Phase', 'Environment'));
+            }
+            initStack();
+        </script>
       </div>
     </main>
     <aside class="curtain right-curtain is-collapsed" id="rightCurtain"></aside>
@@ -215,38 +201,13 @@
 </div>
 
 <script>
-  const categories = [
-    { id: 'Force', desc: 'Directional imbalance and push', items: ['Asymmetry Field', 'Momentum Vector', 'Participation Flux'] },
-    { id: 'Inertia', desc: 'Resistance and mass behavior', items: ['Inertia Field', 'Mass Classification', 'Inertia Decay'] },
-    { id: 'Environment', desc: 'Entropy, stability, conditions', items: ['Entropy Phase', 'Stability Index', 'Distortion Field'] },
-    { id: 'Resistance', desc: 'Friction, density, obstruction', items: ['Cost to Move', 'Liquidity Density', 'Slippage Friction'] },
-    { id: 'Interpretation', desc: 'Truth, confidence, clarity', items: ['Truth Field', 'Confidence Field', 'Precision Field'] },
-    { id: 'Decision', desc: 'Alignment, continuation, reversal', items: ['Alignment Score', 'Continuation Pressure', 'Reversal Pressure'] }
-  ];
-
-  // BUG FIX: STABLE FULLSCREEN FLOW
   function toggleFullscreen() {
     const isFS = document.body.classList.contains('chart-fullscreen');
     const btn = document.getElementById('fsBtn');
-    const chartBox = document.getElementById('chartContainer');
-    const workspace = document.getElementById('mainWorkspace');
-
-    if (!isFS) {
-        // ENTER FS
-        document.body.classList.add('chart-fullscreen');
-        btn.innerText = '[ EXIT ]';
-        workspace.scrollTop = 0; // Prevent offset scroll
-    } else {
-        // EXIT FS
-        document.body.classList.remove('chart-fullscreen');
-        btn.innerText = '[ FS ]';
-    }
-
-    // Force Resize Engine
+    if (!isFS) { document.body.classList.add('chart-fullscreen'); btn.innerText = '[ EXIT ]'; } 
+    else { document.body.classList.remove('chart-fullscreen'); btn.innerText = '[ FS ]'; }
     requestAnimationFrame(() => {
-        const w = chartBox.clientWidth;
-        const h = chartBox.clientHeight;
-        chart.resize(w, h);
+        chart.resize(document.getElementById('chartContainer').clientWidth, document.getElementById('chartContainer').clientHeight);
         chart.timeScale().fitContent();
     });
   }
@@ -263,8 +224,8 @@
 
   function toggleMenu(id) {
     const card = document.getElementById(`card-${id}`);
-    const isMenu = card.classList.contains('mode-menu');
-    if (!isMenu) {
+    if (!card.classList.contains('mode-menu')) {
+        card.dataset.actionMode = 'replace';
         renderGrid(id);
         card.classList.add('mode-menu');
         card.classList.remove('is-expanded');
@@ -273,38 +234,55 @@
     }
   }
 
-  function renderGrid(cardId) {
-    const body = document.getElementById(`menu-body-${cardId}`);
-    const head = document.getElementById(`header-left-${cardId}`);
-    head.innerHTML = "Select Category";
+  function setActionMode(id, mode) {
+    const card = document.getElementById(`card-${id}`);
+    card.dataset.actionMode = mode;
+    document.getElementById(`btn-replace-${id}`).classList.toggle('is-active', mode === 'replace');
+    document.getElementById(`btn-add-${id}`).classList.toggle('is-active', mode === 'add');
+  }
+
+  function renderGrid(id) {
+    const body = document.getElementById(`menu-body-${id}`);
+    const head = document.getElementById(`head-label-${id}`);
+    const row = document.getElementById(`action-row-${id}`);
+    head.innerHTML = "Instrument Menu";
+    row.style.display = "grid";
+    
     let html = '<div class="category-grid">';
-    categories.forEach(cat => {
-      html += `<div class="cat-box" onclick="renderInstruments(${cardId}, '${cat.id}')">
-                <div class="cat-title">${cat.id}</div>
-                <div class="cat-desc">${cat.desc}</div>
-              </div>`;
-    });
-    html += '</div>';
-    body.innerHTML = html;
+    for (let cat in instrumentData) {
+        html += `<div class="cat-box" onclick="renderInstruments(${id}, '${cat}')">
+                    <div class="cat-title">${cat}</div>
+                    <div class="cat-desc">${instrumentData[cat].desc}</div>
+                </div>`;
+    }
+    body.innerHTML = html + '</div>';
   }
 
-  function renderInstruments(cardId, catId) {
-    const body = document.getElementById(`menu-body-${cardId}`);
-    const head = document.getElementById(`header-left-${cardId}`);
-    const cat = categories.find(c => c.id === catId);
-    head.innerHTML = `<span class="back-btn" onclick="renderGrid(${cardId})">←</span> ${catId}`;
+  function renderInstruments(id, cat) {
+    const body = document.getElementById(`menu-body-${id}`);
+    const head = document.getElementById(`head-label-${id}`);
+    const row = document.getElementById(`action-row-${id}`);
+    head.innerHTML = `<span class="back-btn" onclick="renderGrid(${id})">←</span> ${cat}`;
+    row.style.display = "none";
+    
     let html = '<div class="instrument-list">';
-    cat.items.forEach(inst => {
-      html += `<div class="inst-row" onclick="selectInstrument(${cardId}, '${inst}', '${catId}')">${inst}</div>`;
+    instrumentData[cat].items.forEach(inst => {
+        html += `<div class="inst-row" onclick="selectInstrument(${id}, '${inst}', '${cat}')">${inst}</div>`;
     });
-    html += '</div>';
-    body.innerHTML = html;
+    body.innerHTML = html + '</div>';
   }
 
-  function selectInstrument(cardId, instName, catName) {
-    const card = document.getElementById(`card-${cardId}`);
-    card.querySelector('.hud-title').innerText = instName;
-    card.querySelector('.hud-category').innerText = catName;
+  function selectInstrument(id, inst, cat) {
+    const card = document.getElementById(`card-${id}`);
+    const mode = card.dataset.actionMode;
+    
+    if (mode === 'replace') {
+        card.querySelector('.hud-title').innerText = inst;
+        card.querySelector('.hud-category').innerText = cat;
+    } else {
+        const newCard = createCard(inst, cat);
+        card.after(newCard);
+    }
     card.classList.remove('mode-menu');
   }
 
@@ -313,45 +291,34 @@
     layout: { background: { color: '#000' }, textColor: '#444' },
     grid: { vertLines: { color: '#050505' }, horzLines: { color: '#050505' } },
     timeScale: { borderColor: '#000' },
-    handleScroll: true, handleScale: true,
   });
   const candleSeries = chart.addCandlestickSeries({ upColor: '#00e5ff', downColor: '#000', borderVisible: true, borderUpColor: '#00e5ff', borderDownColor: '#00e5ff' });
-  const data = Array.from({length: 120}, (_, i) => ({ time: 1640995200 + i * 86400, open: 100+i, high: 105+i, low: 98+i, close: 103+i }));
-  candleSeries.setData(data);
+  candleSeries.setData(Array.from({length: 120}, (_, i) => ({ time: 1640995200 + i * 86400, open: 100+i, high: 105+i, low: 98+i, close: 103+i })));
 
-  // ARCTIC FIELD LIVENESS
-  function paint(id) {
-    const canvas = document.getElementById(id);
-    const ctx = canvas.getContext('2d');
-    const rect = canvas.getBoundingClientRect();
-    if (canvas.width !== rect.width) { canvas.width = rect.width; canvas.height = rect.height; }
-    
-    ctx.clearRect(0,0,rect.width, rect.height);
-    ctx.strokeStyle = '#00e5ff'; 
-    ctx.lineWidth = 0.8; 
-    
-    const time = Date.now() * 0.0014;
-    ctx.globalAlpha = 0.14 + Math.sin(time * 0.4) * 0.05;
-    
-    ctx.beginPath();
-    for(let i = 0; i < 18; i++) {
-      let y = (rect.height * 0.5) + Math.sin(time + i * 0.4) * (18 + i);
-      ctx.moveTo(0, y); 
-      ctx.bezierCurveTo(rect.width * 0.35, y - 25, rect.width * 0.65, y + 25, rect.width, y);
-    }
-    ctx.stroke();
+  // CANVAS ANIMATION
+  function paint() {
+    document.querySelectorAll('.field-canvas').forEach(canvas => {
+        const ctx = canvas.getContext('2d');
+        const rect = canvas.getBoundingClientRect();
+        if (canvas.width !== rect.width) { canvas.width = rect.width; canvas.height = rect.height; }
+        ctx.clearRect(0,0,rect.width, rect.height);
+        ctx.strokeStyle = '#00e5ff'; ctx.lineWidth = 0.8;
+        const time = Date.now() * 0.0014;
+        ctx.globalAlpha = 0.14 + Math.sin(time * 0.4) * 0.05;
+        ctx.beginPath();
+        for(let i = 0; i < 15; i++) {
+            let y = (rect.height * 0.5) + Math.sin(time + i * 0.4) * (18 + i);
+            ctx.moveTo(0, y); ctx.bezierCurveTo(rect.width * 0.35, y - 25, rect.width * 0.65, y + 25, rect.width, y);
+        }
+        ctx.stroke();
+    });
+    requestAnimationFrame(paint);
   }
-  
-  function loop() { 
-    paint('canvas-1'); 
-    paint('canvas-2'); 
-    requestAnimationFrame(loop); 
-  }
-  loop();
+  paint();
 
-  window.addEventListener('resize', () => {
-    chart.resize(document.getElementById('chartContainer').clientWidth, document.getElementById('chartContainer').clientHeight);
-  });
+  window.addEventListener('resize', () => chart.resize(document.getElementById('chartContainer').clientWidth, document.getElementById('chartContainer').clientHeight));
 </script>
 </body>
 </html>
+
+```
