@@ -1,22 +1,41 @@
-/* Tightened Chart Logic */
-.center-workspace {
-  display: flex;
-  flex-direction: column;
-  height: 100%; /* Fill the grid cell */
+/* Replace your <style> block with this structured CSS */
+:root {
+    /* Core Neutrals */
+    --void-bg: #000000;
+    --rack-bg: #050505;
+    --panel-bg: #0a0a0a;
+    --border-low: #111111;
+    --text-main: #e8e8e8;
+    --text-dim: #666666;
+    --text-dark: #444444;
+
+    /* Kinetic Accents (Default: Blue/TRON) */
+    --accent-core: #00e5ff; /* Electric Cyan */
+    --accent-glow: rgba(0, 229, 255, 0.4);
+    --accent-surface: rgba(0, 229, 255, 0.05);
 }
 
-.chart-box {
-  flex: 0 0 auto; /* Do not grow or shrink */
-  width: 100%;
-  aspect-ratio: 1.2 / 1; /* Pure ratio-driven height */
-  border: 1px solid #353535;
-  background: #000;
-  z-index: 10;
+/* Color Toggle Support */
+[data-theme="red"] { --accent-core: #ff3e3e; --accent-glow: rgba(255, 62, 62, 0.4); }
+[data-theme="orange"] { --accent-core: #ff9f1c; --accent-glow: rgba(255, 159, 28, 0.4); }
+[data-theme="green"] { --accent-core: #2ec4b6; --accent-glow: rgba(46, 196, 182, 0.4); }
+
+/* The "Breathing" Life */
+@keyframes breathe {
+    0% { box-shadow: 0 0 5px var(--accent-surface); }
+    50% { box-shadow: 0 0 15px var(--accent-surface); }
+    100% { box-shadow: 0 0 5px var(--accent-surface); }
 }
 
-.controls-scroll-area {
-  flex: 1; /* Take all remaining space */
-  overflow-y: auto;
-  padding-top: 10px;
-  -webkit-overflow-scrolling: touch; /* Smooth iOS scroll */
+.stack-card:hover {
+    border-bottom: 1px solid var(--accent-core);
+    animation: breathe 3s infinite ease-in-out;
+}
+
+/* Clean monospaced readouts */
+.readout-item {
+    font-size: 10px;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: var(--accent-core);
+    text-shadow: 0 0 8px var(--accent-glow);
 }
