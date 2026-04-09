@@ -3,135 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>FieldOS / Kinetic - Industrial Glass</title>
+  <title>FieldOS / Kinetic - Industrial Glass Refinement</title>
+  <link rel="stylesheet" href="style.css?v=2">
   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
-  <style>
-    :root {
-      --bg: #000000;
-      --glass-base: #030303;
-      --glass-dense: #050505;
-      --accent: #00e5ff;
-      --accent-haze: rgba(0, 229, 255, 0.04);
-      --accent-edge: rgba(0, 229, 255, 0.15);
-      --accent-glow: rgba(0, 229, 255, 0.3);
-      --access: #ffcc00;
-      --access-glow: rgba(255, 204, 0, 0.4);
-      --text: #e8e8e8;
-      --text-dim: #555555;
-      --text-faint: #282828;
-      --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-      
-      --card-compact: 105px;
-      --card-expanded: 165px;
-    }
-
-    html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; overflow: hidden; }
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-    .app-shell { position: fixed; inset: 0; display: grid; grid-template-rows: 1fr auto; padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) 0; }
-    .workspace-shell { display: grid; grid-template-columns: auto 1fr auto; min-height: 0; overflow: hidden; position: relative; }
-
-    /* ACCESS TRIGGERS */
-    .access-trigger {
-      position: absolute; top: 0; bottom: 0; width: 48px;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; z-index: 200;
-    }
-    .trigger-left { left: 0; }
-    .trigger-right { right: 0; }
-    
-    .access-orb {
-      width: 4px; height: 4px; background: var(--access);
-      border-radius: 50%; box-shadow: 0 0 8px var(--access-glow);
-      opacity: 0.5; transition: opacity 0.2s, transform 0.2s;
-    }
-    .access-trigger:active .access-orb { opacity: 1; transform: scale(1.4); }
-
-    /* CURTAINS */
-    .curtain { height: 100%; overflow: hidden; transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1); background: #020202; z-index: 100; }
-    .left-curtain { width: 140px; }
-    .right-curtain { width: 130px; }
-    .curtain.is-collapsed { width: 0 !important; }
-
-    /* CENTER WORKSPACE */
-    .center-workspace { position: relative; display: flex; flex-direction: column; overflow-y: auto; background: var(--bg); scrollbar-width: none; }
-    .center-workspace::-webkit-scrollbar { display: none; }
-
-    /* CHART PLANE */
-    .chart-box { 
-      position: sticky; top: 0; z-index: 20; 
-      background: var(--bg); width: 100%; height: 44vh;
-      border-bottom: 1px solid rgba(0, 229, 255, 0.05);
-    }
-
-    /* INSTRUMENT STACK */
-    .middle-stack { display: flex; flex-direction: column; padding: 12px 10px 140px 10px; gap: 10px; }
-    
-    /* FLOATING GLASS MATERIAL */
-    .stack-card { 
-      background: var(--glass-base);
-      position: relative; overflow: hidden;
-      border-radius: 2px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.8), inset 0 0 0 0.5px var(--accent-edge);
-      transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
-    }
-    
-    /* Lift on expanded/active */
-    .stack-card.is-expanded { 
-      background: var(--glass-dense);
-      transform: translateY(-1px);
-      box-shadow: 0 8px 30px rgba(0,0,0,1), inset 0 0 0 0.5px rgba(0, 229, 255, 0.4);
-    }
-
-    .card-visual-area { 
-      width: 100%; position: relative; height: var(--card-compact); 
-      transition: height 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-      background: radial-gradient(circle at center, var(--accent-haze) 0%, transparent 80%);
-    }
-    .stack-card.is-expanded .card-visual-area { height: var(--card-expanded); }
-
-    /* HUD OVERLAYS */
-    .hud-meta { position: absolute; padding: 12px; z-index: 5; pointer-events: none; font-family: var(--font-mono); text-transform: uppercase; }
-    .hud-top-left { top: 0; left: 0; }
-    .hud-top-right { top: 0; right: 0; display: flex; align-items: center; gap: 14px; pointer-events: auto; }
-    .hud-bottom-left { bottom: 0; left: 0; display: flex; gap: 16px; width: 100%; padding: 24px 12px 10px 12px; background: linear-gradient(0deg, rgba(0,0,0,1) 15%, transparent 100%); }
-
-    .hud-title { font-size: 9px; font-weight: 800; letter-spacing: 1px; color: var(--text-dim); transition: color 0.3s; }
-    .stack-card.is-expanded .hud-title { color: var(--accent); }
-    
-    .hud-category { font-size: 8px; color: var(--text-faint); font-weight: 800; }
-    .readout-item { font-size: 10px; color: var(--accent); opacity: 0.5; transition: opacity 0.3s; }
-    .stack-card.is-expanded .readout-item { opacity: 0.9; }
-    .readout-label { color: var(--text-faint); margin-right: 4px; font-size: 8px; }
-
-    /* GLYPHS */
-    .glyph { width: 16px; height: 16px; cursor: pointer; color: var(--text-faint); transition: color 0.2s; display: flex; align-items: center; justify-content: center; font-size: 10px; }
-    .glyph:hover, .glyph.active { color: var(--accent); text-shadow: 0 0 5px var(--accent-glow); }
-
-    /* SLOT MENU SLAB */
-    .slot-menu-surface {
-      position: absolute; inset: 0; background: #010101;
-      z-index: 10; display: none; flex-direction: column;
-      padding: 14px; justify-content: center; gap: 6px;
-      box-shadow: inset 0 0 15px rgba(0,0,0,1);
-    }
-    .stack-card.mode-menu .slot-menu-surface { display: flex; }
-    
-    .menu-option {
-      font-family: var(--font-mono); font-size: 9px; color: var(--text-dim);
-      text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
-      padding: 10px; border-left: 1px solid transparent; transition: all 0.2s;
-    }
-    .menu-option:hover { color: var(--accent); border-left-color: var(--accent); background: rgba(0, 229, 255, 0.05); }
-
-    /* BOTTOM UTILITY STRIP */
-    .bottom-menu-wrap { 
-      height: 58px; display: grid; grid-template-columns: repeat(6, 1fr) 40px; 
-      background: #020202; z-index: 110; 
-      box-shadow: 0 -4px 20px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.02);
-    }
-    .menu-item { background: transparent; border: none; color: var(--text-dim); font-size: 9px; text-transform: uppercase; font-weight: 600; cursor: pointer; }
-  </style>
 </head>
 <body>
 
@@ -164,7 +38,7 @@
               <div class="menu-option">Add Instrument Below</div>
             </div>
 
-            <canvas id="canvas-asymmetry" style="width:100%; height:100%; position:absolute; inset:0; opacity: 0.8;"></canvas>
+            <canvas id="canvas-asymmetry" class="field-canvas"></canvas>
             
             <div class="hud-meta hud-bottom-left">
               <div class="readout-item"><span class="readout-label">BIAS</span><span>0.419</span></div>
@@ -187,7 +61,7 @@
               <div class="menu-option">Add Instrument Below</div>
             </div>
 
-            <canvas id="canvas-entropy" style="width:100%; height:100%; position:absolute; inset:0; opacity: 0.8;"></canvas>
+            <canvas id="canvas-entropy" class="field-canvas"></canvas>
             
             <div class="hud-meta hud-bottom-left">
               <div class="readout-item"><span class="readout-label">DISORDER</span><span>0.884</span></div>
@@ -202,8 +76,12 @@
   </div>
 
   <footer class="bottom-menu-wrap">
-    <button class="menu-item">Vol</button><button class="menu-item">Chrt</button><button class="menu-item">Inst</button>
-    <button class="menu-item">Book</button><button class="menu-item">Sig</button><button class="menu-item">News</button>
+    <button class="menu-item">Vol</button>
+    <button class="menu-item">Chrt</button>
+    <button class="menu-item">Inst</button>
+    <button class="menu-item">Book</button>
+    <button class="menu-item">Sig</button>
+    <button class="menu-item">News</button>
     <button class="menu-item">▾</button>
   </footer>
 </div>
@@ -213,21 +91,18 @@
 
   function toggleMode(el, mode) {
     const card = el.closest('.stack-card');
-    const allCards = document.querySelectorAll('.stack-card');
     
     if (mode === 'expand') {
       const isExpanded = card.classList.contains('is-expanded');
-      allCards.forEach(c => { c.classList.remove('is-expanded'); c.classList.remove('mode-menu'); });
+      document.querySelectorAll('.stack-card').forEach(c => c.classList.remove('is-expanded'));
       if (!isExpanded) card.classList.add('is-expanded');
     } 
     else if (mode === 'menu') {
-      const isMenu = card.classList.contains('mode-menu');
-      allCards.forEach(c => { c.classList.remove('mode-menu'); c.classList.remove('is-expanded'); });
-      if (!isMenu) card.classList.add('mode-menu');
+      // UPDATED: MULTI-MENU LOGIC
+      card.classList.toggle('mode-menu');
     }
   }
 
-  // CHART SETUP
   const chart = LightweightCharts.createChart(document.getElementById('chartContainer'), {
     layout: { background: { color: '#000' }, textColor: '#444', fontFamily: 'JetBrains Mono' },
     grid: { vertLines: { color: '#040404' }, horzLines: { color: '#040404' } },
@@ -238,7 +113,6 @@
   const mockData = Array.from({length: 100}, (_, i) => ({ time: new Date(2026, 0, i).toISOString().split('T')[0], open: 100+i, high: 105+i, low: 98+i, close: 103+i }));
   candleSeries.setData(mockData);
 
-  // KINETIC FIELD PAINTERS
   function paint(id, color) {
     const canvas = document.getElementById(id);
     const ctx = canvas.getContext('2d');
