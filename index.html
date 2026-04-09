@@ -3,321 +3,281 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>FieldOS / Kinetic</title>
+  <title>FieldOS / Kinetic - 2-Stage Menu</title>
   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
   <style>
     :root {
       --bg: #000000;
-      --panel: #050505;
       --accent: #00e5ff;
-      --accent-glow: rgba(0, 229, 255, 0.4);
-      --accent-edge: rgba(0, 229, 255, 0.7);
+      --glass-blue: rgba(0, 180, 255, 0.08);
+      --glass-border: rgba(0, 229, 255, 0.3);
       --access: #ffcc00;
-      --text-main: #e0e0e0;
-      --text-dim: #707070;
-      --text-faint: #333333;
+      --text-main: #f0f0f0;
+      --text-dim: #888888;
+      --text-faint: #444444;
       --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-      
       --card-compact: 105px;
-      --card-expanded: 170px;
+      --card-expanded: 175px;
     }
 
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
     html, body { 
       margin: 0; padding: 0; width: 100%; height: 100%; 
       background: var(--bg); color: var(--text-main); 
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-      overflow: hidden; 
+      font-family: -apple-system, sans-serif; overflow: hidden; 
     }
 
-    .app-shell { 
-      position: fixed; inset: 0; display: grid; grid-template-rows: 1fr auto; 
-      padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) 0; 
-    }
-    .workspace-shell { 
-      display: grid; grid-template-columns: auto 1fr auto; 
-      min-height: 0; overflow: hidden; position: relative; 
-    }
+    .app-shell { position: fixed; inset: 0; display: grid; grid-template-rows: 1fr auto; }
+    .workspace-shell { display: grid; grid-template-columns: auto 1fr auto; min-height: 0; overflow: hidden; position: relative; }
 
-    /* ACCESS ORBS */
-    .access-trigger {
-      position: absolute; top: 12%; width: 44px; height: 44px;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; z-index: 200;
-    }
+    /* ACCESS */
+    .access-trigger { position: absolute; top: 12%; width: 48px; height: 60px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 200; }
     .trigger-left { left: 0; }
     .trigger-right { right: 0; }
-    .access-orb {
-      width: 4px; height: 4px; background: var(--access);
-      border-radius: 50%; box-shadow: 0 0 8px var(--access);
-      opacity: 0.6; transition: opacity 0.2s;
-    }
+    .access-orb { width: 4px; height: 4px; background: var(--access); border-radius: 50%; box-shadow: 0 0 10px var(--access); opacity: 0.6; }
 
     /* CURTAINS */
-    .curtain { 
-      height: 100%; overflow: hidden; 
-      transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
-      background: #030303; z-index: 100; 
-    }
+    .curtain { height: 100%; transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1); background: #030303; z-index: 100; overflow: hidden; }
+    .curtain.is-collapsed { width: 0 !important; }
     .left-curtain { width: 160px; }
     .right-curtain { width: 140px; }
-    .curtain.is-collapsed { width: 0 !important; }
 
-    /* CENTER WORKSPACE */
-    .center-workspace { 
-      position: relative; display: flex; flex-direction: column; 
-      overflow-y: auto; background: var(--bg); scrollbar-width: none; 
-    }
+    /* WORKSPACE */
+    .center-workspace { position: relative; display: flex; flex-direction: column; overflow-y: auto; background: var(--bg); scrollbar-width: none; }
     .center-workspace::-webkit-scrollbar { display: none; }
+    .chart-box { position: sticky; top: 0; z-index: 20; background: var(--bg); width: 100%; height: 42vh; }
+    .middle-stack { display: flex; flex-direction: column; padding: 0 10px 140px 10px; gap: 10px; }
 
-    /* CHART ZONE (NO SEPARATOR) */
-    .chart-box { 
-      position: sticky; top: 0; z-index: 20; 
-      background: var(--bg); width: 100%; height: 42vh;
-    }
-
-    /* INSTRUMENT STACK */
-    .middle-stack { 
-      display: flex; flex-direction: column; 
-      padding: 0 10px 120px 10px; gap: 10px; 
-    }
-
-    /* REFINED SLAB MATERIAL */
+    /* CARD MATERIAL */
     .stack-card { 
-      background: #020202;
-      position: relative; overflow: hidden;
-      border-radius: 1px;
-      /* PRECISE CYAN EDGE DEFINITION */
-      box-shadow: 
-        0 10px 30px rgba(0,0,0,0.9),
-        inset 0 0 0 1px var(--accent-edge);
-      transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
+      background: #040404; position: relative; overflow: hidden; border-radius: 2px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8); border: 1px solid var(--glass-border);
+      transition: transform 0.3s;
     }
+    .stack-card.is-expanded { transform: translateY(-2px); border-color: var(--accent); }
 
-    .stack-card.is-expanded { 
-      background: #040404;
-      transform: translateY(-1px);
-      box-shadow: 
-        0 15px 40px rgba(0,0,0,1),
-        inset 0 0 0 1px var(--accent),
-        inset 0 0 10px rgba(0, 229, 255, 0.2);
-    }
-
-    /* PRECISE CORE SPOTLIGHT */
     .card-visual-area { 
       width: 100%; position: relative; height: var(--card-compact); 
       transition: height 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-      background: 
-        radial-gradient(circle at 50% 50%, rgba(0, 229, 255, 0.12) 0%, rgba(0, 229, 255, 0.04) 25%, transparent 50%),
-        #020202;
+      background: linear-gradient(135deg, rgba(0, 229, 255, 0.05) 0%, transparent 100%), var(--glass-blue);
     }
     .stack-card.is-expanded .card-visual-area { height: var(--card-expanded); }
 
-    .field-canvas { 
-      width: 100%; height: 100%; position: absolute; inset: 0; 
-      opacity: 0.6; pointer-events: none; 
-    }
+    .field-canvas { width: 100%; height: 100%; position: absolute; inset: 0; opacity: 0.4; pointer-events: none; }
 
-    /* HUD ELEMENTS */
+    /* HUD */
     .hud-meta { position: absolute; padding: 12px; z-index: 5; pointer-events: none; font-family: var(--font-mono); text-transform: uppercase; }
     .hud-top-left { top: 0; left: 0; }
-    .hud-top-right { top: 0; right: 0; display: flex; align-items: center; gap: 14px; pointer-events: auto; }
-    
-    .hud-title { font-size: 10px; font-weight: 700; letter-spacing: 1px; color: #999; }
-    .stack-card.is-expanded .hud-title { color: var(--accent); }
-    .hud-category { font-size: 8px; color: #444; font-weight: 800; letter-spacing: 0.5px; }
+    .hud-top-right { top: 0; right: 0; display: flex; align-items: center; gap: 16px; pointer-events: auto; }
+    .hud-title { font-size: 11px; font-weight: 800; color: var(--text-main); }
+    .hud-category { font-size: 8px; color: var(--text-dim); }
+    .hud-bottom-left { bottom: 0; left: 0; display: flex; gap: 16px; width: 100%; padding: 30px 12px 10px 12px; background: linear-gradient(0deg, rgba(0, 0, 0, 0.8) 0%, transparent 100%); }
+    .readout-item { font-size: 10px; color: var(--accent); font-weight: 700; }
+    .readout-label { color: var(--text-dim); margin-right: 4px; font-size: 8px; }
 
-    .hud-bottom-left { 
-      bottom: 0; left: 0; display: flex; gap: 16px; width: 100%; 
-      padding: 30px 12px 10px 12px; 
-      background: linear-gradient(0deg, rgba(0, 0, 0, 0.95) 10%, transparent 100%); 
-    }
-    .readout-item { font-size: 10px; color: var(--accent); opacity: 0.7; }
-    .readout-label { color: #555; margin-right: 4px; font-size: 8px; }
+    .glyph { width: 22px; height: 22px; cursor: pointer; color: #666; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+    .glyph:active { color: var(--accent); }
 
-    /* GLYPH CONTROLS */
-    .glyph { 
-      width: 20px; height: 20px; cursor: pointer; color: #2a2a2a; 
-      display: flex; align-items: center; justify-content: center; 
-      font-size: 11px; transition: color 0.2s; 
+    /* STAGE 1 & 2 MENU SYSTEM */
+    .card-menu-overlay {
+      position: absolute; inset: 0; background: #020202; z-index: 50;
+      display: none; flex-direction: column; font-family: var(--font-mono);
     }
-    .glyph:hover { color: var(--accent); }
+    .stack-card.mode-menu .card-menu-overlay { display: flex; }
 
-    /* SLOT MENU */
-    .slot-menu-surface {
-      position: absolute; inset: 1px; background: #010101;
-      z-index: 10; display: none; flex-direction: column;
-      padding: 16px; justify-content: center; gap: 6px;
+    .menu-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 14px; border-bottom: 1px solid #111;
     }
-    .stack-card.mode-menu .slot-menu-surface { display: flex; }
-    .menu-option {
-      font-family: var(--font-mono); font-size: 9px; color: #555;
-      text-transform: uppercase; letter-spacing: 1.5px; cursor: pointer;
-      padding: 10px; border-left: 1px solid transparent; transition: all 0.2s;
-    }
-    .menu-option:hover { color: var(--accent); border-left-color: var(--accent); background: rgba(0, 229, 255, 0.05); }
+    .header-left { display: flex; align-items: center; gap: 8px; font-size: 9px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
+    .back-btn { cursor: pointer; font-size: 14px; padding-right: 4px; }
+    .close-btn { cursor: pointer; font-size: 12px; color: #444; }
 
-    /* BOTTOM UTILITY */
-    .bottom-menu-wrap { 
-      height: 60px; display: grid; grid-template-columns: repeat(6, 1fr) 44px; 
-      background: #020202; z-index: 110; 
-      border-top: 1px solid #111;
+    .menu-body { flex: 1; overflow-y: auto; padding: 10px; scrollbar-width: none; }
+    .menu-body::-webkit-scrollbar { display: none; }
+
+    /* STAGE 1: CATEGORY GRID */
+    .category-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; height: 100%; }
+    .cat-box {
+      background: #050505; border: 1px solid #111; padding: 10px;
+      cursor: pointer; display: flex; flex-direction: column; justify-content: center;
     }
-    .menu-item { 
-      background: transparent; border: none; color: #444; 
-      font-size: 9px; text-transform: uppercase; font-weight: 700; 
-      cursor: pointer; letter-spacing: 1px;
+    .cat-box:active { border-color: var(--accent); background: #080808; }
+    .cat-title { font-size: 9px; color: var(--text-main); margin-bottom: 4px; text-transform: uppercase; }
+    .cat-desc { font-size: 7px; color: #444; line-height: 1.2; text-transform: none; }
+
+    /* STAGE 2: INSTRUMENT LIST */
+    .instrument-list { display: flex; flex-direction: column; gap: 4px; }
+    .inst-row {
+      padding: 12px; background: #050505; border-left: 2px solid transparent;
+      font-size: 10px; text-transform: uppercase; color: #777; cursor: pointer;
     }
+    .inst-row:active { border-left-color: var(--accent); color: var(--accent); background: #080808; }
+
+    /* BOTTOM NAV */
+    .bottom-menu-wrap { height: 60px; display: grid; grid-template-columns: repeat(6, 1fr) 44px; background: #020202; border-top: 1px solid #111; }
+    .menu-item { background: transparent; border: none; color: #444; font-size: 9px; text-transform: uppercase; font-weight: 700; }
   </style>
 </head>
 <body>
 
 <div class="app-shell">
   <div class="workspace-shell">
-    
-    <div class="access-trigger trigger-left" onclick="toggleCurtain('leftCurtain')">
-      <div class="access-orb"></div>
-    </div>
-    <div class="access-trigger trigger-right" onclick="toggleCurtain('rightCurtain')">
-      <div class="access-orb"></div>
-    </div>
-
+    <div class="access-trigger trigger-left" onclick="toggleCurtain('leftCurtain')"><div class="access-orb"></div></div>
+    <div class="access-trigger trigger-right" onclick="toggleCurtain('rightCurtain')"><div class="access-orb"></div></div>
     <aside class="curtain left-curtain is-collapsed" id="leftCurtain"></aside>
 
     <main class="center-workspace">
       <section class="chart-box" id="chartContainer"></section>
-
-      <div class="middle-stack">
+      <div class="middle-stack" id="stack">
         
-        <section class="stack-card" id="card-asymmetry">
+        <section class="stack-card" id="card-1">
           <div class="card-visual-area">
             <div class="hud-meta hud-top-left"><span class="hud-title">Asymmetry Field</span></div>
             <div class="hud-meta hud-top-right">
               <span class="hud-category">Force</span>
-              <div class="glyph" onclick="toggleMode(this, 'menu')">⧉</div>
-              <div class="glyph" onclick="toggleMode(this, 'expand')">▿</div>
+              <div class="glyph" onclick="toggleMenu(1)">⧉</div>
+              <div class="glyph" onclick="toggleExpand(1)">▿</div>
             </div>
-            
-            <div class="slot-menu-surface">
-              <div class="menu-option">Replace Instrument</div>
-              <div class="menu-option">Add Instrument Below</div>
-            </div>
-
-            <canvas id="canvas-asymmetry" class="field-canvas"></canvas>
-            
+            <canvas id="canvas-1" class="field-canvas"></canvas>
             <div class="hud-meta hud-bottom-left">
               <div class="readout-item"><span class="readout-label">BIAS</span><span>0.419</span></div>
               <div class="readout-item"><span class="readout-label">VOL</span><span>0.177</span></div>
             </div>
           </div>
+          <div class="card-menu-overlay" id="menu-1">
+            <div class="menu-header">
+              <div class="header-left" id="header-left-1">Select Category</div>
+              <div class="close-btn" onclick="toggleMenu(1)">X</div>
+            </div>
+            <div class="menu-body" id="menu-body-1"></div>
+          </div>
         </section>
 
-        <section class="stack-card" id="card-entropy">
+        <section class="stack-card" id="card-2">
           <div class="card-visual-area">
             <div class="hud-meta hud-top-left"><span class="hud-title">Entropy Phase</span></div>
             <div class="hud-meta hud-top-right">
               <span class="hud-category">Environment</span>
-              <div class="glyph" onclick="toggleMode(this, 'menu')">⧉</div>
-              <div class="glyph" onclick="toggleMode(this, 'expand')">▿</div>
+              <div class="glyph" onclick="toggleMenu(2)">⧉</div>
+              <div class="glyph" onclick="toggleExpand(2)">▿</div>
             </div>
-
-            <div class="slot-menu-surface">
-              <div class="menu-option">Replace Instrument</div>
-              <div class="menu-option">Add Instrument Below</div>
-            </div>
-
-            <canvas id="canvas-entropy" class="field-canvas"></canvas>
-            
+            <canvas id="canvas-2" class="field-canvas"></canvas>
             <div class="hud-meta hud-bottom-left">
               <div class="readout-item"><span class="readout-label">ENTR</span><span>0.884</span></div>
               <div class="readout-item"><span class="readout-label">STAB</span><span>0.116</span></div>
             </div>
           </div>
+          <div class="card-menu-overlay" id="menu-2">
+            <div class="menu-header">
+              <div class="header-left" id="header-left-2">Select Category</div>
+              <div class="close-btn" onclick="toggleMenu(2)">X</div>
+            </div>
+            <div class="menu-body" id="menu-body-2"></div>
+          </div>
         </section>
 
       </div>
     </main>
-
     <aside class="curtain right-curtain is-collapsed" id="rightCurtain"></aside>
   </div>
-
   <footer class="bottom-menu-wrap">
-    <button class="menu-item">Order</button>
-    <button class="menu-item">Flow</button>
-    <button class="menu-item">Depth</button>
-    <button class="menu-item">Histo</button>
-    <button class="menu-item">Alert</button>
-    <button class="menu-item">Log</button>
-    <button class="menu-item" style="color:#111">▿</button>
+    <button class="menu-item">Order</button><button class="menu-item">Flow</button><button class="menu-item">Depth</button>
+    <button class="menu-item">Histo</button><button class="menu-item">Alert</button><button class="menu-item">Log</button>
   </footer>
 </div>
 
 <script>
-  function toggleCurtain(id) {
-    document.getElementById(id).classList.toggle('is-collapsed');
+  const categories = [
+    { id: 'Force', desc: 'Directional imbalance and push', items: ['Asymmetry Field', 'Momentum Vector', 'Participation Flux'] },
+    { id: 'Inertia', desc: 'Resistance and mass behavior', items: ['Inertia Field', 'Mass Classification', 'Inertia Decay'] },
+    { id: 'Environment', desc: 'Entropy, stability, conditions', items: ['Entropy Phase', 'Stability Index', 'Distortion Field'] },
+    { id: 'Resistance', desc: 'Friction, density, obstruction', items: ['Cost to Move', 'Liquidity Density', 'Slippage Friction'] },
+    { id: 'Interpretation', desc: 'Truth, confidence, clarity', items: ['Truth Field', 'Confidence Field', 'Precision Field'] },
+    { id: 'Decision', desc: 'Alignment, continuation, reversal', items: ['Alignment Score', 'Continuation Pressure', 'Reversal Pressure'] }
+  ];
+
+  function toggleCurtain(id) { document.getElementById(id).classList.toggle('is-collapsed'); }
+
+  function toggleExpand(id) {
+    const card = document.getElementById(`card-${id}`);
+    const isExpanded = card.classList.contains('is-expanded');
+    document.querySelectorAll('.stack-card').forEach(c => c.classList.remove('is-expanded'));
+    if (!isExpanded) card.classList.add('is-expanded');
   }
 
-  function toggleMode(el, mode) {
-    const card = el.closest('.stack-card');
-    if (mode === 'expand') {
-      const isExpanded = card.classList.contains('is-expanded');
-      document.querySelectorAll('.stack-card').forEach(c => c.classList.remove('is-expanded'));
-      if (!isExpanded) card.classList.add('is-expanded');
-    } 
-    else if (mode === 'menu') {
-      card.classList.toggle('mode-menu');
-    }
+  function toggleMenu(id) {
+    const card = document.getElementById(`card-${id}`);
+    const isOpen = card.classList.contains('mode-menu');
+    if (!isOpen) renderGrid(id);
+    card.classList.toggle('mode-menu');
   }
 
+  function renderGrid(cardId) {
+    const body = document.getElementById(`menu-body-${cardId}`);
+    const head = document.getElementById(`header-left-${cardId}`);
+    head.innerHTML = "Select Category";
+    
+    let html = '<div class="category-grid">';
+    categories.forEach(cat => {
+      html += `<div class="cat-box" onclick="renderInstruments(${cardId}, '${cat.id}')">
+                <div class="cat-title">${cat.id}</div>
+                <div class="cat-desc">${cat.desc}</div>
+              </div>`;
+    });
+    html += '</div>';
+    body.innerHTML = html;
+  }
+
+  function renderInstruments(cardId, catId) {
+    const body = document.getElementById(`menu-body-${cardId}`);
+    const head = document.getElementById(`header-left-${cardId}`);
+    const cat = categories.find(c => c.id === catId);
+    
+    head.innerHTML = `<span class="back-btn" onclick="renderGrid(${cardId})">←</span> ${catId}`;
+    
+    let html = '<div class="instrument-list">';
+    cat.items.forEach(inst => {
+      html += `<div class="inst-row" onclick="selectInstrument(${cardId}, '${inst}', '${catId}')">${inst}</div>`;
+    });
+    html += '</div>';
+    body.innerHTML = html;
+  }
+
+  function selectInstrument(cardId, instName, catName) {
+    const card = document.getElementById(`card-${cardId}`);
+    card.querySelector('.hud-title').innerText = instName;
+    card.querySelector('.hud-category').innerText = catName;
+    card.classList.remove('mode-menu');
+  }
+
+  // CHART
   const chart = LightweightCharts.createChart(document.getElementById('chartContainer'), {
-    layout: { background: { color: '#000' }, textColor: '#333', fontFamily: 'JetBrains Mono' },
-    grid: { vertLines: { color: '#040404' }, horzLines: { color: '#040404' } },
-    timeScale: { borderColor: '#000', timeVisible: true },
-    crosshair: { vertLine: { color: 'rgba(0, 229, 255, 0.05)' }, horzLine: { color: 'rgba(0, 229, 255, 0.05)' } },
+    layout: { background: { color: '#000' }, textColor: '#444' },
+    grid: { vertLines: { color: '#050505' }, horzLines: { color: '#050505' } },
+    timeScale: { borderColor: '#000' }
   });
-  
-  const candleSeries = chart.addCandlestickSeries({ 
-    upColor: '#00e5ff', downColor: '#000', 
-    borderVisible: true, borderUpColor: '#00e5ff', borderDownColor: '#00e5ff',
-    wickUpColor: '#00e5ff', wickDownColor: '#00e5ff' 
-  });
+  const candleSeries = chart.addCandlestickSeries({ upColor: '#00e5ff', downColor: '#000', borderVisible: true, borderUpColor: '#00e5ff', borderDownColor: '#00e5ff' });
+  const data = Array.from({length: 100}, (_, i) => ({ time: 1640995200 + i * 86400, open: 100+i, high: 105+i, low: 98+i, close: 103+i }));
+  candleSeries.setData(data);
 
-  const mockData = Array.from({length: 120}, (_, i) => ({
-    time: (Date.now() / 1000) - (120 - i) * 3600,
-    open: 50000 + (Math.random() * 200),
-    high: 50300 + (Math.random() * 200),
-    low: 49800 - (Math.random() * 200),
-    close: 50100 + (Math.random() * 200)
-  }));
-  candleSeries.setData(mockData);
-
-  function paintField(id) {
+  // CANVAS
+  function paint(id) {
     const canvas = document.getElementById(id);
     const ctx = canvas.getContext('2d');
-    const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
-    if (canvas.width !== rect.width * dpr) { canvas.width = rect.width * dpr; canvas.height = rect.height * dpr; ctx.scale(dpr, dpr); }
-    ctx.clearRect(0, 0, rect.width, rect.height);
-    ctx.beginPath(); ctx.strokeStyle = '#00e5ff'; ctx.lineWidth = 0.5; ctx.globalAlpha = 0.12;
-    const time = Date.now() * 0.001;
-    for(let x = 0; x < rect.width; x += 15) {
-      ctx.moveTo(x, rect.height * 0.8);
-      ctx.lineTo(x + Math.sin(x * 0.05 + time) * 8, (rect.height * 0.6) + Math.cos(time) * 10);
+    canvas.width = rect.width; canvas.height = rect.height;
+    ctx.strokeStyle = '#00e5ff'; ctx.lineWidth = 0.5; ctx.globalAlpha = 0.08;
+    const time = Date.now() * 0.0008;
+    ctx.beginPath();
+    for(let i = 0; i < 15; i++) {
+      let y = (rect.height * 0.5) + Math.sin(time + i) * 20;
+      ctx.moveTo(0, y); ctx.lineTo(rect.width, y + Math.cos(time + i) * 10);
     }
     ctx.stroke();
   }
-
-  function loop() {
-    paintField('canvas-asymmetry');
-    paintField('canvas-entropy');
-    requestAnimationFrame(loop);
-  }
+  function loop() { paint('canvas-1'); paint('canvas-2'); requestAnimationFrame(loop); }
   loop();
-
-  window.addEventListener('resize', () => {
-    chart.applyOptions({ width: document.getElementById('chartContainer').clientWidth });
-  });
 </script>
-
 </body>
 </html>
