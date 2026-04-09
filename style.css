@@ -1,41 +1,90 @@
-:root {
-  /* Core Neutrals */
-  --void-bg: #000000;
-  --rack-bg: #050505;
-  --panel-bg: #0a0a0a;
-  --border-low: #111111;
-  --text-main: #e8e8e8;
-  --text-dim: #666666;
-
-  /* Kinetic Accents (Default: TRON Blue) */
-  --accent-core: #00e5ff;
-  --accent-glow: rgba(0, 229, 255, 0.4);
-  --accent-surface: rgba(0, 229, 255, 0.05);
-}
-
-/* Color Toggles */
-[data-theme="red"] { --accent-core: #ff3e3e; --accent-glow: rgba(255, 62, 62, 0.4); }
-[data-theme="orange"] { --accent-core: #ff9f1c; --accent-glow: rgba(255, 159, 28, 0.4); }
-[data-theme="green"] { --accent-core: #2ec4b6; --accent-glow: rgba(46, 196, 182, 0.4); }
-
-/* The Breathing Animation */
-@keyframes breathe {
-  0% { box-shadow: inset 0 0 5px var(--accent-surface); }
-  50% { box-shadow: inset 0 0 15px var(--accent-surface); border-bottom-color: var(--accent-core); }
-  100% { box-shadow: inset 0 0 5px var(--accent-surface); }
-}
+```css
+/* UPDATED INSTRUMENT CARD MATERIAL */
 
 .stack-card { 
-  border-bottom: 1px solid var(--border-low); 
-  transition: all 0.3s ease;
+  background: #020202;
+  position: relative; 
+  overflow: hidden;
+  border-radius: 2px;
+  /* Lifted slab with sharper edge definition and dark depth */
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.9), 
+    inset 0 0 0 1px rgba(0, 229, 255, 0.08); 
+  transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
 }
 
-.stack-card:hover {
-  animation: breathe 3s infinite ease-in-out;
+.stack-card.is-expanded { 
+  background: #040404;
+  transform: translateY(-1px);
+  /* Increased edge definition for focus state */
+  box-shadow: 
+    0 15px 40px rgba(0, 0, 0, 1), 
+    inset 0 0 0 1px rgba(0, 229, 255, 0.2),
+    inset 0 0 12px rgba(0, 229, 255, 0.05);
 }
 
-.readout-item {
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  color: var(--accent-core);
-  text-shadow: 0 0 8px var(--accent-glow);
+.card-visual-area { 
+  width: 100%; 
+  position: relative; 
+  height: var(--card-compact); 
+  transition: height 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  /* Layered Background: 1. Edge Haze (Top) 2. Center Spotlight (Mid) 3. Black Base */
+  background: 
+    radial-gradient(circle at 50% 50%, transparent 40%, rgba(0, 229, 255, 0.03) 100%),
+    radial-gradient(circle at 50% 50%, rgba(0, 229, 255, 0.04) 0%, transparent 60%),
+    #000000;
 }
+
+/* HUD READABILITY & CONTRAST */
+
+.hud-title { 
+  font-size: 9px; 
+  font-weight: 800; 
+  letter-spacing: 1px; 
+  color: #777; /* Increased contrast from dim */
+  transition: color 0.3s; 
+}
+
+.stack-card.is-expanded .hud-title { 
+  color: var(--accent); 
+}
+
+.hud-category { 
+  font-size: 8px; 
+  color: #444; /* Slightly lifted from faint */
+  font-weight: 800; 
+}
+
+.hud-bottom-left { 
+  bottom: 0; 
+  left: 0; 
+  display: flex; 
+  gap: 16px; 
+  width: 100%; 
+  padding: 30px 12px 10px 12px; /* Increased vertical coverage for fade */
+  /* Stronger dark fade for readout protection */
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.7) 40%, transparent 100%); 
+}
+
+.readout-item { 
+  font-size: 10px; 
+  color: var(--accent); 
+  opacity: 0.6; 
+  transition: opacity 0.3s; 
+}
+
+.stack-card.is-expanded .readout-item { 
+  opacity: 1; 
+}
+
+/* MACHINED GLASS EDGE */
+.stack-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 1px 1px rgba(0, 229, 255, 0.05); /* Faint top-edge catch light */
+  z-index: 6;
+}
+
+```
