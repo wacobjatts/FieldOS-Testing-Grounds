@@ -3,95 +3,212 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>FieldOS / Kinetic - Physical Alignment Shell</title>
+  <title>FieldOS / Kinetic - Phase 1 Refinement</title>
   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
   <style>
     :root {
-      /* Core Neutrals */
-      --void-bg: #000000;
-      --rack-bg: #050505;
-      --panel-bg: #0a0a0a;
-      --border-low: #111111;
-      --text-main: #e8e8e8;
-      --text-dim: #666666;
-      --text-dark: #444444;
-
-      /* Kinetic Accents (Default: TRON Blue) */
-      --accent-core: #00e5ff;
+      /* THE CORE PALETTE */
+      --bg: #000000;
+      --bg-elev: #050505;
+      --panel: #0a0a0a;
+      --panel-2: #121212;
+      
+      /* THE ACCENT SYSTEM */
+      --accent: #00e5ff;
+      --accent-soft: rgba(0, 229, 255, 0.15);
       --accent-glow: rgba(0, 229, 255, 0.4);
-      --accent-surface: rgba(0, 229, 255, 0.05);
+      
+      /* LINE WORK */
+      --line: #141414;
+      --line-strong: #1a1a1a;
+      
+      /* TYPOGRAPHY */
+      --text: #e8e8e8;
+      --text-dim: #888888;
+      --text-faint: #444444;
+      
+      --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
-    [data-theme="red"] { --accent-core: #ff3e3e; --accent-glow: rgba(255, 62, 62, 0.4); }
-    [data-theme="orange"] { --accent-core: #ff9f1c; --accent-glow: rgba(255, 159, 28, 0.4); }
-    [data-theme="green"] { --accent-core: #2ec4b6; --accent-glow: rgba(46, 196, 182, 0.4); }
-
-    html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--void-bg); color: var(--text-main); font-family: -apple-system, sans-serif; overflow: hidden; }
+    html, body { 
+      margin: 0; padding: 0; width: 100%; height: 100%; 
+      background: var(--bg); color: var(--text); 
+      font-family: var(--font-sans); overflow: hidden; 
+    }
+    
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-    .app-shell { position: fixed; inset: 0; display: grid; grid-template-rows: 1fr auto; padding: env(safe-area-inset-top) 10px env(safe-area-inset-bottom) 10px; }
-    .workspace-shell { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; min-height: 0; overflow: hidden; }
+    /* SHELL ARCHITECTURE */
+    .app-shell { 
+      position: fixed; inset: 0; 
+      display: grid; grid-template-rows: 1fr auto; 
+      padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) 0; 
+    }
+    
+    .workspace-shell { 
+      display: grid; grid-template-columns: auto 1fr auto; 
+      gap: 1px; /* Sharp technical spacing */
+      min-height: 0; overflow: hidden;
+      background: var(--line); /* Acting as a thin grid line */
+    }
 
-    /* CURTAINS */
-    .curtain { height: 100%; overflow: hidden; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; border: 1px solid var(--border-low); background: var(--rack-bg); }
-    .left-curtain { width: 130px; }
-    .right-curtain { width: 120px; }
-    .curtain.is-collapsed { width: 24px !important; border-color: transparent; }
+    /* CURTAINS (INSTRUMENT RAILS) */
+    .curtain { 
+      height: 100%; overflow: hidden; 
+      transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); 
+      display: flex; background: var(--bg-elev);
+      position: relative;
+    }
+    .left-curtain { width: 140px; border-right: 1px solid var(--line-strong); }
+    .right-curtain { width: 130px; border-left: 1px solid var(--line-strong); }
+    .curtain.is-collapsed { width: 28px !important; }
 
-    .curtain-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 8px; }
-    .curtain.is-collapsed .curtain-content { display: none; }
-    .curtain-handle { width: 24px; background: var(--panel-bg); color: var(--text-dim); cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; border: none; outline: none; transition: color 0.2s; }
-    .curtain-handle:hover { color: var(--accent-core); }
+    .curtain-content { 
+      flex: 1; display: flex; flex-direction: column; 
+      overflow: hidden; padding: 12px 8px; 
+    }
+    .curtain.is-collapsed .curtain-content { opacity: 0; pointer-events: none; }
+    
+    .curtain-handle { 
+      width: 28px; background: var(--panel); 
+      color: var(--text-faint); cursor: pointer; 
+      display: flex; align-items: center; justify-content: center; 
+      font-size: 12px; border: none; transition: all 0.2s;
+    }
+    .curtain-handle:hover { color: var(--accent); background: var(--panel-2); }
 
-    /* CENTER WORKSPACE */
-    .center-workspace { display: flex; flex-direction: column; overflow-y: auto; gap: 6px; scrollbar-width: none; }
+    /* CENTER WORKSPACE (REACTOR CHAMBER) */
+    .center-workspace { 
+      display: flex; flex-direction: column; 
+      overflow-y: auto; background: var(--bg);
+      scrollbar-width: none;
+    }
     .center-workspace::-webkit-scrollbar { display: none; }
     
-    .chart-box { position: sticky; top: 0; z-index: 20; background: var(--void-bg); width: 100%; aspect-ratio: 1.1 / 1; border: 1px solid var(--border-low); }
-
-    /* STACK CARDS */
-    .middle-stack { display: flex; flex-direction: column; gap: 6px; }
-    .stack-card { background: var(--void-bg); display: flex; flex-direction: column; border-bottom: 1px solid var(--border-low); transition: border 0.3s; }
-    
-    @keyframes breathe {
-      0%, 100% { box-shadow: inset 0 0 5px var(--accent-surface); }
-      50% { box-shadow: inset 0 0 15px var(--accent-surface); border-bottom-color: var(--accent-core); }
+    /* CHART BOX (MAIN STAGE) */
+    .chart-box { 
+      position: sticky; top: 0; z-index: 20; 
+      background: var(--bg); width: 100%; 
+      aspect-ratio: 1.1 / 1; 
+      border-bottom: 2px solid var(--line-strong);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     }
-    .stack-card:hover { animation: breathe 3s infinite ease-in-out; }
 
-    .card-header { padding: 8px 6px; display: flex; justify-content: space-between; align-items: center; }
-    .card-title { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; margin: 0; color: var(--text-main); }
-    .card-category { font-size: 8px; color: var(--text-dark); text-transform: uppercase; font-weight: bold; }
+    /* INSTRUMENT STACK */
+    .middle-stack { display: flex; flex-direction: column; padding: 8px; gap: 8px; }
     
-    .card-visual-area { background: var(--rack-bg); height: 100px; width: 100%; position: relative; overflow: hidden; border-top: 1px solid var(--border-low); }
-    .card-readout { display: flex; gap: 12px; padding: 6px; background: var(--void-bg); border-top: 1px solid var(--border-low); }
-    
-    .readout-item { font-size: 10px; font-family: 'JetBrains Mono', monospace; color: var(--accent-core); text-shadow: 0 0 8px var(--accent-glow); }
-    .readout-label { color: var(--text-dark); margin-right: 4px; font-weight: bold; }
+    .stack-card { 
+      background: var(--bg-elev); 
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      display: flex; flex-direction: column; 
+      transition: border 0.3s, transform 0.2s;
+    }
+    .stack-card:hover { border-color: var(--accent-soft); }
 
-    /* MENU */
-    .bottom-menu-wrap { height: 54px; display: grid; grid-template-columns: repeat(6, 1fr) 40px; background: var(--void-bg); border-top: 1px solid var(--border-low); }
-    .menu-item { background: transparent; border: none; color: var(--text-main); font-size: 8px; text-transform: uppercase; cursor: pointer; letter-spacing: 1px; }
+    .card-header { 
+      padding: 10px 12px; 
+      display: flex; justify-content: space-between; align-items: center; 
+      border-bottom: 1px solid var(--line);
+    }
+    .card-title { 
+      font-size: 11px; font-weight: 700; 
+      text-transform: uppercase; letter-spacing: 1.2px; 
+      margin: 0; color: var(--text); 
+    }
+    .card-category { 
+      font-size: 9px; color: var(--text-faint); 
+      text-transform: uppercase; font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+    
+    .card-visual-area { 
+      background: #020202; 
+      height: 110px; width: 100%; 
+      position: relative; overflow: hidden; 
+    }
+    
+    .card-readout { 
+      display: flex; gap: 16px; 
+      padding: 10px 12px; 
+      background: var(--panel);
+      border-top: 1px solid var(--line);
+    }
+    .readout-item { 
+      font-size: 11px; font-family: var(--font-mono); 
+      color: var(--accent);
+    }
+    .readout-label { 
+      color: var(--text-faint); margin-right: 6px; 
+      font-size: 9px; font-weight: bold;
+    }
+
+    /* BOTTOM MENU (UTILITY STRIP) */
+    .bottom-menu-wrap { 
+      height: 58px; display: grid; 
+      grid-template-columns: repeat(6, 1fr) 40px; 
+      background: var(--panel);
+      border-top: 1px solid var(--line-strong);
+    }
+    .menu-item { 
+      background: transparent; border: none; 
+      color: var(--text-dim); font-size: 9px; 
+      text-transform: uppercase; cursor: pointer;
+      font-weight: 600; letter-spacing: 0.5px;
+      transition: color 0.2s, background 0.2s;
+    }
+    .menu-item:hover { color: var(--accent); background: rgba(255,255,255,0.02); }
+
+    /* UTILITY CLASSES */
+    .panel-title { 
+      font-size: 10px; font-weight: 800; 
+      text-transform: uppercase; letter-spacing: 1.5px; 
+      color: var(--text-faint); margin-bottom: 12px; 
+    }
+    .ghost-btn { 
+      background: var(--panel-2); border: 1px solid var(--line); 
+      color: var(--text-dim); padding: 8px 16px; 
+      font-size: 10px; font-weight: 700;
+      text-transform: uppercase; cursor: pointer; 
+      transition: all 0.2s;
+    }
+    .ghost-btn:hover { color: var(--accent); border-color: var(--accent-soft); }
+    
+    .icon-btn { 
+      background: transparent; border: none; color: var(--text-faint); 
+      width: 24px; height: 24px; cursor: pointer; 
+      display: flex; align-items: center; justify-content: center; 
+      transition: color 0.2s;
+    }
+    .icon-btn:hover { color: var(--accent); }
   </style>
 </head>
 <body>
 
 <div class="app-shell">
   <div class="workspace-shell">
+    
     <aside class="curtain left-curtain" id="leftCurtain">
       <div class="curtain-content">
-        <div style="font-size: 10px; color: var(--text-dim); margin-bottom: 10px;">WATCHLIST</div>
-      </div>
-      <button class="curtain-handle" onclick="toggleCurtain('leftCurtain')">‹</button>
+        <div class="panel-title">Fields</div>
+        <div style="flex:1"></div> </div>
+      <button class="curtain-handle" onclick="toggleCurtain('leftCurtain')">◂</button>
     </aside>
 
     <main class="center-workspace">
       <section class="chart-box" id="chartContainer"></section>
 
-      <div class="middle-stack">
+      <div class="middle-stack" id="middleStack">
+        
         <section class="stack-card" id="card-asymmetry-field">
-          <div class="card-header"><h3 class="card-title">Asymmetry Field</h3><span class="card-category">Force</span></div>
-          <div class="card-visual-area"><canvas id="canvas-asymmetry"></canvas></div>
+          <div class="card-header">
+            <h3 class="card-title">Asymmetry Field</h3>
+            <span class="card-category">Force</span>
+          </div>
+          <div class="card-visual-area">
+            <canvas id="canvas-asymmetry"></canvas>
+          </div>
           <div class="card-readout">
             <div class="readout-item"><span class="readout-label">BIAS</span><span id="val-bias">0</span></div>
             <div class="readout-item"><span class="readout-label">EFFORT</span><span id="val-effort">0</span></div>
@@ -99,8 +216,13 @@
         </section>
 
         <section class="stack-card" id="card-entropy-phase">
-          <div class="card-header"><h3 class="card-title">Entropy Phase</h3><span class="card-category">Environment</span></div>
-          <div class="card-visual-area"><canvas id="canvas-entropy"></canvas></div>
+          <div class="card-header">
+            <h3 class="card-title">Entropy Phase</h3>
+            <span class="card-category">Environment</span>
+          </div>
+          <div class="card-visual-area">
+            <canvas id="canvas-entropy"></canvas>
+          </div>
           <div class="card-readout">
             <div class="readout-item"><span class="readout-label">DISORDER</span><span id="val-disorder">0</span></div>
             <div class="readout-item"><span class="readout-label">STABILITY</span><span id="val-stability">0</span></div>
@@ -108,20 +230,27 @@
         </section>
 
         <section class="stack-card" id="card-inertia-field">
-          <div class="card-header"><h3 class="card-title">Inertia Field</h3><span class="card-category">Inertia</span></div>
-          <div class="card-visual-area"><canvas id="canvas-inertia"></canvas></div>
+          <div class="card-header">
+            <h3 class="card-title">Inertia Field</h3>
+            <span class="card-category">Inertia</span>
+          </div>
+          <div class="card-visual-area">
+            <canvas id="canvas-inertia"></canvas>
+          </div>
           <div class="card-readout">
             <div class="readout-item"><span class="readout-label">INERTIA</span><span id="val-inertia">0</span></div>
             <div class="readout-item"><span class="readout-label">MASS</span><span id="val-mass">0</span></div>
           </div>
         </section>
+        
+        <button class="ghost-btn" style="margin: 12px 0 24px 0;">+ Integrate Tool</button>
       </div>
     </main>
 
     <aside class="curtain right-curtain" id="rightCurtain">
-      <button class="curtain-handle" onclick="toggleCurtain('rightCurtain')">›</button>
+      <button class="curtain-handle" onclick="toggleCurtain('rightCurtain')">▸</button>
       <div class="curtain-content">
-        <div style="font-size: 10px; color: var(--text-dim);">SYSTEM</div>
+        <div class="panel-title">Intelligence</div>
       </div>
     </aside>
   </div>
@@ -133,32 +262,35 @@
     <button class="menu-item">Book</button>
     <button class="menu-item">Sig</button>
     <button class="menu-item">News</button>
-    <button class="menu-item">⌄</button>
+    <button class="menu-item" style="font-size: 14px; color: var(--text-faint)">▾</button>
   </footer>
 </div>
 
 <script>
-  // 1. CHART ENGINE
-  const chart = LightweightCharts.createChart(document.getElementById('chartContainer'), {
-    layout: { background: { color: '#000' }, textColor: '#ccc', fontFamily: 'JetBrains Mono' },
-    grid: { vertLines: { color: '#0a0a0a' }, horzLines: { color: '#0a0a0a' } },
-    timeScale: { borderColor: '#111' },
-  });
-  const candleSeries = chart.addCandlestickSeries({
-    upColor: '#00e5ff', downColor: '#333', borderVisible: false, wickUpColor: '#00e5ff', wickDownColor: '#333'
-  });
-
-  // Mock Data
-  const data = []; let time = new Date(2026, 0, 1);
-  for(let i=0; i<100; i++) {
-    data.push({ time: time.toISOString().split('T')[0], open: 100+i, high: 105+i, low: 98+i, close: 103+i });
-    time.setDate(time.getDate() + 1);
-  }
-  candleSeries.setData(data);
-
-  // 2. PAINTERS & ENGINE
+  // --- CORE SYSTEM LOGIC (PRESERVED) ---
   function toggleCurtain(id) { document.getElementById(id).classList.toggle('is-collapsed'); }
 
+  // --- CHART ENGINE INITIALIZATION ---
+  const chart = LightweightCharts.createChart(document.getElementById('chartContainer'), {
+    layout: { background: { color: '#000' }, textColor: '#888', fontFamily: 'JetBrains Mono' },
+    grid: { vertLines: { color: '#080808' }, horzLines: { color: '#080808' } },
+    timeScale: { borderColor: '#111' },
+    crosshair: { vertLine: { color: '#00e5ff33' }, horzLine: { color: '#00e5ff33' } }
+  });
+  
+  const candleSeries = chart.addCandlestickSeries({
+    upColor: '#00e5ff', downColor: '#222', borderVisible: false, wickUpColor: '#00e5ff', wickDownColor: '#222'
+  });
+
+  // MOCK DATA
+  const mockData = []; let t = new Date(2026, 0, 1);
+  for(let i=0; i<100; i++) {
+    mockData.push({ time: t.toISOString().split('T')[0], open: 100+i, high: 105+i, low: 98+i, close: 103+i });
+    t.setDate(t.getDate() + 1);
+  }
+  candleSeries.setData(mockData);
+
+  // --- GENERIC PAINTER (PLACEHOLDER) ---
   function paintGeneric(id, color) {
     const canvas = document.getElementById(id);
     if (!canvas) return;
@@ -168,20 +300,26 @@
     canvas.width = rect.width * dpr; canvas.height = rect.height * dpr;
     ctx.scale(dpr, dpr);
     ctx.clearRect(0,0,rect.width, rect.height);
+    
     ctx.beginPath();
     ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    ctx.globalAlpha = 0.6;
     ctx.moveTo(0, rect.height * 0.8);
-    for(let x=0; x<rect.width; x+=5) ctx.lineTo(x, rect.height * 0.8 - Math.random() * 40);
+    for(let x=0; x<rect.width; x+=8) {
+      ctx.lineTo(x, rect.height * 0.8 - Math.random() * 50);
+    }
     ctx.stroke();
   }
 
   function loop() {
     paintGeneric('canvas-asymmetry', '#00e5ff');
-    paintGeneric('canvas-entropy', '#ff9f1c');
-    paintGeneric('canvas-inertia', '#2ec4b6');
+    paintGeneric('canvas-entropy', '#00e5ff');
+    paintGeneric('canvas-inertia', '#00e5ff');
     requestAnimationFrame(loop);
   }
   loop();
 </script>
+
 </body>
 </html>
