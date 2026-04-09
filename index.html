@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>FieldOS / Kinetic - Action System</title>
+  <title>FieldOS / Kinetic - Density Pass</title>
   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
   <style>
     :root {
@@ -19,7 +19,7 @@
       --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
       --card-compact: 105px;
       --card-expanded: 185px;
-      --card-menu-height: 310px; /* Increased for action row */
+      --card-menu-height: 310px;
       --chart-height: 42vh;
     }
 
@@ -56,7 +56,7 @@
     .stack-card { 
       background: var(--glass-base); position: relative; overflow: hidden; border-radius: 1px;
       box-shadow: 0 12px 35px rgba(0,0,0,0.9); border: 1px solid var(--glass-border);
-      transition: transform 0.3s, height 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s;
+      transition: height 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s;
       height: var(--card-compact); flex-shrink: 0;
     }
     .stack-card.is-expanded { height: var(--card-expanded); border-color: var(--accent); }
@@ -67,51 +67,61 @@
       background: linear-gradient(160deg, var(--glass-frost) 0%, transparent 60%), radial-gradient(circle at 20% 0%, rgba(150, 230, 255, 0.05) 0%, transparent 50%);
     }
 
-    .field-canvas { width: 100%; height: 100%; position: absolute; inset: 0; pointer-events: none; }
+    .field-canvas { width: 100%; height: 100%; position: absolute; inset: 0; pointer-events: none; transition: opacity 0.3s; }
+    .stack-card.is-data-mode .field-canvas { opacity: 0; }
 
-    .hud-meta { position: absolute; padding: 12px; z-index: 5; font-family: var(--font-mono); text-transform: uppercase; }
+    /* HUD */
+    .hud-meta { position: absolute; padding: 12px; z-index: 5; font-family: var(--font-mono); text-transform: uppercase; transition: opacity 0.2s; }
     .hud-top-left { top: 0; left: 0; pointer-events: none; }
-    .hud-top-right { top: 0; right: 0; display: flex; align-items: center; gap: 16px; pointer-events: auto; }
+    .hud-top-right { top: 0; right: 0; display: flex; align-items: center; gap: 10px; pointer-events: auto; }
     .hud-title { font-size: 11px; font-weight: 800; color: var(--text-main); letter-spacing: 0.5px; }
     .hud-category { font-size: 8px; color: var(--text-dim); font-weight: 600; }
     
+    /* VIS MODE HUD DENSITY */
     .hud-bottom-left { 
       bottom: 0; left: 0; display: flex; gap: 16px; width: 100%; 
       padding: 35px 12px 12px 12px; pointer-events: none;
       background: linear-gradient(0deg, var(--glass-base) 20%, transparent 100%); 
     }
+    .stack-card:not(.is-data-mode) .hud-bottom-left { opacity: 0.15; filter: blur(1px); } /* Strongly minimize in VIS */
+
     .readout-item { font-size: 10px; color: var(--accent); font-weight: 700; }
     .readout-label { color: #555; margin-right: 4px; font-size: 8px; }
 
     .glyph { width: 22px; height: 22px; cursor: pointer; color: #444; display: flex; align-items: center; justify-content: center; font-size: 11px; }
     .glyph:active { color: var(--accent); }
 
+    /* MODE TOGGLE */
+    .mode-toggle { display: flex; background: #080808; border: 1px solid #1a1a1a; padding: 2px; gap: 2px; }
+    .mode-btn { border: none; background: transparent; color: #444; font-family: var(--font-mono); font-size: 8px; font-weight: 800; cursor: pointer; padding: 3px 6px; }
+    .mode-btn.is-active { color: var(--accent); background: rgba(0, 229, 255, 0.08); }
+
+    /* DATA PANEL */
+    .data-panel { position: absolute; inset: 40px 12px 40px 12px; display: none; flex-direction: column; gap: 6px; pointer-events: none; font-family: var(--font-mono); }
+    .stack-card.is-data-mode .data-panel { display: flex; }
+    .data-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #101010; padding-bottom: 4px; }
+    .data-label { font-size: 8px; color: #555; }
+    .data-val { font-size: 10px; color: var(--text-main); font-weight: 600; }
+    .data-bar-wrap { width: 100%; height: 2px; background: #111; margin-top: 2px; overflow: hidden; }
+    .data-bar { height: 100%; background: var(--accent); transition: width 0.5s; }
+    .data-status { font-size: 8px; color: var(--accent); letter-spacing: 1px; margin-top: 4px; text-transform: uppercase; font-weight: 700; }
+
     /* MENU SYSTEM */
     .card-menu-overlay { position: absolute; inset: 0; background: var(--glass-base); z-index: 50; display: none; flex-direction: column; font-family: var(--font-mono); }
     .stack-card.mode-menu .card-menu-overlay { display: flex; }
-
     .menu-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border-bottom: 1px solid #1a1a1a; }
     .header-left { display: flex; align-items: center; gap: 8px; font-size: 9px; color: var(--accent); text-transform: uppercase; }
     .close-btn { cursor: pointer; font-size: 12px; color: #555; padding: 4px; }
-
-    /* ACTION ROW */
-    .action-row { display: grid; grid-template-columns: 1fr 1fr; padding: 10px 14px; gap: 1px; background: #0a0a0a; border-bottom: 1px solid #1a1a1a; }
-    .action-btn { 
-      background: transparent; border: none; color: #444; font-family: var(--font-mono); 
-      font-size: 8px; text-transform: uppercase; padding: 8px; cursor: pointer; 
-      letter-spacing: 1px; text-align: center; transition: all 0.2s;
-    }
+    .action-row { display: grid; grid-template-columns: 1fr 1fr; padding: 10px 14px; gap: 1px; background: #0a0a0a; border-bottom: 1px solid #1a1a1a; flex-shrink: 0; }
+    .action-btn { background: transparent; border: none; color: #444; font-family: var(--font-mono); font-size: 8px; text-transform: uppercase; padding: 8px; cursor: pointer; letter-spacing: 1px; text-align: center; }
     .action-btn.is-active { color: var(--accent); background: rgba(0, 229, 255, 0.05); }
-
     .menu-body { flex: 1; overflow-y: auto; padding: 10px; scrollbar-width: none; }
     .menu-body::-webkit-scrollbar { display: none; }
-
     .category-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .cat-box { background: #080808; border: 1px solid #1a1a1a; padding: 12px; cursor: pointer; }
     .cat-box:active { border-color: var(--accent); }
     .cat-title { font-size: 9px; color: var(--text-main); margin-bottom: 4px; text-transform: uppercase; }
     .cat-desc { font-size: 7px; color: #555; line-height: 1.2; text-transform: none; }
-
     .instrument-list { display: flex; flex-direction: column; gap: 4px; }
     .inst-row { padding: 12px; background: #080808; font-size: 10px; text-transform: uppercase; color: #666; cursor: pointer; border-left: 2px solid transparent; }
     .inst-row:active { color: var(--accent); border-left-color: var(--accent); }
@@ -138,41 +148,55 @@
         <script>
             let cardCounter = 0;
             const instrumentData = {
-                Force: { desc: 'directional imbalance and push', items: ['Asymmetry Field', 'Momentum Vector', 'Participation Flux'] },
-                Inertia: { desc: 'resistance and mass behavior', items: ['Inertia Field', 'Mass Classification', 'Inertia Decay'] },
-                Environment: { desc: 'entropy, stability, conditions', items: ['Entropy Phase', 'Stability Index', 'Distortion Field'] },
-                Resistance: { desc: 'friction, density, obstruction', items: ['Cost to Move', 'Liquidity Density', 'Slippage Friction'] },
-                Interpretation: { desc: 'truth, confidence, clarity', items: ['Truth Field', 'Confidence Field', 'Precision Field'] },
-                Decision: { desc: 'alignment, continuation, reversal pressure', items: ['Alignment Score', 'Continuation Pressure', 'Reversal Pressure'] }
+                Force: { desc: 'directional imbalance and push', items: ['Asymmetry Field', 'Momentum Vector', 'Participation Flux'], labels: ['BIAS', 'VOL'], data: ['Bias', 'Volume', 'Pressure'], status: 'Building' },
+                Inertia: { desc: 'resistance and mass behavior', items: ['Inertia Field', 'Mass Classification', 'Inertia Decay'], labels: ['MASS', 'DECAY'], data: ['Mass', 'Decay', 'Resistance'], status: 'Heavy / Weak' },
+                Environment: { desc: 'entropy, stability, conditions', items: ['Entropy Phase', 'Stability Index', 'Distortion Field'], labels: ['ENTR', 'STAB'], data: ['Entropy', 'Stability', 'Distortion'], status: 'Calm / Unstable' },
+                Resistance: { desc: 'friction, density, obstruction', items: ['Cost to Move', 'Liquidity Density', 'Slippage Friction'], labels: ['COST', 'SLIP'], data: ['Cost', 'Slip', 'Density'], status: 'Thick / Thin' },
+                Interpretation: { desc: 'truth, confidence, clarity', items: ['Truth Field', 'Confidence Field', 'Precision Field'], labels: ['TRUTH', 'CONF'], data: ['Truth', 'Confidence', 'Precision'], status: 'Valid / Unclear' },
+                Decision: { desc: 'alignment, continuation, reversal pressure', items: ['Alignment Score', 'Continuation Pressure', 'Reversal Pressure'], labels: ['ALIGN', 'REV'], data: ['Alignment', 'Reversal', 'Continuation'], status: 'Ready / Early' }
             };
 
-            function createCard(title, category) {
+            function createCard(title, category, labels) {
                 cardCounter++;
                 const id = cardCounter;
                 const card = document.createElement('section');
                 card.className = 'stack-card';
                 card.id = `card-${id}`;
                 card.dataset.actionMode = 'replace';
+                card.dataset.viewMode = 'vis';
                 
+                const d = instrumentData[category] || instrumentData['Force'];
+                const useLabels = labels || d.labels;
+
                 card.innerHTML = `
                     <div class="card-visual-area">
                         <div class="hud-meta hud-top-left"><span class="hud-title">${title}</span></div>
                         <div class="hud-top-right hud-meta">
+                            <div class="mode-toggle">
+                                <button class="mode-btn is-active" id="v-vis-${id}" onclick="setCardView(${id}, 'vis')">VIS</button>
+                                <button class="mode-btn" id="v-data-${id}" onclick="setCardView(${id}, 'data')">DATA</button>
+                            </div>
                             <span class="hud-category">${category}</span>
                             <div class="glyph" onclick="toggleMenu(${id})">⧉</div>
                             <div class="glyph" onclick="toggleExpand(${id})">▿</div>
                         </div>
                         <canvas id="canvas-${id}" class="field-canvas"></canvas>
+                        
+                        <div class="data-panel" id="data-panel-${id}">
+                            <div class="data-row"><span class="data-label">${d.data[0]}</span><span class="data-val">0.${Math.floor(Math.random()*900)+100}</span></div>
+                            <div class="data-row"><span class="data-label">${d.data[1]}</span><span class="data-val">0.${Math.floor(Math.random()*900)+100}</span></div>
+                            <div class="data-row"><span class="data-label">${d.data[2]}</span><span class="data-val">0.${Math.floor(Math.random()*900)+100}</span></div>
+                            <div class="data-bar-wrap"><div class="data-bar" style="width: ${Math.floor(Math.random()*60)+20}%"></div></div>
+                            <div class="data-status">${d.status}</div>
+                        </div>
+
                         <div class="hud-bottom-left hud-meta">
-                            <div class="readout-item"><span class="readout-label">SIG</span><span>0.${Math.floor(Math.random()*900)+100}</span></div>
-                            <div class="readout-item"><span class="readout-label">VAL</span><span>0.${Math.floor(Math.random()*900)+100}</span></div>
+                            <div class="readout-item"><span class="readout-label">${useLabels[0]}</span><span>0.${Math.floor(Math.random()*900)+100}</span></div>
+                            <div class="readout-item"><span class="readout-label">${useLabels[1]}</span><span>0.${Math.floor(Math.random()*900)+100}</span></div>
                         </div>
                     </div>
                     <div class="card-menu-overlay" id="menu-${id}">
-                        <div class="menu-header">
-                            <div class="header-left" id="head-label-${id}">Instrument Menu</div>
-                            <div class="close-btn" onclick="toggleMenu(${id})">X</div>
-                        </div>
+                        <div class="menu-header"><div class="header-left" id="head-label-${id}">Instrument Menu</div><div class="close-btn" onclick="toggleMenu(${id})">X</div></div>
                         <div class="action-row" id="action-row-${id}">
                             <button class="action-btn is-active" id="btn-replace-${id}" onclick="setActionMode(${id}, 'replace')">Replace</button>
                             <button class="action-btn" id="btn-add-${id}" onclick="setActionMode(${id}, 'add')">Add Below</button>
@@ -185,8 +209,8 @@
 
             function initStack() {
                 const stack = document.getElementById('stack');
-                stack.appendChild(createCard('Asymmetry Field', 'Force'));
-                stack.appendChild(createCard('Entropy Phase', 'Environment'));
+                stack.appendChild(createCard('Asymmetry Field', 'Force', ['BIAS', 'VOL']));
+                stack.appendChild(createCard('Entropy Phase', 'Environment', ['ENTR', 'STAB']));
             }
             initStack();
         </script>
@@ -206,10 +230,15 @@
     const btn = document.getElementById('fsBtn');
     if (!isFS) { document.body.classList.add('chart-fullscreen'); btn.innerText = '[ EXIT ]'; } 
     else { document.body.classList.remove('chart-fullscreen'); btn.innerText = '[ FS ]'; }
-    requestAnimationFrame(() => {
-        chart.resize(document.getElementById('chartContainer').clientWidth, document.getElementById('chartContainer').clientHeight);
-        chart.timeScale().fitContent();
-    });
+    requestAnimationFrame(() => { chart.resize(document.getElementById('chartContainer').clientWidth, document.getElementById('chartContainer').clientHeight); });
+  }
+
+  function setCardView(id, mode) {
+    const card = document.getElementById(`card-${id}`);
+    card.dataset.viewMode = mode;
+    card.classList.toggle('is-data-mode', mode === 'data');
+    document.getElementById(`v-vis-${id}`).classList.toggle('is-active', mode === 'vis');
+    document.getElementById(`v-data-${id}`).classList.toggle('is-active', mode === 'data');
   }
 
   function toggleCurtain(id) { document.getElementById(id).classList.toggle('is-collapsed'); }
@@ -225,7 +254,7 @@
   function toggleMenu(id) {
     const card = document.getElementById(`card-${id}`);
     if (!card.classList.contains('mode-menu')) {
-        card.dataset.actionMode = 'replace';
+        setActionMode(id, 'replace');
         renderGrid(id);
         card.classList.add('mode-menu');
         card.classList.remove('is-expanded');
@@ -244,16 +273,10 @@
   function renderGrid(id) {
     const body = document.getElementById(`menu-body-${id}`);
     const head = document.getElementById(`head-label-${id}`);
-    const row = document.getElementById(`action-row-${id}`);
     head.innerHTML = "Instrument Menu";
-    row.style.display = "grid";
-    
     let html = '<div class="category-grid">';
     for (let cat in instrumentData) {
-        html += `<div class="cat-box" onclick="renderInstruments(${id}, '${cat}')">
-                    <div class="cat-title">${cat}</div>
-                    <div class="cat-desc">${instrumentData[cat].desc}</div>
-                </div>`;
+        html += `<div class="cat-box" onclick="renderInstruments(${id}, '${cat}')"><div class="cat-title">${cat}</div><div class="cat-desc">${instrumentData[cat].desc}</div></div>`;
     }
     body.innerHTML = html + '</div>';
   }
@@ -261,10 +284,7 @@
   function renderInstruments(id, cat) {
     const body = document.getElementById(`menu-body-${id}`);
     const head = document.getElementById(`head-label-${id}`);
-    const row = document.getElementById(`action-row-${id}`);
     head.innerHTML = `<span class="back-btn" onclick="renderGrid(${id})">←</span> ${cat}`;
-    row.style.display = "none";
-    
     let html = '<div class="instrument-list">';
     instrumentData[cat].items.forEach(inst => {
         html += `<div class="inst-row" onclick="selectInstrument(${id}, '${inst}', '${cat}')">${inst}</div>`;
@@ -275,18 +295,25 @@
   function selectInstrument(id, inst, cat) {
     const card = document.getElementById(`card-${id}`);
     const mode = card.dataset.actionMode;
+    const d = instrumentData[cat];
     
     if (mode === 'replace') {
         card.querySelector('.hud-title').innerText = inst;
         card.querySelector('.hud-category').innerText = cat;
+        card.querySelectorAll('.readout-label')[0].innerText = d.labels[0];
+        card.querySelectorAll('.readout-label')[1].innerText = d.labels[1];
+        
+        const dp = card.querySelector('.data-panel');
+        dp.querySelectorAll('.data-label')[0].innerText = d.data[0];
+        dp.querySelectorAll('.data-label')[1].innerText = d.data[1];
+        dp.querySelectorAll('.data-label')[2].innerText = d.data[2];
+        dp.querySelector('.data-status').innerText = d.status;
     } else {
-        const newCard = createCard(inst, cat);
-        card.after(newCard);
+        card.after(createCard(inst, cat, d.labels));
     }
     card.classList.remove('mode-menu');
   }
 
-  // CHART SETUP
   const chart = LightweightCharts.createChart(document.getElementById('chartContainer'), {
     layout: { background: { color: '#000' }, textColor: '#444' },
     grid: { vertLines: { color: '#050505' }, horzLines: { color: '#050505' } },
@@ -295,7 +322,6 @@
   const candleSeries = chart.addCandlestickSeries({ upColor: '#00e5ff', downColor: '#000', borderVisible: true, borderUpColor: '#00e5ff', borderDownColor: '#00e5ff' });
   candleSeries.setData(Array.from({length: 120}, (_, i) => ({ time: 1640995200 + i * 86400, open: 100+i, high: 105+i, low: 98+i, close: 103+i })));
 
-  // CANVAS ANIMATION
   function paint() {
     document.querySelectorAll('.field-canvas').forEach(canvas => {
         const ctx = canvas.getContext('2d');
