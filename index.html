@@ -1,381 +1,63 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>FieldOS / Kinetic - Displacement Field Connection</title>
-  <style>
-    /* GLOBAL STYLES - PRESERVED FROM SHELL */
-    html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #000000; color: #e8e8e8; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; overflow: hidden; }
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+<div class="middle-stack" id="middleStack">
+  
+  <section class="stack-card" id="card-asymmetry-field">
+    <div class="card-header">
+      <h3 class="card-title">Asymmetry Field</h3>
+      <span class="card-category">Force</span>
+    </div>
+    <div class="card-visual-area">
+      <canvas id="canvas-asymmetry" style="width:100%; height:100%;"></canvas>
+    </div>
+    <div class="card-readout">
+      <div class="readout-item"><span class="readout-label">BIAS</span><span id="val-bias">0</span></div>
+      <div class="readout-item"><span class="readout-label">EFFORT</span><span id="val-effort">0</span></div>
+      <div class="readout-item"><span class="readout-label">FLUX</span><span id="val-flux">0</span></div>
+    </div>
+  </section>
 
-    .app-shell { position: fixed; inset: 0; display: grid; grid-template-rows: 1fr auto; padding: env(safe-area-inset-top) 10px env(safe-area-inset-bottom) 10px; }
-    .workspace-shell { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; min-height: 0; overflow: hidden; }
+  <section class="stack-card" id="card-entropy-phase">
+    <div class="card-header">
+      <h3 class="card-title">Entropy Phase</h3>
+      <span class="card-category">Environment</span>
+    </div>
+    <div class="card-visual-area">
+      <canvas id="canvas-entropy" style="width:100%; height:100%;"></canvas>
+    </div>
+    <div class="card-readout">
+      <div class="readout-item"><span class="readout-label">DISORDER</span><span id="val-disorder">0</span></div>
+      <div class="readout-item"><span class="readout-label">STABILITY</span><span id="val-stability">0</span></div>
+      <div class="readout-item"><span class="readout-label">GAP</span><span id="val-gap">0</span></div>
+    </div>
+  </section>
 
-    /* CURTAINS */
-    .curtain { height: 100%; overflow: hidden; transition: width 0.2s ease; display: flex; }
-    .left-curtain { width: 130px; }
-    .right-curtain { width: 120px; }
-    .curtain.is-collapsed { width: 20px !important; }
+  <section class="stack-card" id="card-inertia-field">
+    <div class="card-header">
+      <h3 class="card-title">Inertia Field</h3>
+      <span class="card-category">Inertia</span>
+    </div>
+    <div class="card-visual-area">
+      <canvas id="canvas-inertia" style="width:100%; height:100%;"></canvas>
+    </div>
+    <div class="card-readout">
+      <div class="readout-item"><span class="readout-label">INERTIA</span><span id="val-inertia">0</span></div>
+      <div class="readout-item"><span class="readout-label">MASS</span><span id="val-mass">0</span></div>
+      <div class="readout-item"><span class="readout-label">DECAY</span><span id="val-decay">0</span></div>
+    </div>
+  </section>
 
-    .curtain-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 8px; background: #050505; }
-    .curtain.is-collapsed .curtain-content { display: none; }
-    .curtain-handle { width: 20px; background: #0a0a0a; color: #e8e8e8; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; border: none; }
-
-    /* CENTER WORKSPACE */
-    .center-workspace { display: flex; flex-direction: column; overflow-y: auto; gap: 6px; scrollbar-width: none; }
-    .center-workspace::-webkit-scrollbar { display: none; }
-    
-    /* CHART BOX */
-    .chart-box { position: sticky; top: 0; z-index: 20; background: #000; width: 100%; aspect-ratio: 1.1 / 1; border: none; display: flex; align-items: center; justify-content: center; font-weight: bold; }
-
-    /* MIDDLE STACK */
-    .middle-stack { display: flex; flex-direction: column; gap: 6px; }
-    
-    /* INSTRUMENT CARD STYLING */
-    .stack-card { border: none; background: #000; display: flex; flex-direction: column; border-bottom: 1px solid #111; }
-    .card-header { padding: 8px 6px; display: flex; justify-content: space-between; align-items: center; background: #000; }
-    .card-title { font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin: 0; color: #ccc; }
-    .card-category { font-size: 9px; color: #444; text-transform: uppercase; }
-    
-    .card-visual-area { background: #050505; height: 100px; width: 100%; position: relative; overflow: hidden; }
-    .card-readout { display: flex; gap: 12px; padding: 4px 6px; background: #000; border-top: 1px solid #0a0a0a; }
-    .readout-item { font-size: 10px; font-family: monospace; color: #00ffff; }
-    .readout-label { color: #444; margin-right: 4px; }
-
-    /* BOTTOM MENU - PRESERVED */
-    .bottom-menu-wrap { border: none; height: 54px; display: grid; grid-template-columns: repeat(6, 1fr) 40px; background: #000; }
-    .menu-item { background: transparent; border: none; color: #fff; font-size: 8px; text-transform: uppercase; cursor: pointer; }
-    .reopen-menu { position: fixed; bottom: 10px; right: 10px; background: #000; border: none; color: #fff; padding: 6px 10px; font-size: 10px; z-index: 100; display: none; border-radius: 2px; }
-    .is-hidden { display: none !important; }
-
-    .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-    .panel-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #666; margin: 0; }
-    .ticker-search { width: 100%; background: #111; border: none; color: #fff; padding: 6px; margin-bottom: 10px; font-size: 11px; outline: none; }
-    .ghost-btn { background: #0a0a0a; border: none; color: #fff; padding: 4px 8px; font-size: 10px; cursor: pointer; }
-    .icon-btn { background: transparent; border: none; color: #fff; width: 22px; height: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-  </style>
-  <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
-</head>
-<body>
-
-<div class="app-shell">
-  <div class="workspace-shell">
-    
-    <aside class="curtain left-curtain" id="leftCurtain">
-      <div class="curtain-content">
-        <div class="panel-header"><span class="panel-title">Watchlists</span><button class="icon-btn">+</button></div>
-        <input type="text" class="ticker-search" placeholder="Find symbol...">
-      </div>
-      <button class="curtain-handle" onclick="toggleCurtain('leftCurtain')">‹</button>
-    </aside>
-
-    <main class="center-workspace">
-      <section class="chart-box">
-        <div id="chartContainer" style="width:100%;height:100%;"></div>
-      </section>
-
-      <div class="middle-stack" id="middleStack">
-        <section class="stack-card" id="card-absorption-tension">
-          <div class="card-header">
-            <h3 class="card-title">Absorption Tension</h3>
-            <span class="card-category">Tension</span>
-          </div>
-          <div class="card-visual-area">
-            <canvas id="canvas-tension" style="width:100%; height:100%;"></canvas>
-          </div>
-          <div class="card-readout">
-            <div class="readout-item"><span class="readout-label">TENSION</span><span id="val-tension">0</span></div>
-            <div class="readout-item"><span class="readout-label">LOADING</span><span id="val-loading">0</span></div>
-            <div class="readout-item"><span class="readout-label">SATURATION</span><span id="val-saturation">0</span></div>
-          </div>
-        </section>
-
-        <section class="stack-card" id="card-reality-gap">
-          <div class="card-header">
-            <h3 class="card-title">Reality Gap</h3>
-            <span class="card-category">Reality</span>
-          </div>
-          <div class="card-visual-area">
-            <canvas id="canvas-reality-gap" style="width:100%; height:100%;"></canvas>
-          </div>
-          <div class="card-readout">
-            <div class="readout-item"><span class="readout-label">FIDELITY</span><span id="val-fidelity">0</span></div>
-            <div class="readout-item"><span class="readout-label">FRESHNESS</span><span id="val-freshness">0</span></div>
-            <div class="readout-item"><span class="readout-label">SYNC</span><span id="val-sync">0</span></div>
-          </div>
-        </section>
-
-        <section class="stack-card" id="card-kinetic-anchor">
-          <div class="card-header">
-            <h3 class="card-title">Kinetic Anchor</h3>
-            <span class="card-category">Tension</span>
-          </div>
-          <div class="card-visual-area">
-            <canvas id="canvas-kinetic-anchor" style="width:100%; height:100%;"></canvas>
-          </div>
-          <div class="card-readout">
-            <div class="readout-item"><span class="readout-label">ANCHOR</span><span id="val-anchorStrength">0</span></div>
-            <div class="readout-item"><span class="readout-label">PERSIST</span><span id="val-persistence">0</span></div>
-            <div class="readout-item"><span class="readout-label">SIG</span><span id="val-significance">0</span></div>
-          </div>
-        </section>
-
-        <section class="stack-card" id="card-decay-oscillator">
-          <div class="card-header">
-            <h3 class="card-title">Decay Oscillator</h3>
-            <span class="card-category">Decay</span>
-          </div>
-          <div class="card-visual-area">
-            <canvas id="canvas-decay-oscillator" style="width:100%; height:100%;"></canvas>
-          </div>
-          <div class="card-readout">
-            <div class="readout-item"><span class="readout-label">DECAY</span><span id="val-decay-decay">0</span></div>
-            <div class="readout-item"><span class="readout-label">INTENSITY</span><span id="val-decay-intensity">0</span></div>
-            <div class="readout-item"><span class="readout-label">PRECISION</span><span id="val-decay-precision">0</span></div>
-          </div>
-        </section>
-
-        <section class="stack-card" id="card-compression-spark">
-          <div class="card-header">
-            <h3 class="card-title">Compression Spark</h3>
-            <span class="card-category">Tension</span>
-          </div>
-          <div class="card-visual-area">
-            <canvas id="canvas-compression-spark" style="width:100%; height:100%;"></canvas>
-          </div>
-          <div class="card-readout">
-            <div class="readout-item"><span class="readout-label">SPARK</span><span id="val-spark">0</span></div>
-            <div class="readout-item"><span class="readout-label">ACTIVE</span><span id="val-activation">0</span></div>
-            <div class="readout-item"><span class="readout-label">IMPULSE</span><span id="val-impulse">0</span></div>
-          </div>
-        </section>
-
-        <section class="stack-card" id="card-displacement-field">
-          <div class="card-header">
-            <h3 class="card-title">Displacement Field</h3>
-            <span class="card-category">Displacement</span>
-          </div>
-          <div class="card-visual-area">
-            <canvas id="canvas-displacement-field" style="width:100%; height:100%;"></canvas>
-          </div>
-          <div class="card-readout">
-            <div class="readout-item"><span class="readout-label">DISPLACE</span><span id="val-displacement">0</span></div>
-            <div class="readout-item"><span class="readout-label">ACTIVITY</span><span id="val-activity">0</span></div>
-            <div class="readout-item"><span class="readout-label">REGIME</span><span id="val-regime">0</span></div>
-          </div>
-        </section>
-      </div>
-
-      <section class="instrument-chooser-area">
-        <button class="ghost-btn" id="addInstrBtn" style="margin: 20px auto; display: block; padding: 10px 20px;">+ Add Tool</button>
-      </section>
-    </main>
-
-    <aside class="curtain right-curtain" id="rightCurtain">
-      <button class="curtain-handle" onclick="toggleCurtain('rightCurtain')">›</button>
-      <div class="curtain-content">
-        <div class="panel-header"><span class="panel-title">Info</span></div>
-      </div>
-    </aside>
-  </div>
-
-  <footer class="bottom-menu-wrap" id="bottomMenu">
-    <button class="menu-item">Volume</button>
-    <button class="menu-item">Chart</button>
-    <button class="menu-item">Instr</button>
-    <button class="menu-item">Book</button>
-    <button class="menu-item">Sig</button>
-    <button class="menu-item">News</button>
-    <button class="menu-item" style="color:#666;" onclick="toggleBottomMenu(false)">⌄</button>
-  </footer>
+  <section class="stack-card" id="card-absorption-tension">
+    <div class="card-header">
+      <h3 class="card-title">Tension Field</h3>
+      <span class="card-category">Tension</span>
+    </div>
+    <div class="card-visual-area">
+      <canvas id="canvas-tension" style="width:100%; height:100%;"></canvas>
+    </div>
+    <div class="card-readout">
+      <div class="readout-item"><span class="readout-label">TENSION</span><span id="val-tension">0</span></div>
+      <div class="readout-item"><span class="readout-label">LOAD</span><span id="val-load">0</span></div>
+      <div class="readout-item"><span class="readout-label">PRECISION</span><span id="val-precision">0</span></div>
+    </div>
+  </section>
+  
 </div>
-
-<button class="reopen-menu" id="reopenMenu" onclick="toggleBottomMenu(true)">OPEN MENU</button>
-
-<script>
-  // --- RENDERER LOGIC: displacement-field-painter.ts ---
-  function paintDisplacementField(ctx, points) {
-    const width = ctx.canvas.width;
-    const height = ctx.canvas.height;
-    const baselineY = height * 0.85;
-    if (points.length < 2) return;
-    const stepX = width / (points.length - 1);
-    const maxAmplitude = height * 0.7;
-
-    ctx.save();
-    ctx.clearRect(0, 0, width, height);
-
-    // 1. THE MASS (Supporting Structural Curve)
-    ctx.beginPath();
-    ctx.moveTo(width, baselineY);
-    for (let i = 0; i < points.length; i++) {
-      const p = points[i];
-      const x = width - (i * stepX);
-      const massHeight = (p.displacement / 100) * maxAmplitude * 0.4;
-      ctx.lineTo(x, baselineY - massHeight);
-    }
-    ctx.lineTo(width - (points.length - 1) * stepX, baselineY);
-    ctx.closePath();
-    ctx.fillStyle = 'rgba(0, 50, 80, 0.3)';
-    ctx.fill();
-
-    // 2. MONOLITHS
-    for (let i = 0; i < points.length; i++) {
-      const p = points[i];
-      const x = width - (i * stepX);
-      const colWidth = Math.max(2, stepX * 0.8);
-      const h = (p.displacement / 100) * maxAmplitude;
-      const y = baselineY - h;
-      const isValid = p.regime > 50;
-
-      ctx.beginPath();
-      const activityAlpha = (p.activity / 100) * (0.2 + p.precision * 0.5);
-
-      if (isValid) {
-        ctx.fillStyle = `rgba(0, 180, 255, ${activityAlpha})`;
-        ctx.fillRect(x - colWidth / 2, y, colWidth, h);
-        ctx.strokeStyle = `rgba(200, 240, 255, ${p.precision})`;
-        ctx.lineWidth = 1 + p.precision;
-        ctx.strokeRect(x - colWidth / 2, y, colWidth, 1);
-      } else {
-        ctx.setLineDash([2, 2]);
-        ctx.strokeStyle = `rgba(100, 120, 140, ${0.1 * p.precision})`;
-        ctx.strokeRect(x - colWidth / 2, y, colWidth, h);
-        ctx.setLineDash([]);
-      }
-
-      if (isValid && p.activity > 10) {
-        const coreH = h * (p.activity / 100) * 0.8;
-        ctx.fillStyle = `rgba(255, 255, 255, ${0.1 * p.precision})`;
-        ctx.fillRect(x - colWidth / 4, baselineY - coreH, colWidth / 2, coreH);
-      }
-    }
-    ctx.restore();
-  }
-
-  // --- RENDERER LOGIC: compression-spark-painter.ts (PRESERVED) ---
-  function paintCompressionSpark(ctx, points) {
-    const width = ctx.canvas.width; const height = ctx.canvas.height;
-    if (points.length < 2) return;
-    const stepX = width / (points.length - 1); const baselineY = height * 0.85;
-    ctx.save(); ctx.clearRect(0, 0, width, height);
-    for (let i = 0; i < points.length; i++) {
-      const p = points[i]; const x = width - i * stepX;
-      if (p.activation > 50) {
-        ctx.beginPath(); ctx.strokeStyle = `rgba(0, 220, 255, 0.8)`; ctx.moveTo(x, baselineY); ctx.lineTo(x, baselineY - p.spark); ctx.stroke();
-      }
-    }
-    ctx.restore();
-  }
-
-  // --- RENDERER LOGIC: decay-oscillator-painter.ts (PRESERVED) ---
-  function paintDecayOscillator(ctx, events) {
-    const width = ctx.canvas.width; const height = ctx.canvas.height;
-    const bottomY = height * 0.85;
-    ctx.save(); ctx.clearRect(0, 0, width, height);
-    events.forEach(event => {
-      const x = width - (event.age / 10000) * width;
-      const dotY = bottomY - (event.decay / 100) * (height * 0.7);
-      ctx.beginPath(); ctx.arc(x, dotY, 2, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(0, 255, 200, 0.8)'; ctx.fill();
-    });
-    ctx.restore();
-  }
-
-  // --- RENDERER LOGIC: kinetic-anchor-painter.ts (PRESERVED) ---
-  function paintKineticAnchor(ctx, points) {
-    const width = ctx.canvas.width; const height = ctx.canvas.height; const centerY = height / 2;
-    if (points.length < 2) return;
-    const stepX = width / (points.length - 1);
-    ctx.save(); ctx.clearRect(0, 0, width, height);
-    for (let i = 0; i < points.length - 1; i++) {
-      const x1 = width - (i * stepX), x2 = width - ((i + 1) * stepX);
-      ctx.beginPath(); ctx.strokeStyle = 'cyan'; ctx.moveTo(x1, centerY - points[i].anchorStrength/2); ctx.lineTo(x2, centerY - points[i+1].anchorStrength/2); ctx.stroke();
-    }
-    ctx.restore();
-  }
-
-  // --- RENDERER LOGIC: reality-gap-painter.ts (PRESERVED) ---
-  function paintRealityGapField(ctx, points) {
-    const width = ctx.canvas.width; const height = ctx.canvas.height; const centerY = height / 2;
-    if (points.length < 2) return;
-    const stepX = width / (points.length - 1);
-    ctx.save(); ctx.clearRect(0, 0, width, height);
-    for (let i = 0; i < points.length - 1; i++) {
-      const x1 = width - (i * stepX), x2 = width - ((i + 1) * stepX);
-      ctx.fillStyle = 'rgba(0, 210, 255, 0.2)'; ctx.fillRect(x2, centerY - points[i].fidelity/2, stepX, points[i].fidelity);
-    }
-    ctx.restore();
-  }
-
-  // --- RENDERER LOGIC: tension-field-painter.ts (PRESERVED) ---
-  function paintTensionField(ctx, points) {
-    const width = ctx.canvas.width; const height = ctx.canvas.height; const baselineY = height * 0.92;
-    if (points.length < 2) return;
-    const stepX = width / (points.length - 1);
-    ctx.save(); ctx.clearRect(0, 0, width, height);
-    for (let i = 0; i < points.length - 1; i++) {
-      const x1 = width - i * stepX, x2 = width - (i + 1) * stepX;
-      ctx.beginPath(); ctx.strokeStyle = 'rgba(100, 180, 255, 0.8)'; ctx.moveTo(x1, baselineY - points[i].tension); ctx.lineTo(x2, baselineY - points[i+1].tension); ctx.stroke();
-    }
-    ctx.restore();
-  }
-
-  // --- MOCK ENGINE CONNECTION ---
-  function updateInstruments() {
-    const dpr = window.devicePixelRatio || 1;
-    const now = Date.now();
-
-    const canvases = [
-      {id: 'canvas-tension', paint: paintTensionField, mock: () => ({tension: Math.sin(now/1000)*30+40})},
-      {id: 'canvas-reality-gap', paint: paintRealityGapField, mock: () => ({fidelity: Math.cos(now/800)*40+50})},
-      {id: 'canvas-kinetic-anchor', paint: paintKineticAnchor, mock: () => ({anchorStrength: Math.sin(now/1200)*50+50})},
-      {id: 'canvas-decay-oscillator', paint: paintDecayOscillator, isEvent: true},
-      {id: 'canvas-compression-spark', paint: paintCompressionSpark, mock: (i) => ({ spark: 40, activation: 100, impulse: 30, precision: 0.9 })},
-      {id: 'canvas-displacement-field', paint: paintDisplacementField, mock: (i) => {
-          // final page.tsx integration will use real engine output (displacementfield.ts)
-          const norm = Math.abs(Math.sin(now/1500 - i*0.15));
-          return { displacement: norm * 90, activity: norm * 70, regime: norm > 0.3 ? 100 : 0, precision: 0.95 };
-      }}
-    ];
-
-    canvases.forEach(cfg => {
-      const canvas = document.getElementById(cfg.id);
-      if (!canvas) return;
-      const rect = canvas.parentElement.getBoundingClientRect();
-      canvas.width = rect.width * dpr; canvas.height = rect.height * dpr;
-      const ctx = canvas.getContext('2d'); ctx.scale(dpr, dpr);
-      
-      if (cfg.isEvent) {
-        const events = []; for(let i=0; i<15; i++) events.push({decay: 70*Math.exp(-i*800/5000), age: i*800});
-        cfg.paint(ctx, events);
-      } else {
-        const points = []; for(let i=0; i<40; i++) points.push(cfg.mock(i));
-        cfg.paint(ctx, points);
-        if (cfg.id === 'canvas-displacement-field') {
-          document.getElementById('val-displacement').innerText = Math.round(points[0].displacement);
-          document.getElementById('val-activity').innerText = Math.round(points[0].activity);
-          document.getElementById('val-regime').innerText = Math.round(points[0].regime);
-        }
-      }
-    });
-  }
-
-  function toggleCurtain(id) { document.getElementById(id).classList.toggle('is-collapsed'); }
-  function toggleBottomMenu(show) { 
-    document.getElementById('bottomMenu').classList.toggle('is-hidden', !show);
-    document.getElementById('reopenMenu').style.display = show ? 'none' : 'block';
-  }
-
-  const mainChart = LightweightCharts.createChart(document.getElementById('chartContainer'), {
-    layout: { background: { type: LightweightCharts.ColorType.Solid, color: '#000' }, textColor: '#ccc' },
-    grid: { vertLines: { color: '#111' }, horzLines: { color: '#111' } }
-  });
-
-  function loop() { updateInstruments(); requestAnimationFrame(loop); }
-  loop();
-</script>
-
-</body>
-</html>
