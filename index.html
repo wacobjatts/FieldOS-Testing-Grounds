@@ -1,69 +1,87 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>FieldOS / Kinetic - Borderless Hud</title>
+  <title>FieldOS / Kinetic - Contour System</title>
   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
   <style>
     :root {
       --bg: #000000;
-      --bg-elev: #050505;
-      --panel: #0a0a0a;
+      --bg-elev: #040404;
+      --panel: #080808;
       --accent: #00e5ff;
-      --accent-soft: rgba(0, 229, 255, 0.1);
-      --accent-glow: rgba(0, 229, 255, 0.5);
-      --line: #0c0c0c;
+      --accent-dim: rgba(0, 229, 255, 0.15);
+      --accent-glow: rgba(0, 229, 255, 0.4);
+      --access: #ffcc00; /* Yellow for access controls */
+      --access-glow: rgba(255, 204, 0, 0.6);
+      --contour: rgba(0, 229, 255, 0.08);
+      --contour-strong: rgba(0, 229, 255, 0.25);
       --text: #e8e8e8;
-      --text-dim: #707070;
-      --text-faint: #333333;
+      --text-dim: #606060;
+      --text-faint: #303030;
       --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
       
       --card-compact: 105px;
-      --card-expanded: 160px;
+      --card-expanded: 165px;
     }
 
     html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; overflow: hidden; }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-    /* SHELL ARCHITECTURE */
+    /* SHELL STRUCTURE */
     .app-shell { position: fixed; inset: 0; display: grid; grid-template-rows: 1fr auto; padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) 0; }
     .workspace-shell { display: grid; grid-template-columns: auto 1fr auto; min-height: 0; overflow: hidden; position: relative; }
 
-    /* CURTAINS (BORDERLESS) */
+    /* CONTOUR REFINEMENT: CURTAINS */
     .curtain { height: 100%; overflow: hidden; transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); background: var(--bg-elev); z-index: 100; }
     .left-curtain { width: 140px; }
     .right-curtain { width: 130px; }
     .curtain.is-collapsed { width: 0 !important; }
 
-    /* GLOWING DOT HANDLES */
-    .glow-dot {
-      position: absolute; top: 50%; transform: translateY(-50%);
-      width: 6px; height: 6px; background: var(--accent);
-      border-radius: 50%; cursor: pointer; z-index: 200;
-      box-shadow: 0 0 8px var(--accent-glow);
-      opacity: 0.3; transition: opacity 0.2s, box-shadow 0.2s;
+    /* SIDE PANEL OPENERS: YELLOW ORBS + LARGE HIT AREA */
+    .access-trigger {
+      position: absolute; top: 0; bottom: 0; width: 44px; /* Large iPhone-friendly tap target */
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; z-index: 200;
     }
-    .glow-dot:hover { opacity: 1; box-shadow: 0 0 12px var(--accent); }
-    .dot-left { left: 8px; }
-    .dot-right { right: 8px; }
+    .trigger-left { left: 0; }
+    .trigger-right { right: 0; }
+    
+    .access-orb {
+      width: 4px; height: 4px; background: var(--access);
+      border-radius: 50%; box-shadow: 0 0 6px var(--access-glow);
+      opacity: 0.6; transition: opacity 0.2s, transform 0.2s;
+    }
+    .access-trigger:active .access-orb { opacity: 1; transform: scale(1.5); }
 
     /* CENTER WORKSPACE */
     .center-workspace { position: relative; display: flex; flex-direction: column; overflow-y: auto; background: var(--bg); scrollbar-width: none; }
     .center-workspace::-webkit-scrollbar { display: none; }
 
-    /* CHART STAGE (BORDERLESS) */
+    /* CONTOUR: CHART STAGE */
     .chart-box { 
       position: sticky; top: 0; z-index: 20; 
-      background: var(--bg); width: 100%; height: 45vh;
+      background: var(--bg); width: 100%; height: 44vh;
+      border-bottom: 1px solid var(--contour-strong);
+      box-shadow: inset 0 -10px 20px rgba(0,0,0,0.5);
     }
 
     /* INSTRUMENT STACK */
-    .middle-stack { display: flex; flex-direction: column; padding-bottom: 100px; }
+    .middle-stack { display: flex; flex-direction: column; padding: 8px 0 120px 0; gap: 4px; }
     
+    /* CONTOUR: INSTRUMENT CARDS */
     .stack-card { 
       background: var(--bg); position: relative; overflow: hidden;
-      margin-bottom: 2px; /* Subtle spacing instead of borders */
+      border-top: 1px solid var(--contour);
+      border-bottom: 1px solid var(--contour);
+      transition: border-color 0.3s, background 0.3s;
+    }
+    .stack-card.is-expanded { 
+      border-color: var(--contour-strong); 
+      background: var(--bg-elev);
+      box-shadow: inset 0 0 15px var(--accent-dim);
     }
 
     .card-visual-area { 
@@ -76,45 +94,51 @@
     .hud-meta { position: absolute; padding: 12px; z-index: 5; pointer-events: none; font-family: var(--font-mono); text-transform: uppercase; }
     .hud-top-left { top: 0; left: 0; }
     .hud-top-right { top: 0; right: 0; display: flex; align-items: center; gap: 14px; pointer-events: auto; }
-    .hud-bottom-left { bottom: 0; left: 0; display: flex; gap: 16px; width: 100%; padding: 20px 12px 8px 12px; background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, transparent 100%); }
+    .hud-bottom-left { bottom: 0; left: 0; display: flex; gap: 16px; width: 100%; padding: 24px 12px 10px 12px; background: linear-gradient(0deg, rgba(0,0,0,1) 0%, transparent 100%); }
 
     .hud-title { font-size: 9px; font-weight: 800; letter-spacing: 1px; color: var(--text-dim); }
-    .hud-category { font-size: 8px; color: var(--text-faint); font-weight: 800; margin-right: 4px; }
-    .readout-item { font-size: 10px; color: var(--accent); opacity: 0.7; }
+    .hud-category { font-size: 8px; color: var(--text-faint); font-weight: 800; }
+    .readout-item { font-size: 10px; color: var(--accent); opacity: 0.6; }
     .readout-label { color: var(--text-faint); margin-right: 4px; font-size: 8px; }
 
-    /* GLYPH CONTROLS */
-    .glyph { width: 14px; height: 14px; cursor: pointer; color: var(--text-faint); transition: color 0.2s; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+    /* GLYPHS */
+    .glyph { width: 16px; height: 16px; cursor: pointer; color: var(--text-faint); transition: color 0.2s; display: flex; align-items: center; justify-content: center; font-size: 10px; }
     .glyph:hover, .glyph.active { color: var(--accent); }
 
-    /* SLOT MENU MODE */
+    /* CONTOUR: SLOT MENU */
     .slot-menu-surface {
-      position: absolute; inset: 0; background: var(--bg-elev);
+      position: absolute; inset: 0; background: #020202;
       z-index: 10; display: none; flex-direction: column;
       padding: 12px; justify-content: center; gap: 8px;
+      border: 1px inset var(--contour-strong);
     }
     .stack-card.mode-menu .slot-menu-surface { display: flex; }
-    .stack-card.mode-menu .hud-bottom-left, 
-    .stack-card.mode-menu canvas { opacity: 0; }
-
     .menu-option {
-      font-family: var(--font-mono); font-size: 10px; color: var(--text-dim);
+      font-family: var(--font-mono); font-size: 9px; color: var(--text-dim);
       text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
-      padding: 8px; border-left: 1px solid transparent; transition: all 0.2s;
+      padding: 10px; border-left: 2px solid transparent; transition: all 0.2s;
     }
-    .menu-option:hover { color: var(--accent); border-left-color: var(--accent); background: var(--accent-soft); }
+    .menu-option:hover { color: var(--accent); border-left-color: var(--accent); background: var(--accent-dim); }
 
-    /* BOTTOM MENU */
-    .bottom-menu-wrap { height: 58px; display: grid; grid-template-columns: repeat(6, 1fr) 40px; background: var(--panel); z-index: 110; }
-    .menu-item { background: transparent; border: none; color: var(--text-dim); font-size: 9px; text-transform: uppercase; font-weight: 600; cursor: pointer; }
+    /* CONTOUR: BOTTOM UTILITY STRIP */
+    .bottom-menu-wrap { 
+      height: 58px; display: grid; grid-template-columns: repeat(6, 1fr) 40px; 
+      background: var(--panel); z-index: 110; 
+      border-top: 1px solid var(--contour-strong);
+    }
+    .menu-item { background: transparent; border: none; color: var(--text-dim); font-size: 9px; text-transform: uppercase; font-weight: 600; cursor: pointer; border-right: 1px solid rgba(255,255,255,0.02); }
   </style>
 </head>
 <body>
 
 <div class="app-shell">
   <div class="workspace-shell">
-    <div class="glow-dot dot-left" onclick="toggleCurtain('leftCurtain')"></div>
-    <div class="glow-dot dot-right" onclick="toggleCurtain('rightCurtain')"></div>
+    <div class="access-trigger trigger-left" onclick="toggleCurtain('leftCurtain')">
+      <div class="access-orb"></div>
+    </div>
+    <div class="access-trigger trigger-right" onclick="toggleCurtain('rightCurtain')">
+      <div class="access-orb"></div>
+    </div>
 
     <aside class="curtain left-curtain is-collapsed" id="leftCurtain"></aside>
 
@@ -122,7 +146,7 @@
       <section class="chart-box" id="chartContainer"></section>
 
       <div class="middle-stack">
-        <section class="stack-card" id="card-1">
+        <section class="stack-card" id="card-asymmetry">
           <div class="card-visual-area">
             <div class="hud-meta hud-top-left"><span class="hud-title">Asymmetry Field</span></div>
             <div class="hud-meta hud-top-right">
@@ -136,16 +160,16 @@
               <div class="menu-option">Add Instrument Below</div>
             </div>
 
-            <canvas id="canvas-1" style="width:100%; height:100%; position:absolute; inset:0;"></canvas>
+            <canvas id="canvas-asymmetry" style="width:100%; height:100%; position:absolute; inset:0;"></canvas>
             
             <div class="hud-meta hud-bottom-left">
-              <div class="readout-item"><span class="readout-label">BIAS</span><span>0.42</span></div>
-              <div class="readout-item"><span class="readout-label">EFFORT</span><span>0.18</span></div>
+              <div class="readout-item"><span class="readout-label">BIAS</span><span>0.419</span></div>
+              <div class="readout-item"><span class="readout-label">EFFORT</span><span>0.177</span></div>
             </div>
           </div>
         </section>
 
-        <section class="stack-card" id="card-2">
+        <section class="stack-card" id="card-entropy">
           <div class="card-visual-area">
             <div class="hud-meta hud-top-left"><span class="hud-title">Entropy Phase</span></div>
             <div class="hud-meta hud-top-right">
@@ -159,11 +183,11 @@
               <div class="menu-option">Add Instrument Below</div>
             </div>
 
-            <canvas id="canvas-2" style="width:100%; height:100%; position:absolute; inset:0;"></canvas>
+            <canvas id="canvas-entropy" style="width:100%; height:100%; position:absolute; inset:0;"></canvas>
             
             <div class="hud-meta hud-bottom-left">
-              <div class="readout-item"><span class="readout-label">DISORDER</span><span>0.89</span></div>
-              <div class="readout-item"><span class="readout-label">STABILITY</span><span>0.11</span></div>
+              <div class="readout-item"><span class="readout-label">DISORDER</span><span>0.884</span></div>
+              <div class="readout-item"><span class="readout-label">STABILITY</span><span>0.116</span></div>
             </div>
           </div>
         </section>
@@ -206,11 +230,11 @@
     timeScale: { borderColor: '#000' },
     crosshair: { vertLine: { color: '#00e5ff11' }, horzLine: { color: '#00e5ff11' } }
   });
-  const candleSeries = chart.addCandlestickSeries({ upColor: '#00e5ff', downColor: '#111', borderVisible: false, wickUpColor: '#00e5ff', wickDownColor: '#111' });
+  const candleSeries = chart.addCandlestickSeries({ upColor: '#00e5ff', downColor: '#080808', borderVisible: false, wickUpColor: '#00e5ff', wickDownColor: '#080808' });
   const mockData = Array.from({length: 100}, (_, i) => ({ time: new Date(2026, 0, i).toISOString().split('T')[0], open: 100+i, high: 105+i, low: 98+i, close: 103+i }));
   candleSeries.setData(mockData);
 
-  // KINETIC VISUALS
+  // FIELD PAINTERS
   function paint(id, color) {
     const canvas = document.getElementById(id);
     const ctx = canvas.getContext('2d');
@@ -218,15 +242,17 @@
     const rect = canvas.getBoundingClientRect();
     if (canvas.width !== rect.width * dpr) { canvas.width = rect.width * dpr; canvas.height = rect.height * dpr; ctx.scale(dpr, dpr); }
     ctx.clearRect(0,0,rect.width, rect.height);
-    ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = 1; ctx.globalAlpha = 0.3;
-    ctx.moveTo(0, rect.height * 0.8);
-    for(let x=0; x<rect.width; x+=15) ctx.lineTo(x, rect.height * 0.8 - Math.random() * (rect.height * 0.4));
+    ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = 1; ctx.globalAlpha = 0.25;
+    ctx.moveTo(0, rect.height * 0.7);
+    for(let x=0; x<rect.width; x+=12) ctx.lineTo(x, rect.height * 0.7 - Math.random() * (rect.height * 0.35));
     ctx.stroke();
   }
 
-  function loop() { paint('canvas-1', '#00e5ff'); paint('canvas-2', '#00e5ff'); requestAnimationFrame(loop); }
+  function loop() { paint('canvas-asymmetry', '#00e5ff'); paint('canvas-entropy', '#00e5ff'); requestAnimationFrame(loop); }
   loop();
 </script>
 
 </body>
 </html>
+
+```
