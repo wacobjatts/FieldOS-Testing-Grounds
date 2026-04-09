@@ -1,18 +1,17 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>FieldOS / Kinetic - Arctic Refinement</title>
+  <title>FieldOS / Kinetic - Fullscreen Fix</title>
   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
   <style>
     :root {
       --bg: #000000;
       --accent: #00e5ff;
-      /* ARCTIC GLASS MATERIAL */
-      --glass-base: #020202;
-      --glass-frost: rgba(180, 245, 255, 0.03); 
+      /* REFINED ARCTIC GLASS - Slightly more visible frost */
+      --glass-base: #030405;
+      --glass-frost: rgba(130, 220, 255, 0.07); 
       --glass-border: rgba(0, 229, 255, 0.35);
       
       --access: #ffcc00;
@@ -23,6 +22,7 @@
       --card-compact: 105px;
       --card-expanded: 185px;
       --card-menu-height: 260px;
+      --chart-height: 42vh;
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
@@ -32,15 +32,23 @@
       font-family: -apple-system, sans-serif; overflow: hidden; 
     }
 
-    .app-shell { position: fixed; inset: 0; display: grid; grid-template-rows: 1fr auto; transition: opacity 0.3s; }
+    .app-shell { position: fixed; inset: 0; display: grid; grid-template-rows: 1fr auto; }
     .workspace-shell { display: grid; grid-template-columns: auto 1fr auto; min-height: 0; overflow: hidden; position: relative; }
 
-    /* CHART FULLSCREEN STATE */
+    /* FULLSCREEN LOGIC - CLEAN CLASS OVERRIDE */
     body.chart-fullscreen .middle-stack,
-    body.chart-fullscreen .bottom-menu-wrap { display: none !important; }
-    body.chart-fullscreen .chart-box { height: 100vh !important; position: fixed; inset: 0; z-index: 500; }
+    body.chart-fullscreen .bottom-menu-wrap,
+    body.chart-fullscreen .access-trigger,
+    body.chart-fullscreen .curtain { display: none !important; }
+    
+    body.chart-fullscreen .app-shell { grid-template-rows: 1fr; }
+    body.chart-fullscreen .workspace-shell { grid-template-columns: 1fr; }
+    body.chart-fullscreen .center-workspace { overflow: hidden; }
+    body.chart-fullscreen .chart-box { 
+        position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 500; 
+    }
 
-    /* ACCESS */
+    /* ACCESS ORBS */
     .access-trigger { position: absolute; top: 12%; width: 48px; height: 60px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 200; }
     .trigger-left { left: 0; }
     .trigger-right { right: 0; }
@@ -53,23 +61,25 @@
     .right-curtain { width: 140px; }
 
     /* WORKSPACE */
-    .center-workspace { position: relative; display: flex; flex-direction: column; overflow-y: auto; background: var(--bg); scrollbar-width: none; }
+    .center-workspace { position: relative; display: flex; flex-direction: column; overflow-y: auto; background: var(--bg); scrollbar-width: none; -webkit-overflow-scrolling: touch; }
     .center-workspace::-webkit-scrollbar { display: none; }
     
-    .chart-box { position: sticky; top: 0; z-index: 20; background: var(--bg); width: 100%; height: 42vh; transition: height 0.3s; }
+    .chart-box { position: sticky; top: 0; z-index: 20; background: var(--bg); width: 100%; height: var(--chart-height); transition: height 0.2s ease-out; }
+    
     .fs-toggle { 
         position: absolute; top: 12px; right: 12px; z-index: 600; 
         font-family: var(--font-mono); font-size: 10px; color: var(--text-dim); 
-        background: rgba(0,0,0,0.5); border: 1px solid #222; padding: 4px 8px; cursor: pointer;
+        background: rgba(0,0,0,0.6); border: 1px solid #333; padding: 6px 10px; cursor: pointer;
+        letter-spacing: 1px;
     }
     .fs-toggle:active { color: var(--accent); border-color: var(--accent); }
 
-    .middle-stack { display: flex; flex-direction: column; padding: 0 10px 140px 10px; gap: 10px; }
+    .middle-stack { display: flex; flex-direction: column; padding: 10px 10px 140px 10px; gap: 10px; position: relative; }
 
-    /* ARCTIC GLASS CARD */
+    /* IMPROVED ARCTIC GLASS CARD */
     .stack-card { 
-      background: var(--glass-base); position: relative; overflow: hidden; border-radius: 2px;
-      box-shadow: 0 12px 35px rgba(0,0,0,0.8); border: 1px solid var(--glass-border);
+      background: var(--glass-base); position: relative; overflow: hidden; border-radius: 1px;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.9); border: 1px solid var(--glass-border);
       transition: transform 0.3s, height 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s;
       height: var(--card-compact);
     }
@@ -78,7 +88,10 @@
 
     .card-visual-area { 
       width: 100%; position: relative; height: 100%;
-      background: linear-gradient(135deg, var(--glass-frost) 0%, transparent 100%);
+      /* Visible frosty/arctic tone overlay */
+      background: 
+        linear-gradient(160deg, var(--glass-frost) 0%, transparent 60%),
+        radial-gradient(circle at 20% 0%, rgba(150, 230, 255, 0.05) 0%, transparent 50%);
     }
 
     .field-canvas { width: 100%; height: 100%; position: absolute; inset: 0; pointer-events: none; }
@@ -87,13 +100,13 @@
     .hud-meta { position: absolute; padding: 12px; z-index: 5; pointer-events: none; font-family: var(--font-mono); text-transform: uppercase; }
     .hud-top-left { top: 0; left: 0; }
     .hud-top-right { top: 0; right: 0; display: flex; align-items: center; gap: 16px; pointer-events: auto; }
-    .hud-title { font-size: 11px; font-weight: 800; color: var(--text-main); }
-    .hud-category { font-size: 8px; color: var(--text-dim); }
+    .hud-title { font-size: 11px; font-weight: 800; color: var(--text-main); letter-spacing: 0.5px; }
+    .hud-category { font-size: 8px; color: var(--text-dim); font-weight: 600; }
     
     .hud-bottom-left { 
       bottom: 0; left: 0; display: flex; gap: 16px; width: 100%; 
       padding: 35px 12px 12px 12px; 
-      background: linear-gradient(0deg, var(--glass-base) 15%, transparent 100%); 
+      background: linear-gradient(0deg, var(--glass-base) 20%, transparent 100%); 
     }
     .readout-item { font-size: 10px; color: var(--accent); font-weight: 700; }
     .readout-label { color: #555; margin-right: 4px; font-size: 8px; }
@@ -101,34 +114,34 @@
     .glyph { width: 22px; height: 22px; cursor: pointer; color: #444; display: flex; align-items: center; justify-content: center; font-size: 11px; transition: color 0.2s; }
     .glyph:active { color: var(--accent); }
 
-    /* 2-STAGE MENU SYSTEM */
+    /* MENU OVERLAY */
     .card-menu-overlay {
       position: absolute; inset: 0; background: var(--glass-base); z-index: 50;
       display: none; flex-direction: column; font-family: var(--font-mono);
     }
     .stack-card.mode-menu .card-menu-overlay { display: flex; }
 
-    .menu-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border-bottom: 1px solid #151515; }
+    .menu-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border-bottom: 1px solid #1a1a1a; }
     .header-left { display: flex; align-items: center; gap: 8px; font-size: 9px; color: var(--accent); text-transform: uppercase; }
     .back-btn { cursor: pointer; font-size: 14px; }
-    .close-btn { cursor: pointer; font-size: 12px; color: #444; }
+    .close-btn { cursor: pointer; font-size: 12px; color: #555; padding: 4px; }
 
     .menu-body { flex: 1; overflow-y: auto; padding: 10px; scrollbar-width: none; }
     .menu-body::-webkit-scrollbar { display: none; }
 
     .category-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .cat-box { background: #080808; border: 1px solid #181818; padding: 12px; cursor: pointer; }
-    .cat-box:active { border-color: var(--accent); background: #0a0a0a; }
+    .cat-box { background: #080808; border: 1px solid #1a1a1a; padding: 12px; cursor: pointer; }
+    .cat-box:active { border-color: var(--accent); background: #0c0c0c; }
     .cat-title { font-size: 9px; color: var(--text-main); margin-bottom: 4px; text-transform: uppercase; }
-    .cat-desc { font-size: 7px; color: #444; line-height: 1.2; text-transform: none; }
+    .cat-desc { font-size: 7px; color: #555; line-height: 1.2; text-transform: none; }
 
     .instrument-list { display: flex; flex-direction: column; gap: 4px; }
-    .inst-row { padding: 12px; background: #080808; font-size: 10px; text-transform: uppercase; color: #666; cursor: pointer; }
-    .inst-row:active { color: var(--accent); background: #0a0a0a; }
+    .inst-row { padding: 12px; background: #080808; font-size: 10px; text-transform: uppercase; color: #666; cursor: pointer; border-left: 2px solid transparent; }
+    .inst-row:active { color: var(--accent); background: #0c0c0c; border-left-color: var(--accent); }
 
     /* BOTTOM NAV */
     .bottom-menu-wrap { height: 60px; display: grid; grid-template-columns: repeat(6, 1fr) 44px; background: #020202; border-top: 1px solid #111; }
-    .menu-item { background: transparent; border: none; color: #444; font-size: 9px; text-transform: uppercase; font-weight: 700; }
+    .menu-item { background: transparent; border: none; color: #555; font-size: 9px; text-transform: uppercase; font-weight: 700; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -140,13 +153,12 @@
     
     <aside class="curtain left-curtain is-collapsed" id="leftCurtain"></aside>
 
-    <main class="center-workspace">
+    <main class="center-workspace" id="mainWorkspace">
       <section class="chart-box" id="chartContainer">
-          <div class="fs-toggle" onclick="toggleFullscreen()">[ FS ]</div>
+          <div class="fs-toggle" id="fsBtn" onclick="toggleFullscreen()">[ FS ]</div>
       </section>
 
       <div class="middle-stack" id="stack">
-        
         <section class="stack-card" id="card-1">
           <div class="card-visual-area">
             <div class="hud-meta hud-top-left"><span class="hud-title">Asymmetry Field</span></div>
@@ -192,7 +204,6 @@
             <div class="menu-body" id="menu-body-2"></div>
           </div>
         </section>
-
       </div>
     </main>
     <aside class="curtain right-curtain is-collapsed" id="rightCurtain"></aside>
@@ -213,11 +224,31 @@
     { id: 'Decision', desc: 'Alignment, continuation, reversal', items: ['Alignment Score', 'Continuation Pressure', 'Reversal Pressure'] }
   ];
 
+  // BUG FIX: STABLE FULLSCREEN FLOW
   function toggleFullscreen() {
-    document.body.classList.toggle('chart-fullscreen');
-    setTimeout(() => {
-        chart.applyOptions({ width: document.getElementById('chartContainer').clientWidth, height: document.getElementById('chartContainer').clientHeight });
-    }, 50);
+    const isFS = document.body.classList.contains('chart-fullscreen');
+    const btn = document.getElementById('fsBtn');
+    const chartBox = document.getElementById('chartContainer');
+    const workspace = document.getElementById('mainWorkspace');
+
+    if (!isFS) {
+        // ENTER FS
+        document.body.classList.add('chart-fullscreen');
+        btn.innerText = '[ EXIT ]';
+        workspace.scrollTop = 0; // Prevent offset scroll
+    } else {
+        // EXIT FS
+        document.body.classList.remove('chart-fullscreen');
+        btn.innerText = '[ FS ]';
+    }
+
+    // Force Resize Engine
+    requestAnimationFrame(() => {
+        const w = chartBox.clientWidth;
+        const h = chartBox.clientHeight;
+        chart.resize(w, h);
+        chart.timeScale().fitContent();
+    });
   }
 
   function toggleCurtain(id) { document.getElementById(id).classList.toggle('is-collapsed'); }
@@ -225,7 +256,6 @@
   function toggleExpand(id) {
     const card = document.getElementById(`card-${id}`);
     const isExpanded = card.classList.contains('is-expanded');
-    // If opening expand, close menu mode
     card.classList.remove('mode-menu');
     document.querySelectorAll('.stack-card').forEach(c => c.classList.remove('is-expanded'));
     if (!isExpanded) card.classList.add('is-expanded');
@@ -237,6 +267,7 @@
     if (!isMenu) {
         renderGrid(id);
         card.classList.add('mode-menu');
+        card.classList.remove('is-expanded');
     } else {
         card.classList.remove('mode-menu');
     }
@@ -277,7 +308,7 @@
     card.classList.remove('mode-menu');
   }
 
-  // CHART
+  // CHART SETUP
   const chart = LightweightCharts.createChart(document.getElementById('chartContainer'), {
     layout: { background: { color: '#000' }, textColor: '#444' },
     grid: { vertLines: { color: '#050505' }, horzLines: { color: '#050505' } },
@@ -285,7 +316,7 @@
     handleScroll: true, handleScale: true,
   });
   const candleSeries = chart.addCandlestickSeries({ upColor: '#00e5ff', downColor: '#000', borderVisible: true, borderUpColor: '#00e5ff', borderDownColor: '#00e5ff' });
-  const data = Array.from({length: 100}, (_, i) => ({ time: 1640995200 + i * 86400, open: 100+i, high: 105+i, low: 98+i, close: 103+i }));
+  const data = Array.from({length: 120}, (_, i) => ({ time: 1640995200 + i * 86400, open: 100+i, high: 105+i, low: 98+i, close: 103+i }));
   candleSeries.setData(data);
 
   // ARCTIC FIELD LIVENESS
@@ -299,15 +330,14 @@
     ctx.strokeStyle = '#00e5ff'; 
     ctx.lineWidth = 0.8; 
     
-    const time = Date.now() * 0.0012;
-    // Dynamic opacity for "liveness"
-    ctx.globalAlpha = 0.12 + Math.sin(time * 0.5) * 0.04;
+    const time = Date.now() * 0.0014;
+    ctx.globalAlpha = 0.14 + Math.sin(time * 0.4) * 0.05;
     
     ctx.beginPath();
     for(let i = 0; i < 18; i++) {
-      let y = (rect.height * 0.5) + Math.sin(time + i * 0.4) * (15 + i);
+      let y = (rect.height * 0.5) + Math.sin(time + i * 0.4) * (18 + i);
       ctx.moveTo(0, y); 
-      ctx.bezierCurveTo(rect.width * 0.3, y - 20, rect.width * 0.7, y + 20, rect.width, y);
+      ctx.bezierCurveTo(rect.width * 0.35, y - 25, rect.width * 0.65, y + 25, rect.width, y);
     }
     ctx.stroke();
   }
@@ -320,10 +350,8 @@
   loop();
 
   window.addEventListener('resize', () => {
-    chart.applyOptions({ width: document.getElementById('chartContainer').clientWidth });
+    chart.resize(document.getElementById('chartContainer').clientWidth, document.getElementById('chartContainer').clientHeight);
   });
 </script>
 </body>
 </html>
-
-```
