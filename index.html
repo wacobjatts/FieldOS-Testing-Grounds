@@ -10,8 +10,8 @@
       --bg: #000000;
       --panel: #050505;
       --accent: #00e5ff;
-      --accent-dim: rgba(0, 229, 255, 0.15);
-      --accent-border: rgba(0, 229, 255, 0.4);
+      --accent-glow: rgba(0, 229, 255, 0.4);
+      --accent-edge: rgba(0, 229, 255, 0.7);
       --access: #ffcc00;
       --text-main: #e0e0e0;
       --text-dim: #707070;
@@ -22,7 +22,6 @@
       --card-expanded: 170px;
     }
 
-    /* BASE RESET */
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     html, body { 
       margin: 0; padding: 0; width: 100%; height: 100%; 
@@ -31,7 +30,6 @@
       overflow: hidden; 
     }
 
-    /* SHELL LAYOUT */
     .app-shell { 
       position: fixed; inset: 0; display: grid; grid-template-rows: 1fr auto; 
       padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) 0; 
@@ -43,7 +41,7 @@
 
     /* ACCESS ORBS */
     .access-trigger {
-      position: absolute; top: 15%; width: 40px; height: 60px;
+      position: absolute; top: 12%; width: 44px; height: 44px;
       display: flex; align-items: center; justify-content: center;
       cursor: pointer; z-index: 200;
     }
@@ -54,7 +52,6 @@
       border-radius: 50%; box-shadow: 0 0 8px var(--access);
       opacity: 0.6; transition: opacity 0.2s;
     }
-    .access-trigger:active .access-orb { opacity: 1; transform: scale(1.2); }
 
     /* CURTAINS */
     .curtain { 
@@ -73,27 +70,27 @@
     }
     .center-workspace::-webkit-scrollbar { display: none; }
 
-    /* CHART ZONE */
+    /* CHART ZONE (NO SEPARATOR) */
     .chart-box { 
       position: sticky; top: 0; z-index: 20; 
       background: var(--bg); width: 100%; height: 42vh;
-      border-bottom: 1px solid #111;
     }
 
     /* INSTRUMENT STACK */
     .middle-stack { 
       display: flex; flex-direction: column; 
-      padding: 10px 10px 120px 10px; gap: 8px; 
+      padding: 0 10px 120px 10px; gap: 10px; 
     }
 
-    /* INSTRUMENT CARDS (SMOKED GLASS SLABS) */
+    /* REFINED SLAB MATERIAL */
     .stack-card { 
       background: #020202;
       position: relative; overflow: hidden;
-      border-radius: 2px;
+      border-radius: 1px;
+      /* PRECISE CYAN EDGE DEFINITION */
       box-shadow: 
-        0 8px 24px rgba(0,0,0,0.9),
-        inset 0 0 0 1px var(--accent-border);
+        0 10px 30px rgba(0,0,0,0.9),
+        inset 0 0 0 1px var(--accent-edge);
       transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
     }
 
@@ -101,24 +98,24 @@
       background: #040404;
       transform: translateY(-1px);
       box-shadow: 
-        0 12px 32px rgba(0,0,0,1),
+        0 15px 40px rgba(0,0,0,1),
         inset 0 0 0 1px var(--accent),
-        inset 0 0 15px var(--accent-dim);
+        inset 0 0 10px rgba(0, 229, 255, 0.2);
     }
 
+    /* PRECISE CORE SPOTLIGHT */
     .card-visual-area { 
       width: 100%; position: relative; height: var(--card-compact); 
       transition: height 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-      /* CLEAN RADIAL SPOTLIGHT */
       background: 
-        radial-gradient(circle at 50% 50%, rgba(0, 229, 255, 0.06) 0%, transparent 65%),
+        radial-gradient(circle at 50% 50%, rgba(0, 229, 255, 0.12) 0%, rgba(0, 229, 255, 0.04) 25%, transparent 50%),
         #020202;
     }
     .stack-card.is-expanded .card-visual-area { height: var(--card-expanded); }
 
     .field-canvas { 
       width: 100%; height: 100%; position: absolute; inset: 0; 
-      opacity: 0.7; pointer-events: none; 
+      opacity: 0.6; pointer-events: none; 
     }
 
     /* HUD ELEMENTS */
@@ -126,38 +123,37 @@
     .hud-top-left { top: 0; left: 0; }
     .hud-top-right { top: 0; right: 0; display: flex; align-items: center; gap: 14px; pointer-events: auto; }
     
-    .hud-title { font-size: 10px; font-weight: 700; letter-spacing: 1px; color: var(--text-dim); }
+    .hud-title { font-size: 10px; font-weight: 700; letter-spacing: 1px; color: #999; }
     .stack-card.is-expanded .hud-title { color: var(--accent); }
-    .hud-category { font-size: 8px; color: var(--text-faint); font-weight: 800; }
+    .hud-category { font-size: 8px; color: #444; font-weight: 800; letter-spacing: 0.5px; }
 
     .hud-bottom-left { 
       bottom: 0; left: 0; display: flex; gap: 16px; width: 100%; 
       padding: 30px 12px 10px 12px; 
-      background: linear-gradient(0deg, rgba(0, 0, 0, 0.9) 0%, transparent 100%); 
+      background: linear-gradient(0deg, rgba(0, 0, 0, 0.95) 10%, transparent 100%); 
     }
-    .readout-item { font-size: 10px; color: var(--accent); opacity: 0.6; }
-    .readout-label { color: #444; margin-right: 4px; font-size: 8px; }
+    .readout-item { font-size: 10px; color: var(--accent); opacity: 0.7; }
+    .readout-label { color: #555; margin-right: 4px; font-size: 8px; }
 
     /* GLYPH CONTROLS */
     .glyph { 
-      width: 18px; height: 18px; cursor: pointer; color: #333; 
+      width: 20px; height: 20px; cursor: pointer; color: #2a2a2a; 
       display: flex; align-items: center; justify-content: center; 
-      font-size: 10px; transition: color 0.2s; 
+      font-size: 11px; transition: color 0.2s; 
     }
     .glyph:hover { color: var(--accent); }
-    .glyph.active { color: var(--accent); }
 
-    /* SLOT MENU (EMBEDDED) */
+    /* SLOT MENU */
     .slot-menu-surface {
-      position: absolute; inset: 0; background: #010101;
+      position: absolute; inset: 1px; background: #010101;
       z-index: 10; display: none; flex-direction: column;
-      padding: 16px; justify-content: center; gap: 8px;
+      padding: 16px; justify-content: center; gap: 6px;
     }
     .stack-card.mode-menu .slot-menu-surface { display: flex; }
     .menu-option {
       font-family: var(--font-mono); font-size: 9px; color: #555;
       text-transform: uppercase; letter-spacing: 1.5px; cursor: pointer;
-      padding: 10px; border-left: 2px solid transparent; transition: all 0.2s;
+      padding: 10px; border-left: 1px solid transparent; transition: all 0.2s;
     }
     .menu-option:hover { color: var(--accent); border-left-color: var(--accent); background: rgba(0, 229, 255, 0.05); }
 
@@ -172,7 +168,6 @@
       font-size: 9px; text-transform: uppercase; font-weight: 700; 
       cursor: pointer; letter-spacing: 1px;
     }
-    .menu-item:active { color: var(--accent); }
   </style>
 </head>
 <body>
@@ -198,7 +193,7 @@
           <div class="card-visual-area">
             <div class="hud-meta hud-top-left"><span class="hud-title">Asymmetry Field</span></div>
             <div class="hud-meta hud-top-right">
-              <span class="hud-category">Kinetic</span>
+              <span class="hud-category">Force</span>
               <div class="glyph" onclick="toggleMode(this, 'menu')">⧉</div>
               <div class="glyph" onclick="toggleMode(this, 'expand')">▿</div>
             </div>
@@ -221,7 +216,7 @@
           <div class="card-visual-area">
             <div class="hud-meta hud-top-left"><span class="hud-title">Entropy Phase</span></div>
             <div class="hud-meta hud-top-right">
-              <span class="hud-category">Env</span>
+              <span class="hud-category">Environment</span>
               <div class="glyph" onclick="toggleMode(this, 'menu')">⧉</div>
               <div class="glyph" onclick="toggleMode(this, 'expand')">▿</div>
             </div>
@@ -253,43 +248,36 @@
     <button class="menu-item">Histo</button>
     <button class="menu-item">Alert</button>
     <button class="menu-item">Log</button>
-    <button class="menu-item" style="color:#222">▿</button>
+    <button class="menu-item" style="color:#111">▿</button>
   </footer>
 </div>
 
 <script>
-  // INTERACTION LOGIC
   function toggleCurtain(id) {
     document.getElementById(id).classList.toggle('is-collapsed');
   }
 
   function toggleMode(el, mode) {
     const card = el.closest('.stack-card');
-    
     if (mode === 'expand') {
       const isExpanded = card.classList.contains('is-expanded');
-      // Single-expand rule
       document.querySelectorAll('.stack-card').forEach(c => c.classList.remove('is-expanded'));
       if (!isExpanded) card.classList.add('is-expanded');
     } 
     else if (mode === 'menu') {
-      // Toggle menu independently (Multi-menu allowed)
       card.classList.toggle('mode-menu');
     }
   }
 
-  // CHART IMPLEMENTATION
   const chart = LightweightCharts.createChart(document.getElementById('chartContainer'), {
-    layout: { background: { color: '#000' }, textColor: '#444', fontFamily: 'JetBrains Mono' },
-    grid: { vertLines: { color: '#050505' }, horzLines: { color: '#050505' } },
-    timeScale: { borderColor: '#111', timeVisible: true },
-    crosshair: { vertLine: { color: 'rgba(0, 229, 255, 0.1)' }, horzLine: { color: 'rgba(0, 229, 255, 0.1)' } },
-    handleScroll: true,
-    handleScale: true,
+    layout: { background: { color: '#000' }, textColor: '#333', fontFamily: 'JetBrains Mono' },
+    grid: { vertLines: { color: '#040404' }, horzLines: { color: '#040404' } },
+    timeScale: { borderColor: '#000', timeVisible: true },
+    crosshair: { vertLine: { color: 'rgba(0, 229, 255, 0.05)' }, horzLine: { color: 'rgba(0, 229, 255, 0.05)' } },
   });
   
   const candleSeries = chart.addCandlestickSeries({ 
-    upColor: '#00e5ff', downColor: '#000000', 
+    upColor: '#00e5ff', downColor: '#000', 
     borderVisible: true, borderUpColor: '#00e5ff', borderDownColor: '#00e5ff',
     wickUpColor: '#00e5ff', wickDownColor: '#00e5ff' 
   });
@@ -303,32 +291,18 @@
   }));
   candleSeries.setData(mockData);
 
-  // FIELD CANVAS ANIMATION
   function paintField(id) {
     const canvas = document.getElementById(id);
     const ctx = canvas.getContext('2d');
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
-    
-    if (canvas.width !== rect.width * dpr) {
-      canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
-      ctx.scale(dpr, dpr);
-    }
-    
+    if (canvas.width !== rect.width * dpr) { canvas.width = rect.width * dpr; canvas.height = rect.height * dpr; ctx.scale(dpr, dpr); }
     ctx.clearRect(0, 0, rect.width, rect.height);
-    ctx.beginPath();
-    ctx.strokeStyle = '#00e5ff';
-    ctx.lineWidth = 0.5;
-    ctx.globalAlpha = 0.15;
-    
+    ctx.beginPath(); ctx.strokeStyle = '#00e5ff'; ctx.lineWidth = 0.5; ctx.globalAlpha = 0.12;
     const time = Date.now() * 0.001;
-    const spacing = 14;
-    
-    for(let x = 0; x < rect.width; x += spacing) {
+    for(let x = 0; x < rect.width; x += 15) {
       ctx.moveTo(x, rect.height * 0.8);
-      let yOffset = Math.sin(x * 0.02 + time) * 15;
-      ctx.lineTo(x + Math.cos(time) * 5, (rect.height * 0.7) + yOffset);
+      ctx.lineTo(x + Math.sin(x * 0.05 + time) * 8, (rect.height * 0.6) + Math.cos(time) * 10);
     }
     ctx.stroke();
   }
@@ -338,10 +312,8 @@
     paintField('canvas-entropy');
     requestAnimationFrame(loop);
   }
-  
   loop();
 
-  // Resize handling
   window.addEventListener('resize', () => {
     chart.applyOptions({ width: document.getElementById('chartContainer').clientWidth });
   });
