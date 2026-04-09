@@ -3,261 +3,230 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>FieldOS / Kinetic - Instrument Bay Refinement</title>
+  <title>FieldOS / Kinetic - Borderless Hud</title>
   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
   <style>
     :root {
       --bg: #000000;
       --bg-elev: #050505;
       --panel: #0a0a0a;
-      --panel-2: #121212;
       --accent: #00e5ff;
-      --accent-soft: rgba(0, 229, 255, 0.12);
-      --accent-glow: rgba(0, 229, 255, 0.3);
-      --line: #111111;
-      --line-strong: #1a1a1a;
+      --accent-soft: rgba(0, 229, 255, 0.1);
+      --accent-glow: rgba(0, 229, 255, 0.5);
+      --line: #0c0c0c;
       --text: #e8e8e8;
-      --text-dim: #808080;
-      --text-faint: #404040;
+      --text-dim: #707070;
+      --text-faint: #333333;
       --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       
-      /* Refined Sizing */
-      --chart-height: 48vh;
       --card-compact: 105px;
-      --card-expanded: 155px; /* Restrained expansion */
+      --card-expanded: 160px;
     }
 
-    html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: var(--text); font-family: var(--font-sans); overflow: hidden; }
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; overflow: hidden; }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
+    /* SHELL ARCHITECTURE */
     .app-shell { position: fixed; inset: 0; display: grid; grid-template-rows: 1fr auto; padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) 0; }
-    .workspace-shell { display: grid; grid-template-columns: auto 1fr auto; min-height: 0; overflow: hidden; background: var(--line); }
+    .workspace-shell { display: grid; grid-template-columns: auto 1fr auto; min-height: 0; overflow: hidden; position: relative; }
 
-    /* CURTAINS */
-    .curtain { height: 100%; overflow: hidden; transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); display: flex; background: var(--bg-elev); position: relative; z-index: 100; }
-    .left-curtain { width: 140px; border-right: 1px solid var(--line-strong); }
-    .right-curtain { width: 130px; border-left: 1px solid var(--line-strong); }
-    .curtain.is-collapsed { width: 28px !important; }
-    .curtain-handle { width: 28px; background: var(--panel); color: var(--text-faint); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 11px; border: none; transition: all 0.2s; }
+    /* CURTAINS (BORDERLESS) */
+    .curtain { height: 100%; overflow: hidden; transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); background: var(--bg-elev); z-index: 100; }
+    .left-curtain { width: 140px; }
+    .right-curtain { width: 130px; }
+    .curtain.is-collapsed { width: 0 !important; }
+
+    /* GLOWING DOT HANDLES */
+    .glow-dot {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      width: 6px; height: 6px; background: var(--accent);
+      border-radius: 50%; cursor: pointer; z-index: 200;
+      box-shadow: 0 0 8px var(--accent-glow);
+      opacity: 0.3; transition: opacity 0.2s, box-shadow 0.2s;
+    }
+    .glow-dot:hover { opacity: 1; box-shadow: 0 0 12px var(--accent); }
+    .dot-left { left: 8px; }
+    .dot-right { right: 8px; }
 
     /* CENTER WORKSPACE */
     .center-workspace { position: relative; display: flex; flex-direction: column; overflow-y: auto; background: var(--bg); scrollbar-width: none; }
     .center-workspace::-webkit-scrollbar { display: none; }
 
-    /* CHART STAGE - EDGE TO EDGE */
+    /* CHART STAGE (BORDERLESS) */
     .chart-box { 
       position: sticky; top: 0; z-index: 20; 
-      background: var(--bg); width: 100%; 
-      height: var(--chart-height);
-      border-bottom: 1px solid var(--line-strong);
+      background: var(--bg); width: 100%; height: 45vh;
     }
 
     /* INSTRUMENT STACK */
-    .middle-stack { display: flex; flex-direction: column; gap: 1px; background: var(--line); border-bottom: 1px solid var(--line); }
+    .middle-stack { display: flex; flex-direction: column; padding-bottom: 100px; }
     
     .stack-card { 
-      background: var(--bg); 
-      position: relative; 
-      overflow: hidden;
-      transition: border 0.3s;
+      background: var(--bg); position: relative; overflow: hidden;
+      margin-bottom: 2px; /* Subtle spacing instead of borders */
     }
 
     .card-visual-area { 
-      background: #000000; 
-      width: 100%; position: relative; overflow: hidden;
-      height: var(--card-compact); 
-      transition: height 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      width: 100%; position: relative; height: var(--card-compact); 
+      transition: height 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    
     .stack-card.is-expanded .card-visual-area { height: var(--card-expanded); }
-    .stack-card.is-expanded { background: var(--bg-elev); box-shadow: inset 0 0 20px rgba(0,229,255,0.03); }
-
-    canvas.field-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 
     /* HUD OVERLAYS */
-    .hud-meta { position: absolute; padding: 10px 12px; z-index: 5; pointer-events: none; font-family: var(--font-mono); text-transform: uppercase; }
+    .hud-meta { position: absolute; padding: 12px; z-index: 5; pointer-events: none; font-family: var(--font-mono); text-transform: uppercase; }
     .hud-top-left { top: 0; left: 0; }
-    .hud-top-right { top: 0; right: 0; display: flex; align-items: center; gap: 10px; pointer-events: auto; }
-    .hud-bottom-left { bottom: 0; left: 0; display: flex; gap: 16px; width: 100%; padding: 20px 12px 10px 12px; background: linear-gradient(0deg, rgba(0,0,0,0.85) 0%, transparent 100%); transition: padding 0.3s; }
+    .hud-top-right { top: 0; right: 0; display: flex; align-items: center; gap: 14px; pointer-events: auto; }
+    .hud-bottom-left { bottom: 0; left: 0; display: flex; gap: 16px; width: 100%; padding: 20px 12px 8px 12px; background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, transparent 100%); }
 
-    .hud-title { font-size: 9px; font-weight: 800; letter-spacing: 1px; color: var(--text-dim); transition: color 0.3s; }
-    .hud-category { font-size: 8px; color: var(--text-faint); font-weight: 800; }
-    
-    .stack-card.is-expanded .hud-title { color: var(--accent); }
-    .stack-card.is-expanded .hud-bottom-left { padding-bottom: 14px; }
-
-    .readout-item { font-size: 10px; color: var(--accent); opacity: 0.8; }
+    .hud-title { font-size: 9px; font-weight: 800; letter-spacing: 1px; color: var(--text-dim); }
+    .hud-category { font-size: 8px; color: var(--text-faint); font-weight: 800; margin-right: 4px; }
+    .readout-item { font-size: 10px; color: var(--accent); opacity: 0.7; }
     .readout-label { color: var(--text-faint); margin-right: 4px; font-size: 8px; }
 
-    /* Expand Toggle Glyph */
-    .field-glyph {
-      width: 16px; height: 16px;
-      display: flex; align-items: center; justify-content: center;
-      color: var(--text-faint); font-size: 10px;
-      cursor: pointer; transition: all 0.2s;
-    }
-    .stack-card.is-expanded .field-glyph { color: var(--accent); transform: rotate(180deg); }
+    /* GLYPH CONTROLS */
+    .glyph { width: 14px; height: 14px; cursor: pointer; color: var(--text-faint); transition: color 0.2s; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+    .glyph:hover, .glyph.active { color: var(--accent); }
 
-    /* INSTRUMENT BAY (TRAY) */
-    .instrument-bay {
-      position: fixed; bottom: 58px; left: 0; right: 0;
-      background: var(--panel); border-top: 1px solid var(--accent-soft);
-      z-index: 50; transform: translateY(105%);
-      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-      max-height: 60vh; overflow-y: auto;
-      padding: 20px; box-shadow: 0 -20px 40px rgba(0,0,0,0.6);
+    /* SLOT MENU MODE */
+    .slot-menu-surface {
+      position: absolute; inset: 0; background: var(--bg-elev);
+      z-index: 10; display: none; flex-direction: column;
+      padding: 12px; justify-content: center; gap: 8px;
     }
-    .instrument-bay.is-open { transform: translateY(0); }
+    .stack-card.mode-menu .slot-menu-surface { display: flex; }
+    .stack-card.mode-menu .hud-bottom-left, 
+    .stack-card.mode-menu canvas { opacity: 0; }
 
-    .bay-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
-    .bay-group-title { font-size: 10px; font-weight: 800; color: var(--text-faint); text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 1px solid var(--line-strong); padding-bottom: 6px; margin-bottom: 8px; grid-column: span 2; }
-    
-    .bay-item { 
-      background: var(--bg-elev); border: 1px solid var(--line-strong); padding: 10px; 
-      font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;
-      cursor: pointer; transition: all 0.2s;
+    .menu-option {
+      font-family: var(--font-mono); font-size: 10px; color: var(--text-dim);
+      text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
+      padding: 8px; border-left: 1px solid transparent; transition: all 0.2s;
     }
-    .bay-item:hover { border-color: var(--accent); color: var(--text); }
-
-    /* ACTION BUTTONS */
-    .add-tool-trigger { 
-      background: var(--bg); border: 1px dashed var(--line-strong); color: var(--text-faint);
-      padding: 12px; font-size: 10px; font-weight: 800; text-transform: uppercase;
-      letter-spacing: 2px; cursor: pointer; margin: 15px 6px 30px 6px; transition: all 0.2s;
-    }
-    .add-tool-trigger:hover { color: var(--text-dim); border-color: var(--text-faint); }
+    .menu-option:hover { color: var(--accent); border-left-color: var(--accent); background: var(--accent-soft); }
 
     /* BOTTOM MENU */
-    .bottom-menu-wrap { height: 58px; display: grid; grid-template-columns: repeat(6, 1fr) 40px; background: var(--panel); border-top: 1px solid var(--line-strong); z-index: 110; }
-    .menu-item { background: transparent; border: none; color: var(--text-dim); font-size: 9px; text-transform: uppercase; cursor: pointer; font-weight: 600; }
+    .bottom-menu-wrap { height: 58px; display: grid; grid-template-columns: repeat(6, 1fr) 40px; background: var(--panel); z-index: 110; }
+    .menu-item { background: transparent; border: none; color: var(--text-dim); font-size: 9px; text-transform: uppercase; font-weight: 600; cursor: pointer; }
   </style>
 </head>
 <body>
 
 <div class="app-shell">
   <div class="workspace-shell">
-    <aside class="curtain left-curtain" id="leftCurtain">
-      <button class="curtain-handle" onclick="toggleCurtain('leftCurtain')">◂</button>
-    </aside>
+    <div class="glow-dot dot-left" onclick="toggleCurtain('leftCurtain')"></div>
+    <div class="glow-dot dot-right" onclick="toggleCurtain('rightCurtain')"></div>
 
-    <main class="center-workspace" id="centerWorkspace">
+    <aside class="curtain left-curtain is-collapsed" id="leftCurtain"></aside>
+
+    <main class="center-workspace">
       <section class="chart-box" id="chartContainer"></section>
 
-      <div class="middle-stack" id="instrumentStack">
-        <section class="stack-card" id="card-asymmetry">
+      <div class="middle-stack">
+        <section class="stack-card" id="card-1">
           <div class="card-visual-area">
             <div class="hud-meta hud-top-left"><span class="hud-title">Asymmetry Field</span></div>
-            <div class="hud-meta hud-top-right"><span class="hud-category">Force</span><div class="field-glyph" onclick="toggleCard(this)">▿</div></div>
-            <canvas id="canvas-asymmetry" class="field-canvas"></canvas>
+            <div class="hud-meta hud-top-right">
+              <span class="hud-category">Force</span>
+              <div class="glyph" onclick="toggleMode(this, 'menu')">⧉</div>
+              <div class="glyph" onclick="toggleMode(this, 'expand')">▿</div>
+            </div>
+            
+            <div class="slot-menu-surface">
+              <div class="menu-option">Replace Instrument</div>
+              <div class="menu-option">Add Instrument Below</div>
+            </div>
+
+            <canvas id="canvas-1" style="width:100%; height:100%; position:absolute; inset:0;"></canvas>
+            
             <div class="hud-meta hud-bottom-left">
-              <div class="readout-item"><span class="readout-label">BIAS</span><span id="val-bias">0</span></div>
-              <div class="readout-item"><span class="readout-label">EFFORT</span><span id="val-effort">0</span></div>
+              <div class="readout-item"><span class="readout-label">BIAS</span><span>0.42</span></div>
+              <div class="readout-item"><span class="readout-label">EFFORT</span><span>0.18</span></div>
             </div>
           </div>
         </section>
 
-        <section class="stack-card" id="card-entropy">
+        <section class="stack-card" id="card-2">
           <div class="card-visual-area">
             <div class="hud-meta hud-top-left"><span class="hud-title">Entropy Phase</span></div>
-            <div class="hud-meta hud-top-right"><span class="hud-category">Environment</span><div class="field-glyph" onclick="toggleCard(this)">▿</div></div>
-            <canvas id="canvas-entropy" class="field-canvas"></canvas>
+            <div class="hud-meta hud-top-right">
+              <span class="hud-category">Env</span>
+              <div class="glyph" onclick="toggleMode(this, 'menu')">⧉</div>
+              <div class="glyph" onclick="toggleMode(this, 'expand')">▿</div>
+            </div>
+
+            <div class="slot-menu-surface">
+              <div class="menu-option">Replace Instrument</div>
+              <div class="menu-option">Add Instrument Below</div>
+            </div>
+
+            <canvas id="canvas-2" style="width:100%; height:100%; position:absolute; inset:0;"></canvas>
+            
             <div class="hud-meta hud-bottom-left">
-              <div class="readout-item"><span class="readout-label">DISORDER</span><span id="val-disorder">0</span></div>
-              <div class="readout-item"><span class="readout-label">STABILITY</span><span id="val-stability">0</span></div>
+              <div class="readout-item"><span class="readout-label">DISORDER</span><span>0.89</span></div>
+              <div class="readout-item"><span class="readout-label">STABILITY</span><span>0.11</span></div>
             </div>
           </div>
         </section>
-      </div>
-
-      <button class="add-tool-trigger" onclick="toggleBay(true)">+ Integrate Instrument</button>
-
-      <div class="instrument-bay" id="instrumentBay">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size:11px; font-weight:800; color:var(--accent);">Select Instrument</span>
-          <span class="field-glyph" style="transform:rotate(180deg);" onclick="toggleBay(false)">▿</span>
-        </div>
-        <div class="bay-grid">
-          <div class="bay-group-title">Force</div>
-          <div class="bay-item">Asymmetry</div><div class="bay-item">Vector Bias</div>
-          <div class="bay-group-title">Inertia</div>
-          <div class="bay-item">Inertia Field</div><div class="bay-item">Mass Decay</div>
-          <div class="bay-group-title">Environment</div>
-          <div class="bay-item">Entropy Phase</div><div class="bay-item">Stability</div>
-        </div>
       </div>
     </main>
 
-    <aside class="curtain right-curtain" id="rightCurtain">
-      <button class="curtain-handle" onclick="toggleCurtain('rightCurtain')">▸</button>
-    </aside>
+    <aside class="curtain right-curtain is-collapsed" id="rightCurtain"></aside>
   </div>
 
   <footer class="bottom-menu-wrap">
-    <button class="menu-item">Volume</button>
-    <button class="menu-item">Chart</button>
-    <button class="menu-item">Instr</button>
-    <button class="menu-item">Book</button>
-    <button class="menu-item">Sig</button>
-    <button class="menu-item">News</button>
-    <button class="menu-item" style="color:var(--text-faint)">▾</button>
+    <button class="menu-item">Vol</button><button class="menu-item">Chrt</button><button class="menu-item">Inst</button>
+    <button class="menu-item">Book</button><button class="menu-item">Sig</button><button class="menu-item">News</button>
+    <button class="menu-item">▾</button>
   </footer>
 </div>
 
 <script>
-  // UI LOGIC
-  function toggleCard(element) {
-    const card = element.closest('.stack-card');
-    const isExpanded = card.classList.contains('is-expanded');
-    document.querySelectorAll('.stack-card').forEach(c => c.classList.remove('is-expanded'));
-    if (!isExpanded) card.classList.add('is-expanded');
-  }
-
   function toggleCurtain(id) { document.getElementById(id).classList.toggle('is-collapsed'); }
-  function toggleBay(open) { document.getElementById('instrumentBay').classList.toggle('is-open', open); }
+
+  function toggleMode(el, mode) {
+    const card = el.closest('.stack-card');
+    const allCards = document.querySelectorAll('.stack-card');
+    
+    if (mode === 'expand') {
+      const isExpanded = card.classList.contains('is-expanded');
+      allCards.forEach(c => { c.classList.remove('is-expanded'); c.classList.remove('mode-menu'); });
+      if (!isExpanded) card.classList.add('is-expanded');
+    } 
+    else if (mode === 'menu') {
+      const isMenu = card.classList.contains('mode-menu');
+      allCards.forEach(c => { c.classList.remove('mode-menu'); c.classList.remove('is-expanded'); });
+      if (!isMenu) card.classList.add('mode-menu');
+    }
+  }
 
   // CHART SETUP
   const chart = LightweightCharts.createChart(document.getElementById('chartContainer'), {
-    layout: { background: { color: '#000' }, textColor: '#606060', fontFamily: 'JetBrains Mono' },
-    grid: { vertLines: { color: '#080808' }, horzLines: { color: '#080808' } },
-    timeScale: { borderColor: '#151515' },
-    crosshair: { vertLine: { color: '#00e5ff22' }, horzLine: { color: '#00e5ff22' } }
+    layout: { background: { color: '#000' }, textColor: '#444', fontFamily: 'JetBrains Mono' },
+    grid: { vertLines: { color: '#050505' }, horzLines: { color: '#050505' } },
+    timeScale: { borderColor: '#000' },
+    crosshair: { vertLine: { color: '#00e5ff11' }, horzLine: { color: '#00e5ff11' } }
   });
-  
-  const candleSeries = chart.addCandlestickSeries({ upColor: '#00e5ff', downColor: '#1a1a1a', borderVisible: false, wickUpColor: '#00e5ff', wickDownColor: '#1a1a1a' });
-  const mockData = []; let t = new Date(2026, 0, 1);
-  for(let i=0; i<100; i++) {
-    mockData.push({ time: t.toISOString().split('T')[0], open: 100+i, high: 105+i, low: 98+i, close: 103+i });
-    t.setDate(t.getDate() + 1);
-  }
+  const candleSeries = chart.addCandlestickSeries({ upColor: '#00e5ff', downColor: '#111', borderVisible: false, wickUpColor: '#00e5ff', wickDownColor: '#111' });
+  const mockData = Array.from({length: 100}, (_, i) => ({ time: new Date(2026, 0, i).toISOString().split('T')[0], open: 100+i, high: 105+i, low: 98+i, close: 103+i }));
   candleSeries.setData(mockData);
 
-  // GENERIC KINETIC PAINTER
-  function paintGeneric(id, color) {
+  // KINETIC VISUALS
+  function paint(id, color) {
     const canvas = document.getElementById(id);
-    if (!canvas) return;
     const ctx = canvas.getContext('2d');
     const dpr = window.devicePixelRatio || 1;
-    const rect = canvas.parentElement.getBoundingClientRect();
-    if (canvas.width !== rect.width * dpr || canvas.height !== rect.height * dpr) {
-      canvas.width = rect.width * dpr; canvas.height = rect.height * dpr;
-      ctx.scale(dpr, dpr);
-    }
-    ctx.clearRect(0, 0, rect.width, rect.height);
-    ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = 1.2; ctx.globalAlpha = 0.4;
-    ctx.moveTo(0, rect.height * 0.7);
-    for(let x=0; x<rect.width; x+=12) {
-      ctx.lineTo(x, rect.height * 0.7 - Math.random() * (rect.height * 0.25));
-    }
+    const rect = canvas.getBoundingClientRect();
+    if (canvas.width !== rect.width * dpr) { canvas.width = rect.width * dpr; canvas.height = rect.height * dpr; ctx.scale(dpr, dpr); }
+    ctx.clearRect(0,0,rect.width, rect.height);
+    ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = 1; ctx.globalAlpha = 0.3;
+    ctx.moveTo(0, rect.height * 0.8);
+    for(let x=0; x<rect.width; x+=15) ctx.lineTo(x, rect.height * 0.8 - Math.random() * (rect.height * 0.4));
     ctx.stroke();
   }
 
-  function loop() {
-    paintGeneric('canvas-asymmetry', '#00e5ff');
-    paintGeneric('canvas-entropy', '#00e5ff');
-    requestAnimationFrame(loop);
-  }
+  function loop() { paint('canvas-1', '#00e5ff'); paint('canvas-2', '#00e5ff'); requestAnimationFrame(loop); }
   loop();
 </script>
+
 </body>
 </html>
